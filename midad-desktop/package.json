@@ -8,8 +8,13 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win",
-    "dist:portable": "electron-builder --win portable"
+    "pack": "electron-builder --win --publish never",
+    "dist": "electron-builder --win --publish never",
+    "release": "electron-builder --win --publish always",
+    "dist:portable": "electron-builder --win portable --publish never"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "electron": "^33.0.0",
@@ -25,6 +30,13 @@
       "main.js",
       "preload.js",
       "app/**/*"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "zulf96",
+        "repo": "midad"
+      }
     ],
     "win": {
       "target": [
@@ -42,7 +54,8 @@
       "unicode": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "مِداد ستوديو"
+      "shortcutName": "مِداد ستوديو",
+      "deleteAppDataOnUninstall": false
     }
   }
 }

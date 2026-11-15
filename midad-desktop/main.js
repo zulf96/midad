@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 let win = null;
+let manualUpdateCheck = false;
 
 /* ---------- حفظ واسترجاع أبعاد النافذة ---------- */
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
@@ -28,6 +29,14 @@ function saveWindowState() {
   try { fs.writeFileSync(stateFile(), JSON.stringify(state)); } catch (err) { /* تجاهل */ }
 }
 
+function logUpdate(message) {
+  try {
+    const line = new Date().toISOString() + '  ' + message + '\n';
+    fs.appendFileSync(path.join(app.getPath('userData'), 'updater.log'), line);
+  } catch (err) { /* تجاهل */ }
+}
+
+/* ---------- النافذة ---------- */
 function createWindow() {
   const state = loadWindowState();
   win = new BrowserWindow({
@@ -79,6 +88,110 @@ function wireDownloads() {
   });
 }
 
+/* ---------- التحديث التلقائي ---------- */
+function setupAutoUpdater() {
+  if (!app.isPackaged) return;
+  let autoUpdater;
+  try {
+    autoUpdater = require('electron-updater').autoUpdater;
+  } catch (err) {
+    logUpdate('electron-updater غير متاح: ' + err.message);
+    return;
+  }
+
+  autoUpdater.autoDownload = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('checking-for-update', () => logUpdate('جارٍ فحص التحديثات...'));
+
+  autoUpdater.on('update-available', info => {
+    logUpdate('يتوفر إصدار ' + info.version);
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      dialog.showMessageBox(win, {
+        type: 'info',
+        title: 'تحديث متوفر',
+        message: 'يتوفر إصدار جديد: ' + info.version,
+        detail: 'يجري تنزيله الآن في الخلفية. ستصلك رسالة عند اكتمال التنزيل.',
+        buttons: ['حسنًا']
+      });
+    }
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    logUpdate('لا يوجد تحديث — الإصدار الحالي هو الأحدث.');
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      dialog.showMessageBox(win, {
+        type: 'info',
+        title: 'التحديثات',
+        message: 'أنت تستخدم أحدث إصدار (' + app.getVersion() + ').',
+        buttons: ['حسنًا']
+      });
+    }
+  });
+
+  autoUpdater.on('download-progress', progress => {
+    logUpdate('تنزيل التحديث: ' + Math.round(progress.percent) + '%');
+    if (win && !win.isDestroyed()) win.setProgressBar(progress.percent / 100);
+  });
+
+  autoUpdater.on('update-downloaded', info => {
+    logUpdate('اكتمل تنزيل ' + info.version);
+    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    if (manualUpdateCheck) manualUpdateCheck = false;
+    dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'التحديث جاهز',
+      message: 'اكتمل تنزيل الإصدار ' + info.version,
+      detail: 'سيُثبَّت تلقائيًا عند إغلاق التطبيق، أو أعد التشغيل الآن لتطبيقه فورًا.',
+      buttons: ['إعادة التشغيل الآن', 'لاحقًا'],
+      defaultId: 0,
+      cancelId: 1
+    }).then(({ response }) => {
+      if (response === 0) autoUpdater.quitAndInstall(false, true);
+    });
+  });
+
+  autoUpdater.on('error', err => {
+    logUpdate('خطأ في التحديث: ' + (err && err.message));
+    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      dialog.showMessageBox(win, {
+        type: 'error',
+        title: 'تعذّر التحديث',
+        message: 'لم نتمكن من التحقق من التحديثات.',
+        detail: 'تأكد من اتصال الإنترنت ثم حاول لاحقًا.\n' + (err && err.message ? String(err.message) : ''),
+        buttons: ['حسنًا']
+      });
+    }
+  });
+
+  // فحص عند الإقلاع (بعد استقرار الواجهة) ثم كل ٤ ساعات
+  setTimeout(() => autoUpdater.checkForUpdates().catch(err => logUpdate(err && err.message)), 4000);
+  setInterval(() => autoUpdater.checkForUpdates().catch(err => logUpdate(err && err.message)), 4 * 60 * 60 * 1000);
+}
+
+function checkForUpdatesManually() {
+  if (!app.isPackaged) {
+    dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'التحديثات',
+      message: 'أنت تشغّل نسخة التطوير.',
+      detail: 'فحص التحديثات متاح في النسخة المثبَّتة فقط.',
+      buttons: ['حسنًا']
+    });
+    return;
+  }
+  manualUpdateCheck = true;
+  const { autoUpdater } = require('electron-updater');
+  autoUpdater.checkForUpdates().catch(err => {
+    manualUpdateCheck = false;
+    logUpdate(err && err.message);
+  });
+}
+
 /* ---------- قائمة عربية ---------- */
 function buildMenu() {
   const template = [
@@ -122,13 +235,18 @@ function buildMenu() {
       label: 'مساعدة',
       submenu: [
         {
+          label: 'التحقق من التحديثات',
+          click: () => checkForUpdatesManually()
+        },
+        {
           label: 'عن مِداد',
           click: () => {
             dialog.showMessageBox(win, {
               type: 'info',
               title: 'مِداد ستوديو',
               message: 'مِداد ستوديو — استوديو تأليف الملازم الدراسية',
-              detail: 'الإصدار ' + app.getVersion() + '\nجميع البيانات محفوظة محليًا على جهازك.'
+              detail: 'الإصدار ' + app.getVersion() + '\nجميع البيانات محفوظة محليًا على جهازك.',
+              buttons: ['حسنًا']
             });
           }
         }
@@ -154,6 +272,7 @@ if (!gotLock) {
     wireDownloads();
     buildMenu();
     createWindow();
+    setupAutoUpdater();
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
