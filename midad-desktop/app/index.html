@@ -687,11 +687,20 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 }
 .pop-clear:hover{ background:#fff0ec; color:#a83a17; }
 
+/* شريط الوصول السريع: مثبت أسفل منتصف الشاشة — لا يقفز ولا يغطي النص */
 .quick-bar{
-  position:fixed; z-index:130; display:flex; align-items:center; gap:3px;
-  padding:5px 8px;
-  background:var(--navy); border:1px solid rgba(255,255,255,.16); border-radius:11px;
-  box-shadow:0 10px 26px -10px rgba(18,41,60,.6);
+  position:fixed; bottom:16px; left:50%;
+  transform:translateX(-50%) translateY(14px) scale(.97);
+  z-index:130; display:flex; align-items:center; gap:3px;
+  padding:6px 10px;
+  background:var(--navy); border:1px solid rgba(255,255,255,.16); border-radius:14px;
+  box-shadow:0 14px 34px -12px rgba(18,41,60,.65);
+  opacity:0; pointer-events:none;
+  transition:opacity .18s ease, transform .24s cubic-bezier(.2,.7,.3,1);
+}
+.quick-bar.show{
+  opacity:1; pointer-events:auto;
+  transform:translateX(-50%) translateY(0) scale(1);
 }
 .quick-bar[hidden]{ display:none !important; }
 .qb-btn{
@@ -845,6 +854,29 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   width:62px; height:4px; margin-top:22px; border-radius:3px;
   background:linear-gradient(90deg,var(--accent),var(--navy));
 }
+
+/* ----- أدوات التحكم بعناصر الغلاف (المحرر فقط) ----- */
+.cover-el{ position:relative; min-width:0; }
+.ce-tools{
+  position:absolute; inset-inline-start:0; top:-15px;
+  display:none; gap:2px; z-index:6;
+  direction:ltr;
+}
+.cover-el:hover .ce-tools, .cover-el:focus-within .ce-tools,
+.cover-brand:hover .ce-tools, .cover-brand:focus-within .ce-tools,
+.cover-stamp:hover .ce-tools, .cover-stamp:focus-within .ce-tools,
+.cover-foot:hover .ce-tools, .cover-foot:focus-within .ce-tools{ display:flex; }
+.ce-tools button{
+  width:19px; height:19px; padding:0; border:0; border-radius:5px;
+  background:var(--navy); color:#fff;
+  font-family:var(--font-head); font-size:11px; line-height:1;
+  cursor:pointer; display:grid; place-items:center;
+  box-shadow:0 2px 6px rgba(18,41,60,.25);
+}
+.ce-tools button:hover{ background:var(--coral-ink); }
+.cover-brand, .cover-stamp, .cover-foot{ position:relative; }
+.cover-brand .ce-tools, .cover-stamp .ce-tools, .cover-foot .ce-tools{ top:-11px; inset-inline-start:auto; inset-inline-end:0; }
+@media print{ .ce-tools{ display:none !important; } }
 .cover-meta{
   display:flex; flex-wrap:wrap; gap:22px 34px;
   margin-top:28px; padding-top:20px;
@@ -1658,6 +1690,36 @@ dialog::backdrop{
 .toast.error svg{ color:#ff9a7d; }
 .toast.out{ animation:toastOut .25s ease forwards; }
 @keyframes toastIn{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
+
+/* ----- شريط تقدم تنزيل التحديث (سطح المكتب) ----- */
+#updateBanner{
+  position:fixed; top:14px; inset-inline-start:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:10px;
+  padding:10px 16px; border-radius:12px;
+  background:var(--navy-deep); color:#fff;
+  font-size:11.5px; font-weight:600; white-space:nowrap;
+  box-shadow:0 16px 40px -18px rgba(0,0,0,.5);
+  z-index:9000; direction:rtl;
+}
+#updateBanner svg{ width:16px; height:16px; color:#5ee1a9; flex:0 0 auto; }
+#updateBanner .ub-body{ display:flex; flex-direction:column; gap:5px; min-width:180px; }
+.ub-bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.18); overflow:hidden; }
+.ub-fill{ height:100%; width:0%; border-radius:99px; background:var(--coral); transition:width .35s ease; }
+@media print{ #updateBanner{ display:none !important; } }
+
+/* ----- شريحة اللصق (بعد نسخ عنصر) ----- */
+#pasteChip{
+  position:fixed; bottom:72px; inset-inline-start:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:8px;
+  padding:10px 18px; border-radius:99px; border:0;
+  background:var(--green-deep); color:#fff;
+  font-family:inherit; font-size:12.5px; font-weight:800; white-space:nowrap;
+  cursor:pointer; z-index:8800; direction:rtl;
+  box-shadow:0 14px 34px -14px rgba(0,0,0,.45);
+}
+#pasteChip:hover{ filter:brightness(1.08); }
+#pasteChip svg{ width:15px; height:15px; color:#fff; flex:0 0 auto; }
+@media print{ #pasteChip{ display:none !important; } }
 @keyframes toastOut{ to{ opacity:0; transform:translateY(6px); } }
 
 .sidebar-overlay{
@@ -2019,6 +2081,9 @@ dialog::backdrop{
 .paper-body .hb svg{ width:12px; height:12px; pointer-events:none; }
 .paper-body .hb-del:hover{ background:var(--coral-ink); }
 .layer-bar .hb-del:hover{ background:var(--coral-ink); }
+.paper-body .hb-copy:hover, .layer-bar .hb-copy:hover{ background:var(--green-deep); color:#fff; }
+.paper-body .hb-dup:hover, .layer-bar .hb-dup:hover{ background:var(--green-deep); color:#fff; }
+.paper-body .hb-copy svg, .layer-bar .hb-copy svg{ width:13px; height:13px; }
 .paper-body .rz-corner{
   display:none; position:absolute; inset-block-end:-8px; inset-inline-end:-8px;
   width:17px; height:17px; border-radius:50%; z-index:8;
@@ -2153,6 +2218,7 @@ dialog::backdrop{
   background:rgba(18,41,60,.72); color:#fff; font-size:7.5px; border-radius:5px;
 }
 .custom-add-row{ display:grid; grid-template-columns:auto 1fr auto; gap:6px; margin-top:6px; }
+.custom-add-row .wide-btn{ grid-column:1 / -1; width:100%; justify-content:center; display:flex; align-items:center; gap:6px; padding:7px; }
 .custom-add-row input[type="text"]{
   min-width:0; padding:6px 8px; border:1px solid var(--line); border-radius:8px;
   font-family:inherit; font-size:11.5px;
@@ -2656,6 +2722,14 @@ dialog::backdrop{
           <svg aria-hidden="true"><use href="#i-plus"/></svg>
         </button>
       </div>
+      <div class="custom-add-row">
+        <button class="mini-btn wide-btn" type="button" id="uploadFontBtn" title="رفع ملف خط (TTF / OTF / WOFF / WOFF2)" aria-label="رفع ملف خط">
+          <svg aria-hidden="true"><use href="#i-upload"/></svg>
+          رفع ملف خط
+        </button>
+        <input type="file" id="customFontFile" accept=".ttf,.otf,.woff,.woff2" hidden />
+      </div>
+      <p class="hint" style="margin-top:4px">يُرفع ملف الخط فيُحفظ داخل المشروع ويظهر في خانة «خط المستند». حد ٢ م.ب للملف.</p>
       <div class="setting-row">
         <span>صفحة الغلاف</span>
         <button class="switch" type="button" id="coverSwitch" role="switch" aria-checked="true" aria-label="إظهار صفحة الغلاف"></button>
@@ -2804,7 +2878,7 @@ dialog::backdrop{
       <button class="pop-clear" type="button" id="formatPopoverClear">إزالة التنسيق</button>
     </div>
 
-    <div class="quick-bar" id="quickBar" hidden role="toolbar" aria-label="شريط وصول سريع">
+    <div class="quick-bar" id="quickBar" role="toolbar" aria-label="شريط وصول سريع">
       <button class="qb-btn" type="button" data-cmd="bold" title="عريض" aria-label="عريض"><b>B</b></button>
       <button class="qb-btn" type="button" data-cmd="italic" title="مائل" aria-label="مائل"><i>I</i></button>
       <button class="qb-btn" type="button" data-cmd="underline" title="تسطير" aria-label="تسطير"><u>U</u></button>
@@ -3379,6 +3453,7 @@ dialog::backdrop{
     <div class="field">
       <label>عناصر الغلاف</label>
       <div class="check-col" id="coverElementsChecks"></div>
+      <p class="hint" style="margin-top:6px">نصيحة: مرّر المؤشر فوق أي عنصر في الغلاف داخل المحرر لتظهر أدواته (↑ أعلى، ↓ أسفل، ✕ إخفاء) — والإخفاء هنا يطابق إلغاء التحديد.</p>
     </div>
     <div class="dialog-actions">
       <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
@@ -3491,6 +3566,21 @@ dialog::backdrop{
 <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 
+<!-- شريط تقدم تنزيل التحديث (يعمل في نسخة سطح المكتب فقط) -->
+<div id="updateBanner" role="status" aria-live="polite" hidden>
+  <svg aria-hidden="true"><use href="#i-download"/></svg>
+  <div class="ub-body">
+    <span id="updateBannerText"></span>
+    <div class="ub-bar" aria-hidden="true"><div class="ub-fill" id="updateBannerFill"></div></div>
+  </div>
+</div>
+
+<!-- شريحة اللصق بعد نسخ عنصر -->
+<button id="pasteChip" type="button" hidden>
+  <svg aria-hidden="true"><use href="#i-copy"/></svg>
+  <span>لصق</span>
+</button>
+
 <script>
 /* ============================================================
    مِداد — منطق التطبيق
@@ -3545,7 +3635,29 @@ const COVER_LAYOUTS = ['classic', 'modern', 'academic', 'minimal', 'banner', 'ed
 const COVER_TEMPLATES = ['soft', 'tech', 'custom'];
 const BACK_TEMPLATES = ['soft', 'tech'];
 const COVER_ELEMENTS = ['kicker', 'title', 'subtitle', 'rule', 'meta', 'stamp', 'footer', 'brand'];
+/* العناصر الانسيابية في عمود الغلاف — تصلح لإعادة الترتيب فوق/تحت */
+const COVER_FLOW_ELS = ['kicker', 'title', 'subtitle', 'rule', 'meta'];
 const FONT_CHOICES = ['cairo', 'tajawal', 'amiri', 'dubai', 'readex', 'ibm'];
+
+/* قيم الخطوط المسموحة: المدمجة + المرفوعة (up:الاسم) + خطوط النظام (sys:العائلة) */
+function isValidFontValue(v) {
+  if (FONT_CHOICES.includes(v)) return true;
+  if (typeof v !== 'string') return false;
+  if (v.startsWith('up:')) return v.length > 3 && v.length <= 64;
+  if (v.startsWith('sys:')) return v.length > 4 && v.length <= 100;
+  return false;
+}
+function fontStackFor(doc, value) {
+  value = value || doc.font;
+  if (typeof value === 'string' && value.startsWith('up:')) {
+    const f = (doc.customFonts || []).find(x => x.name === value.slice(3));
+    return f ? '"' + f.name.replace(/["\\]/g, '') + '", var(--font-body)' : '';
+  }
+  if (typeof value === 'string' && value.startsWith('sys:')) {
+    return '"' + value.slice(4).replace(/["\\]/g, '') + '", var(--font-body)';
+  }
+  return '';
+}
 const TABLE_STYLES = ['plain', 'banded', 'grid', 'minimal', 'bordered', 'soft'];
 const TABLE_COLORS = ['coral', 'green', 'navy', 'purple', 'teal', 'amber', 'rose', 'slate'];
 const BORDER_STYLES = ['none', 'solid', 'double', 'dashed', 'dotted', 'rounded', 'shadow', 'gradient', 'glow'];
@@ -3982,7 +4094,7 @@ function normalizeDoc(raw, preserveId) {
     frameColor: /^#[0-9a-fA-F]{6}$/.test(raw.frameColor) ? raw.frameColor : '#1e3d59',
     frameWidth: Math.min(8, Math.max(1, Number(raw.frameWidth) || 2)),
     margins: MARGIN_KEYS.includes(raw.margins) ? raw.margins : 'normal',
-    font: FONT_CHOICES.includes(raw.font) ? raw.font : 'cairo',
+    font: isValidFontValue(raw.font) ? raw.font : 'cairo',
     coverLayout: COVER_LAYOUTS.includes(raw.coverLayout) ? raw.coverLayout : 'classic',
     coverTemplate: COVER_TEMPLATES.includes(raw.coverTemplate) ? raw.coverTemplate : 'soft',
     customCoverId: String(raw.customCoverId || '').slice(0, 40),
@@ -3995,11 +4107,17 @@ function normalizeDoc(raw, preserveId) {
     coverElements: Array.isArray(raw.coverElements)
       ? raw.coverElements.filter(el => COVER_ELEMENTS.includes(el))
       : ['kicker','title','subtitle','rule','meta','stamp','footer','brand'],
+    coverOrder: (function () {
+      const arr = Array.isArray(raw.coverOrder) ? raw.coverOrder.filter(el => COVER_ELEMENTS.includes(el)) : [];
+      if (!arr.length) return null;
+      COVER_ELEMENTS.forEach(el => { if (!arr.includes(el)) arr.push(el); });
+      return arr;
+    })(),
     customColors: Array.isArray(raw.customColors)
       ? raw.customColors.map(c => String(c || '')).filter(c => /^#[0-9a-fA-F]{3,8}$/.test(c)).slice(0, 40)
       : [],
     customFonts: Array.isArray(raw.customFonts)
-      ? raw.customFonts.map(f => ({ name: String((f && f.name) || '').slice(0, 60), url: String((f && f.url) || '').slice(0, 500) })).filter(f => f.name && f.url).slice(0, 12)
+      ? raw.customFonts.map(f => ({ name: String((f && f.name) || '').slice(0, 60), url: String((f && f.url) || '').slice(0, 2500000) })).filter(f => f.name && f.url).slice(0, 12)
       : [],
     showPageNumbers: raw.showPageNumbers !== false,
     showToc: raw.showToc !== false,
@@ -4380,6 +4498,7 @@ function showLibrary() {
   document.body.dataset.view = 'library';
   closeSidebar();
   hideQuickBar();
+  hidePasteChip();
   renderLibrary();
   document.title = 'مِداد — استوديو تأليف الملازم';
   setHash('');
@@ -4530,30 +4649,47 @@ function coverHtml(doc) {
     frameHtml() + pageToolsHtml('cover');
   if (has('brand')) {
     html += '<div class="cover-top">' +
-      '<span class="cover-brand"><i aria-hidden="true"></i> مِداد</span>' +
+      '<span class="cover-brand"><i aria-hidden="true"></i> مِداد' + coverElTools('brand') + '</span>' +
       (has('kicker') ? '<span class="cover-type">' + kicker + '</span>' : '') +
     '</div>';
   } else if (has('kicker')) {
     html += '<div class="cover-top"><span class="cover-type">' + kicker + '</span></div>';
   }
   html += '<div class="cover-main">';
-  if (has('kicker')) html += '<div class="cover-kicker">' + kicker + '</div>';
-  if (has('title')) html += '<div class="cover-title" contenteditable="true" data-cover="title" spellcheck="false">' + esc(doc.title) + '</div>';
-  if (has('subtitle')) html += '<div class="cover-subtitle" contenteditable="true" data-cover="subtitle" spellcheck="false">' + esc(doc.subtitle) + '</div>';
-  if (has('rule')) html += '<div class="cover-rule"></div>';
-  if (has('meta')) {
-    html += '<div class="cover-meta">';
-    if (doc.author) html += '<div>إعداد<b contenteditable="true" data-cover="author" spellcheck="false">' + esc(doc.author) + '</b></div>';
-    if (doc.institution) html += '<div>المؤسسة<b contenteditable="true" data-cover="institution" spellcheck="false">' + esc(doc.institution) + '</b></div>';
-    if (doc.year) html += '<div>السنة<b contenteditable="true" data-cover="year" spellcheck="false">' + esc(doc.year) + '</b></div>';
-    html += '<div>عدد الصفحات<b>' + toAr(total) + ' صفحة</b></div></div>';
-  }
+  /* الترتيب: من doc.coverOrder (أو الافتراضي) — فقط للعناصر الانسيابية */
+  const order = Array.isArray(doc.coverOrder) && doc.coverOrder.length ? doc.coverOrder : COVER_ELEMENTS;
+  const flowEls = COVER_FLOW_ELS.slice().sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  const builders = {
+    kicker: () => '<div class="cover-kicker">' + kicker + '</div>',
+    title: () => '<div class="cover-title" contenteditable="true" data-cover="title" spellcheck="false">' + esc(doc.title) + '</div>',
+    subtitle: () => '<div class="cover-subtitle" contenteditable="true" data-cover="subtitle" spellcheck="false">' + esc(doc.subtitle) + '</div>',
+    rule: () => '<div class="cover-rule"></div>',
+    meta: () => {
+      let m = '<div class="cover-meta">';
+      if (doc.author) m += '<div>إعداد<b contenteditable="true" data-cover="author" spellcheck="false">' + esc(doc.author) + '</b></div>';
+      if (doc.institution) m += '<div>المؤسسة<b contenteditable="true" data-cover="institution" spellcheck="false">' + esc(doc.institution) + '</b></div>';
+      if (doc.year) m += '<div>السنة<b contenteditable="true" data-cover="year" spellcheck="false">' + esc(doc.year) + '</b></div>';
+      return m + '<div>عدد الصفحات<b>' + toAr(total) + ' صفحة</b></div></div>';
+    }
+  };
+  flowEls.forEach(id => {
+    if (!has(id) || !builders[id]) return;
+    html += '<div class="cover-el" data-ce="' + id + '">' + builders[id]() + coverElTools(id, true) + '</div>';
+  });
   html += '</div>';
   if (has('footer')) {
-    html += '<div class="cover-foot"><span data-doc-title>' + esc(doc.title) + '</span>' + footAuthorHtml(doc) + '<b>' + toAr(1) + ' / ' + toAr(total) + '</b></div>';
+    html += '<div class="cover-foot"><span data-doc-title>' + esc(doc.title) + '</span>' + footAuthorHtml(doc) + '<b>' + toAr(1) + ' / ' + toAr(total) + '</b>' + coverElTools('footer') + '</div>';
   }
-  if (has('stamp')) html += '<div class="cover-stamp" aria-hidden="true"><span>مِداد</span>STUDIO</div>';
+  if (has('stamp')) html += '<div class="cover-stamp" aria-hidden="true"><span>مِداد</span>STUDIO' + coverElTools('stamp') + '</div>';
   return html + '</article>';
+}
+
+/* أدوات التحكم بعنصر الغلاف: تحريك (للانسيابية) + إخفاء (للجميع) */
+function coverElTools(id, canMove) {
+  return '<span class="ce-tools" contenteditable="false" aria-label="تحكم بعنصر الغلاف">' +
+    (canMove ? '<button type="button" data-ce-up="' + id + '" title="تحريك لأعلى" aria-label="تحريك لأعلى">↑</button>' +
+      '<button type="button" data-ce-down="' + id + '" title="تحريك لأسفل" aria-label="تحريك لأسفل">↓</button>' : '') +
+    '<button type="button" data-ce-del="' + id + '" title="إخفاء العنصر" aria-label="إخفاء العنصر">✕</button></span>';
 }
 
 /* ---------- قالب الغلاف التقني الداكن + الغلاف الخلفي ---------- */
@@ -4809,7 +4945,7 @@ function syncEditorChrome(doc) {
   $$('button', fontScale).forEach(btn => btn.classList.toggle('active', btn.dataset.font === doc.fontSize));
   if (frameSelect) frameSelect.value = doc.frame;
   if (marginSelect) marginSelect.value = doc.margins;
-  if (fontSelectEl) fontSelectEl.value = doc.font;
+  if (fontSelectEl) { populateFontOptions(doc); fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo'; }
   if (coverLayoutEl) coverLayoutEl.value = doc.coverLayout;
   if (coverTemplateEl) coverTemplateEl.value = doc.coverTemplate || 'soft';
   if (backTemplateEl) backTemplateEl.value = doc.backTemplate || 'tech';
@@ -4835,6 +4971,9 @@ function renderEditor(rebuild) {
   docCanvas.dataset.frame = doc.frame;
   docCanvas.dataset.margins = doc.margins;
   docCanvas.dataset.fontName = doc.font;
+  const fontStack = fontStackFor(doc);
+  if (fontStack) docCanvas.style.setProperty('--doc-font', fontStack);
+  else docCanvas.style.removeProperty('--doc-font');
   docCanvas.dataset.frameColor = doc.frameColor;
   docCanvas.dataset.frameWidth = String(doc.frameWidth);
   docCanvas.style.setProperty('--frame-line', doc.frameColor || '#1e3d59');
@@ -4917,6 +5056,50 @@ function renderCustomFontsList(doc) {
     '<div class="font-chip"><span style="font-family:\'' + esc(f.name) + '\'">' + esc(f.name) + '</span>' +
     '<button type="button" data-remove-font="' + esc(f.name) + '">حذف</button></div>'
   ).join('');
+}
+
+/* ----- تعبئة خانة الخطوط: مدمجة + مرفوعة + خطوط ويندوز (سطح المكتب) ----- */
+let systemFontsCache = null;
+let systemFontsLoading = null;
+
+function populateFontOptions(doc) {
+  if (!fontSelectEl) return;
+  const current = fontSelectEl.value || (doc ? doc.font : 'cairo');
+  let html = FONT_CHOICES.map(f => {
+    const labels = { cairo: 'Cairo', tajawal: 'Tajawal', amiri: 'Amiri', dubai: 'Dubai', readex: 'Readex Pro', ibm: 'IBM Plex' };
+    return '<option value="' + f + '">' + labels[f] + '</option>';
+  }).join('');
+  const customs = doc ? (doc.customFonts || []) : [];
+  if (customs.length) {
+    html += '<optgroup label="الخطوط المرفوعة">' +
+      customs.map(f => '<option value="up:' + esc(f.name) + '">' + esc(f.name) + '</option>').join('') +
+      '</optgroup>';
+  }
+  if (systemFontsCache && systemFontsCache.length) {
+    html += '<optgroup label="خطوط ويندوز المثبّتة">' +
+      systemFontsCache.slice(0, 400).map(n => '<option value="sys:' + esc(n) + '">' + esc(n) + '</option>').join('') +
+      '</optgroup>';
+  }
+  fontSelectEl.innerHTML = html;
+  fontSelectEl.value = isValidFontValue(current) ? current : 'cairo';
+}
+
+async function loadSystemFonts() {
+  if (!window.midadDesktop || !window.midadDesktop.systemFonts) return;
+  if (systemFontsCache || systemFontsLoading) return;
+  systemFontsLoading = true;
+  try {
+    const list = await window.midadDesktop.systemFonts();
+    if (Array.isArray(list) && list.length) {
+      systemFontsCache = list;
+      const doc = activeDoc();
+      if (doc && document.body.dataset.view === 'editor') {
+        populateFontOptions(doc);
+        fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo';
+      }
+    }
+  } catch (err) { /* تجاهل */ }
+  systemFontsLoading = null;
 }
 
 const COVER_ELEMENT_LABELS = {
@@ -5051,7 +5234,7 @@ function syncBodyFromDom(body) {
   const section = doc.sections.find(s => s.id === body.dataset.sec);
   if (!section) return;
   const clone = body.cloneNode(true);
-  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay').forEach(el => el.remove());
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(el => el.remove());
   $$('.el-selected', clone).forEach(el => el.classList.remove('el-selected'));
   section.body = clone.innerHTML;
   updateStats();
@@ -5382,7 +5565,7 @@ docCanvas.addEventListener('input', event => {
     } else {
       renumberQuestions();
       const clean = el.cloneNode(true);
-      clean.querySelectorAll('.move-handle,.rz-corner,.layer-overlay').forEach(x => x.remove());
+      clean.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(x => x.remove());
       $$('.el-selected', clean).forEach(x => x.classList.remove('el-selected'));
       section.body = clean.innerHTML;
       updateStats();
@@ -5428,6 +5611,10 @@ docCanvas.addEventListener('drop', event => {
 docCanvas.addEventListener('click', event => {
   const btn = event.target.closest('button');
   if (!btn) return;
+  /* أدوات عناصر الغلاف: إخفاء / تحريك */
+  if (btn.dataset.ceDel) { coverElDelete(btn.dataset.ceDel); return; }
+  if (btn.dataset.ceUp) { coverElMove(btn.dataset.ceUp, -1); return; }
+  if (btn.dataset.ceDown) { coverElMove(btn.dataset.ceDown, 1); return; }
   if (btn.dataset.delPage) { deleteFixedPage(btn.dataset.delPage); return; }
   if (btn.dataset.addSection !== undefined || btn.hasAttribute('data-add-section')) { addSection(); return; }
   const paper = btn.closest('[data-sec-paper]');
@@ -5435,6 +5622,39 @@ docCanvas.addEventListener('click', event => {
   if (btn.dataset.move && id) moveSection(id, btn.dataset.move === 'up' ? -1 : 1);
   if (btn.dataset.delSec) deleteSection(btn.dataset.delSec);
 });
+
+/* منع أدوات الغلاف من تحريك مؤشر الكتابة */
+docCanvas.addEventListener('mousedown', event => {
+  if (event.target.closest('.ce-tools')) { event.preventDefault(); event.stopPropagation(); }
+}, true);
+
+/* حذف (إخفاء) عنصر من الغلاف — يُرجَع من «تخصيص الغلاف» */
+function coverElDelete(id) {
+  const doc = activeDoc();
+  if (!doc || !COVER_ELEMENTS.includes(id)) return;
+  doc.coverElements = (doc.coverElements || COVER_ELEMENTS.slice()).filter(e => e !== id);
+  renderEditor(true);
+  scheduleSave();
+  toast('أُخفي «' + (COVER_ELEMENT_LABELS[id] || id) + '» من الغلاف — أرجعه من «تخصيص الغلاف».');
+}
+
+/* تحريك عنصر انسيابي فوق/تحت جيرانه */
+function coverElMove(id, dir) {
+  const doc = activeDoc();
+  if (!doc || !COVER_FLOW_ELS.includes(id)) return;
+  const base = Array.isArray(doc.coverOrder) && doc.coverOrder.length ? doc.coverOrder.slice() : COVER_ELEMENTS.slice();
+  const flowOrder = base.filter(e => COVER_FLOW_ELS.includes(e));
+  const i = flowOrder.indexOf(id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= flowOrder.length) return;
+  const tmp = flowOrder[i];
+  flowOrder[i] = flowOrder[j];
+  flowOrder[j] = tmp;
+  doc.coverOrder = flowOrder.concat(base.filter(e => !COVER_FLOW_ELS.includes(e)));
+  renderEditor(true);
+  scheduleSave();
+  toast('تم تحريك «' + (COVER_ELEMENT_LABELS[id] || id) + '» ' + (dir < 0 ? 'لأعلى.' : 'لأسفل.'));
+}
 
 async function deleteFixedPage(kind) {
   const doc = activeDoc();
@@ -5691,24 +5911,11 @@ formatPopoverClear.addEventListener('click', () => {
   closeFormatPopover();
 });
 
-/* ---------- شريط الوصول السريع المصغر ---------- */
+/* ---------- شريط الوصول السريع المصغر (مثبت أسفل الشاشة) ---------- */
 let quickBarTimer = null;
 
-function positionQuickBar(range) {
-  if (!quickBar || quickBar.hidden) return;
-  const rect = range.getBoundingClientRect();
-  const width = quickBar.offsetWidth || 250;
-  const height = quickBar.offsetHeight || 36;
-  let left = rect.left + rect.width / 2 - width / 2;
-  left = Math.max(10, Math.min(window.innerWidth - width - 10, left));
-  let top = rect.top - height - 8;
-  if (top < 10) top = Math.min(window.innerHeight - height - 10, Math.max(10, rect.bottom + 8));
-  quickBar.style.left = Math.round(left) + 'px';
-  quickBar.style.top = Math.round(top) + 'px';
-}
-
 function hideQuickBar() {
-  if (quickBar) quickBar.hidden = true;
+  if (quickBar) quickBar.classList.remove('show');
 }
 
 function updateQuickBar() {
@@ -5724,21 +5931,14 @@ function updateQuickBar() {
   if (host && host.closest && host.closest('.move-handle,.rz-corner,.layer-overlay,.sheet-tools')) { hideQuickBar(); return; }
   const body = bodyFromNode(range.commonAncestorContainer);
   if (!body || !docCanvas.contains(body)) { hideQuickBar(); return; }
-  quickBar.hidden = false;
-  positionQuickBar(range);
+  quickBar.classList.add('show');
 }
 
 document.addEventListener('selectionchange', () => {
   if (!quickBar) return;
   clearTimeout(quickBarTimer);
-  quickBarTimer = setTimeout(updateQuickBar, 150);
+  quickBarTimer = setTimeout(updateQuickBar, 120);
 });
-
-document.addEventListener('scroll', () => {
-  if (quickBar && !quickBar.hidden) hideQuickBar();
-}, true);
-
-window.addEventListener('resize', hideQuickBar);
 
 if (quickBar) {
   quickBar.addEventListener('mousedown', event => {
@@ -6142,6 +6342,8 @@ function barButtonsHtml() {
     '<button class="hb" type="button" data-act="minus" contenteditable="false" title="تصغير" aria-label="تصغير العنصر">−</button>' +
     '<button class="hb" type="button" data-act="plus" contenteditable="false" title="تكبير" aria-label="تكبير العنصر">+</button>' +
     '<button class="hb" type="button" data-act="layer" contenteditable="false" title="أمام / خلف النص" aria-label="تغيير طبقة العنصر">⇅</button>' +
+    '<button class="hb hb-copy" type="button" data-act="copy" contenteditable="false" title="نسخ العنصر" aria-label="نسخ العنصر"><svg aria-hidden="true"><use href="#i-copy"/></svg></button>' +
+    '<button class="hb hb-dup" type="button" data-act="dup" contenteditable="false" title="تكرار العنصر هنا" aria-label="تكرار العنصر">⧉+</button>' +
     '<button class="hb hb-del" type="button" data-act="del" contenteditable="false" title="حذف العنصر" aria-label="حذف العنصر">✕</button>';
 }
 
@@ -6154,6 +6356,88 @@ function deleteMovable(el) {
   ensureOverlay();
   syncBodyFromDom(body);
   toast('تم حذف العنصر.');
+}
+
+/* ---------- نسخ / لصق / تكرار العناصر (أشكال، صور، جداول، صناديق…) ---------- */
+let movableClipboard = null;
+
+function movableKindLabel(el) {
+  if (el.classList.contains('doc-table')) return 'الجدول';
+  if (el.classList.contains('doc-figure')) return 'الصورة';
+  if (el.classList.contains('shape')) return 'الشكل';
+  if (el.classList.contains('eq')) return 'المعادلة';
+  if (el.classList.contains('note')) return 'الصندوق';
+  if (el.classList.contains('problem-box')) return 'صندوق المسألة';
+  if (el.classList.contains('qa-item')) return 'السؤال';
+  return 'العنصر';
+}
+
+/* استنساخ نظيف: بلا مقابض تحريك ولا تحديد ولا طبقات */
+function cloneMovableHtml(el) {
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(x => x.remove());
+  clone.classList.remove('movable', 'el-selected');
+  clone.removeAttribute('data-move');
+  return clone.outerHTML;
+}
+
+function copyMovable(el) {
+  if (!el || !el.isConnected) return;
+  const body = el.closest('.paper-body');
+  if (!body) return;
+  movableClipboard = { html: cloneMovableHtml(el), label: movableKindLabel(el) };
+  showPasteChip();
+  toast('نُسخ ' + movableClipboard.label + ' — انقر «لصق» لوضعه في الموضع الذي تريد.');
+}
+
+function pasteMovable() {
+  if (!movableClipboard) { hidePasteChip(); return; }
+  const body = document.getSelection()
+    ? (document.getSelection().anchorNode && document.getSelection().anchorNode.parentElement
+        ? document.getSelection().anchorNode.parentElement.closest('.paper-body')
+        : null)
+    : null;
+  const target = body || $$('.paper-body', docCanvas)[0];
+  if (!target) { toast('افتح مستندًا أولًا.', 'error'); return; }
+  insertHtml(movableClipboard.html);
+  hidePasteChip();
+  toast('تم لصق ' + movableClipboard.label + '.');
+}
+
+function showPasteChip() {
+  const chip = document.getElementById('pasteChip');
+  if (!chip || !movableClipboard) return;
+  chip.querySelector('span').textContent = 'لصق ' + movableClipboard.label;
+  chip.hidden = false;
+}
+function hidePasteChip() {
+  const chip = document.getElementById('pasteChip');
+  if (chip) chip.hidden = true;
+}
+
+/* تكرار: نسخة فورية بجوار العنصر الأصلي مع إزاحة بسيطة للمتموضع */
+function duplicateMovable(el) {
+  const body = el.closest('.paper-body');
+  if (!body || !el.isConnected) return;
+  const tpl = document.createElement('template');
+  tpl.innerHTML = cloneMovableHtml(el);
+  const node = tpl.content.firstElementChild;
+  if (!node) return;
+  /* إزاحة العناصر المتموضعة كي لا تغطي الأصل */
+  const m = /translate\(\s*(-?\d{1,4})px\s*,\s*(-?\d{1,4})px\s*\)/.exec(el.style.transform || '');
+  if (m) {
+    const x = Math.max(-3000, Math.min(3000, Number(m[1]) + 24));
+    const y = Math.max(-3000, Math.min(3000, Number(m[2]) + 24));
+    node.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+  }
+  const lm = /(?:^|;)\s*left\s*:\s*(-?\d{1,4})px/.exec(el.getAttribute('style') || '');
+  const tm = /(?:^|;)\s*top\s*:\s*(-?\d{1,4})px/.exec(el.getAttribute('style') || '');
+  if (lm) node.style.left = Math.max(-3000, Math.min(3000, Number(lm[1]) + 24)) + 'px';
+  if (tm) node.style.top = Math.max(-3000, Math.min(3000, Number(tm[1]) + 24)) + 'px';
+  el.after(node);
+  ensureOverlay();
+  syncBodyFromDom(body);
+  toast('تم تكرار ' + movableKindLabel(el) + '.');
 }
 
 function enhanceMovables() {
@@ -6359,6 +6643,8 @@ docCanvas.addEventListener('pointerdown', event => {
     const act = actBtn.dataset.act;
     if (act === 'minus' || act === 'plus') { resizeBy(el, act === 'minus' ? -28 : 28); return; }
     if (act === 'layer') { cycleLayer(el); return; }
+    if (act === 'copy') { copyMovable(el); return; }
+    if (act === 'dup') { duplicateMovable(el); return; }
     if (act === 'del') { deleteMovable(el); return; }
     if (act === 'move') {
       const now = Date.now();
@@ -6802,6 +7088,7 @@ if (addCustomFontBtn) {
     customFontUrl.value = '';
     registerCustomFonts();
     renderCustomFontsList(doc);
+    populateFontOptions(doc);
     saveNow();
     toast('أُضيف الخط ' + name);
   });
@@ -6815,9 +7102,68 @@ if (customFontsList) {
     if (!doc) return;
     const name = btn.dataset.removeFont;
     doc.customFonts = (doc.customFonts || []).filter(f => f.name !== name);
+    /* إن كان الخط المحذوف مطبقًا على المستند نرجع للمدمج */
+    if (doc.font === 'up:' + name) doc.font = 'cairo';
+    const styleEl = document.getElementById('ff-' + name.replace(/[^a-z0-9]+/gi, '-').toLowerCase());
+    if (styleEl) styleEl.remove();
     renderCustomFontsList(doc);
+    populateFontOptions(doc);
+    if (fontSelectEl) fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo';
+    const stack = fontStackFor(doc);
+    if (stack) docCanvas.style.setProperty('--doc-font', stack);
+    else docCanvas.style.removeProperty('--doc-font');
+    renderEditor(false);
     saveNow();
     toast('أُزيل الخط ' + name);
+  });
+}
+
+/* ----- رفع ملف خط من الجهاز (TTF/OTF/WOFF/WOFF2) ----- */
+if (uploadFontBtn && customFontFile) {
+  uploadFontBtn.addEventListener('click', () => customFontFile.click());
+  customFontFile.addEventListener('change', async () => {
+    const file = customFontFile.files && customFontFile.files[0];
+    if (!file) return;
+    try {
+      if (!/\.(ttf|otf|woff2?)$/i.test(file.name)) {
+        toast('الصيغ المدعومة: TTF و OTF و WOFF و WOFF2.', 'error'); return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        toast('حجم ملف الخط يتجاوز ٢ م.ب.', 'error'); return;
+      }
+      const doc = activeDoc();
+      if (!doc) return;
+      const buf = await file.arrayBuffer();
+      let bin = '';
+      const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      }
+      const b64 = btoa(bin);
+      const mime = /\.woff2$/i.test(file.name) ? 'font/woff2' : /\.woff$/i.test(file.name) ? 'font/woff' : /\.otf$/i.test(file.name) ? 'font/otf' : 'font/ttf';
+      let name = (customFontName.value.trim() || file.name.replace(/\.[^.]+$/, ''))
+        .replace(/["'<>\\]/g, '').slice(0, 40) || 'خط مرفوع';
+      if ((doc.customFonts || []).some(f => f.name === name)) {
+        toast('يوجد خط باسم «' + name + '» بالفعل — اختر اسمًا آخر.', 'error'); return;
+      }
+      doc.customFonts = doc.customFonts || [];
+      doc.customFonts.push({ name, url: 'data:' + mime + ';base64,' + b64 });
+      doc.customFonts = doc.customFonts.slice(0, 12);
+      registerCustomFonts();
+      renderCustomFontsList(doc);
+      /* اختيار الخط الجديد تلقائيًا وتطبيقه */
+      doc.font = 'up:' + name;
+      populateFontOptions(doc);
+      if (fontSelectEl) fontSelectEl.value = doc.font;
+      customFontName.value = '';
+      renderEditor(false);
+      saveNow();
+      toast('أُضيف الخط «' + name + '» وطُبّق على المستند.');
+    } catch (err) {
+      toast('تعذّر قراءة ملف الخط.', 'error');
+    } finally {
+      customFontFile.value = '';
+    }
   });
 }
 
@@ -6826,7 +7172,10 @@ if (fontSelectEl) {
   fontSelectEl.addEventListener('change', () => {
     const doc = activeDoc();
     if (!doc) return;
-    doc.font = FONT_CHOICES.includes(fontSelectEl.value) ? fontSelectEl.value : 'cairo';
+    doc.font = isValidFontValue(fontSelectEl.value) ? fontSelectEl.value : 'cairo';
+    const stack = fontStackFor(doc);
+    if (stack) docCanvas.style.setProperty('--doc-font', stack);
+    else docCanvas.style.removeProperty('--doc-font');
     renderEditor(false);
     saveNow();
   });
@@ -7177,7 +7526,7 @@ function prepareClone() {
   clone.removeAttribute('id');
   clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
   clone.querySelectorAll('.sheet-tools').forEach(el => el.remove());
-  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay').forEach(el => el.remove());
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(el => el.remove());
   $$('.el-selected', clone).forEach(el => el.classList.remove('el-selected'));
   clone.querySelectorAll('.paper-body').forEach(el => {
     if (!el.textContent.trim() && !el.querySelector('table,.eq,.callout,.note,.problem-box,.qa-item,hr,figure,img,.shape')) el.innerHTML = '';
@@ -7240,6 +7589,9 @@ function exportHtml() {
     '.paper [contenteditable]:empty::before,.paper-body:empty::before,.blank-body:empty::before,.cover-title:empty::before,.cover-subtitle:empty::before,.paper-head h2:empty::before{content:none!important}',
     '@media print{body{padding:0;background:#fff}.canvas{width:auto!important;gap:0!important}}'
   ];
+  (doc.customFonts || []).forEach(f => {
+    if (f && f.name && f.url) exportStyles.push('@font-face{font-family:"' + f.name.replace(/"/g, '') + '";src:url("' + f.url.replace(/"/g, '') + '");font-display:swap;}');
+  });
   (state.customCovers || []).forEach(cc => exportStyles.push('/* غلاف مستورد: ' + cc.name + ' */\n' + cc.css));
   const html = '<!DOCTYPE html>\n<html lang="ar" dir="rtl">\n<head>\n' +
     '<meta charset="UTF-8" />\n' +
@@ -7383,6 +7735,41 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && activeDoc()) persist();
 });
 
+/* ---------- شريط تقدم تنزيل التحديث (سطح المكتب فقط) ---------- */
+let ubHideTimer = null;
+function showUpdateProgress(data) {
+  const banner = document.getElementById('updateBanner');
+  const text = document.getElementById('updateBannerText');
+  const fill = document.getElementById('updateBannerFill');
+  if (!banner || !text || !fill) return;
+  data = data || {};
+  clearTimeout(ubHideTimer);
+  if (data.failed) { banner.hidden = true; return; }
+  if (data.done) {
+    banner.hidden = false;
+    fill.style.width = '100%';
+    text.textContent = 'اكتمل تنزيل التحديث — ستظهر رسالة لتثبيته.';
+    ubHideTimer = setTimeout(() => { banner.hidden = true; }, 7000);
+    return;
+  }
+  if (typeof data.percent !== 'number') return;
+  const pct = Math.max(0, Math.min(100, data.percent));
+  let label = 'جارٍ تنزيل التحديث… ' + toAr(Math.round(pct)) + '٪';
+  if (data.speed) label += ' (' + toAr((data.speed / 1048576).toFixed(1)).replace('.', '٫') + ' م.ب/ث)';
+  banner.hidden = false;
+  fill.style.width = pct + '%';
+  text.textContent = label;
+}
+/* جسر من الإلكترون (preload) + حدث تجريبي/داخلي */
+window.addEventListener('midad-update-progress', e => showUpdateProgress(e && e.detail));
+if (window.midadDesktop && window.midadDesktop.updates && window.midadDesktop.updates.onProgress) {
+  window.midadDesktop.updates.onProgress(showUpdateProgress);
+}
+
+/* شريحة اللصق */
+const pasteChip = document.getElementById('pasteChip');
+if (pasteChip) pasteChip.addEventListener('click', pasteMovable);
+
 /* ---------- الإقلاع ---------- */
 function init() {
   document.body.dataset.view = 'library';
@@ -7393,6 +7780,7 @@ function init() {
     if (!localStorage.getItem(STORE_KEY)) persist();
   } catch (err) { /* ignore */ }
   hydrateFromDesktop();
+  loadSystemFonts();
 
   const match = (location.hash || '').match(/^#doc=(.+)$/);
   if (match) {
