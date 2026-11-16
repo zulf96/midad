@@ -1189,6 +1189,13 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 }
 .back-paper .paper-foot b{ color:inherit; opacity:.85; }
 .cover-tech .page-frame, .back-tech .page-frame{ display:none !important; }
+
+/* ----- الغلاف المخصص (ملف HTML مستورد) ----- */
+.cover-custom{ padding:0 !important; }
+.cover-custom::before, .cover-custom::after{ content:none !important; }
+.cover-custom .page-frame, .cover-custom .paper-foot{ display:none !important; }
+.ccv-wrap{ position:absolute; inset:0; overflow:hidden; background:#fff; }
+.ccv{ width:794px; min-height:1123px; position:relative; }
 .back-tech .paper-foot{ color:#8fa3b8; border-top-color:rgba(226,232,240,.15); }
 .back-tech .paper-foot b{ color:#E2E8F0; opacity:1; }
 .back-tech .paper-foot .foot-author{ color:#8fa3b8; }
@@ -1489,6 +1496,20 @@ dialog::backdrop{
   box-shadow:0 0 0 3px rgba(255,110,64,.1);
 }
 .field .hint{ font-size:9.5px; color:#8fa1ab; }
+.cover-import-row{ display:flex; gap:8px; align-items:center; }
+.imported-covers-list{ display:flex; flex-direction:column; gap:6px; max-height:180px; overflow:auto; }
+.imported-covers-list:empty::after{ content:'لا توجد أغلفة مستوردة بعد.'; font-size:11px; color:#8fa1ab; }
+.cover-chip{
+  display:flex; align-items:center; gap:8px; padding:7px 10px;
+  border:1px solid #e4ecef; border-radius:9px; background:#fbfdfe; font-size:12px;
+}
+.cover-chip b{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; color:var(--navy); }
+.cover-chip button{
+  border:0; background:#fff0ec; color:#a83a17; font-family:inherit; font-size:10.5px;
+  font-weight:700; padding:3px 9px; border-radius:6px; cursor:pointer;
+}
+.cover-chip button:hover{ background:#ffe0d6; }
+.cover-chip .in-use{ font-size:10px; color:var(--green-deep); background:var(--green-soft); padding:2px 7px; border-radius:5px; font-weight:700; }
 .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .dialog-actions{
   display:flex; align-items:center; justify-content:flex-end; gap:8px;
@@ -2196,6 +2217,9 @@ dialog::backdrop{
   .cover-meta{ margin-top:8mm; padding-top:5mm; font-size:8.5pt; }
   .cover-meta b{ font-size:9.5pt; }
   .cover-foot{ font-size:7.5pt; }
+  .cover-custom{ padding:0 !important; }
+  .cover-custom .page-frame, .cover-custom .paper-foot{ display:none !important; }
+  .ccv{ width:794px; min-height:1123px; }
   .cover-tech, .back-tech{
     padding:14mm !important;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -2392,6 +2416,9 @@ dialog::backdrop{
           <button type="button" role="menuitem" id="exportJsonBtn">
             <svg aria-hidden="true"><use href="#i-download"/></svg> نسخة احتياطية JSON
           </button>
+          <button type="button" role="menuitem" id="exportBackupBtn">
+            <svg aria-hidden="true"><use href="#i-download"/></svg> نسخة كاملة — كل المشاريع والأغلفة
+          </button>
           <div class="menu-sep" role="separator"></div>
           <button type="button" role="menuitem" id="importJsonBtn">
             <svg aria-hidden="true"><use href="#i-upload"/></svg> استيراد نسخة
@@ -2482,7 +2509,7 @@ dialog::backdrop{
 
   <p class="library-footnote">
     <svg aria-hidden="true"><use href="#i-check"/></svg>
-    يُحفظ عملك تلقائيًا داخل متصفحك — دون حساب أو اتصال بالإنترنت. احتفظ بنسخة JSON احتياطية بين الحين والآخر.
+    <span id="storageFootnote">يُحفظ عملك تلقائيًا داخل متصفحك — دون حساب أو اتصال بالإنترنت. في نسخة سطح المكتب تُحفظ مشاريعك في ملف آمن داخل مجلد «مِداد ستوديو» في مستنداتك.</span> احتفظ بنسخة JSON احتياطية بين الحين والآخر.
   </p>
 </main>
 
@@ -2964,6 +2991,38 @@ dialog::backdrop{
   </div>
 </dialog>
 
+<dialog id="coverImportDialog" aria-labelledby="coverImportHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="coverImportHeading">استيراد غلاف HTML</h2>
+        <p>ارفع ملف غلاف بتنسيق HTML ليُحوَّل إلى قالب غلاف جاهز داخل البرنامج.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="field">
+      <label for="coverNameInput">اسم القالب</label>
+      <input id="coverNameInput" type="text" maxlength="80" placeholder="مثال: غلاف تقني داكن" />
+    </div>
+    <div class="field">
+      <label for="coverHtmlFile">ملف الغلاف (HTML)</label>
+      <input id="coverHtmlFile" type="file" accept=".html,.htm,text/html" />
+      <p class="hint" style="margin-top:6px">يُفضّل ملف بقياس A4 (794×1123 بكسل) وأنماطه CSS داخل الوسم &lt;style&gt; — كما في ملفات الغلاف الجاهزة. الخطوط الخارجية تُحمَّل عند توفر الإنترنت.</p>
+    </div>
+    <div class="field">
+      <label>الأغلفة المستوردة</label>
+      <div id="coverImportList" class="imported-covers-list"></div>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
+      <button class="btn btn-primary" type="button" id="coverImportApplyBtn" disabled>
+        <svg aria-hidden="true"><use href="#i-check"/></svg>
+        استيراد القالب
+      </button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="tableDialog" aria-labelledby="tableHeading">
   <div class="dialog-card">
     <div class="dialog-head">
@@ -3283,7 +3342,20 @@ dialog::backdrop{
       <select id="coverTemplate">
         <option value="soft">ناعم — أنماط التخطيط</option>
         <option value="tech">تقني داكن — جاهز للطباعة</option>
+        <option value="custom">مخصص — ملف HTML مستورد</option>
       </select>
+    </div>
+    <div class="field">
+      <label for="customCoverSel">الغلاف المستورد</label>
+      <div class="cover-import-row">
+        <select id="customCoverSel" style="flex:1">
+          <option value="">— لا يوجد غلاف مستورد بعد —</option>
+        </select>
+        <button class="mini-btn" type="button" id="importCoverBtn" title="استيراد ملف غلاف HTML" aria-label="استيراد ملف غلاف HTML">
+          <svg aria-hidden="true"><use href="#i-upload"/></svg>
+        </button>
+      </div>
+      <p class="hint" style="margin-top:6px">ارفع ملف غلاف بتنسيق HTML (يُفضّل بقياس A4 — 794×1123 بكسل). يُحفظ داخل البرنامج ويظهر في القائمة لجميع المشاريع.</p>
     </div>
     <div class="field">
       <label for="coverLayout">نمط التخطيط <span class="hint">(للقالب الناعم)</span></label>
@@ -3470,7 +3542,7 @@ const ACCENT_KEYS = Object.keys(ACCENTS);
 const FRAME_KEYS = ['none', 'thin', 'double', 'dashed', 'corners', 'classic', 'ornate', 'gradient', 'shadowbox', 'waves', 'grid'];
 const MARGIN_KEYS = ['narrow', 'normal', 'wide'];
 const COVER_LAYOUTS = ['classic', 'modern', 'academic', 'minimal', 'banner', 'editorial'];
-const COVER_TEMPLATES = ['soft', 'tech'];
+const COVER_TEMPLATES = ['soft', 'tech', 'custom'];
 const BACK_TEMPLATES = ['soft', 'tech'];
 const COVER_ELEMENTS = ['kicker', 'title', 'subtitle', 'rule', 'meta', 'stamp', 'footer', 'brand'];
 const FONT_CHOICES = ['cairo', 'tajawal', 'amiri', 'dubai', 'readex', 'ibm'];
@@ -3523,7 +3595,114 @@ const ALLOWED_CLASSES = new Set([
 ]);
 const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','title','src','alt','data-move']);
 
-function sanitizeHtml(html) {
+/* ----- وضع الأغلفة المستوردة (HTML): وسم SVG وخصائصه ----- */
+/* ملاحظة: الفحص يجري بأسماء صغيرة (toLowerCase) — المتصفح يصحّح حالة وسوم وخصائص SVG تلقائيًا عند الإخراج */
+const COVER_TAGS = new Set([...ALLOWED_TAGS, 'svg','g','path','rect','circle','ellipse','line','polyline','polygon',
+  'defs','lineargradient','radialgradient','stop','text','tspan','clippath','use','title','desc','pattern','marker']);
+const COVER_DROP_TAGS = new Set([...DROP_TAGS].filter(t => t !== 'svg'));
+const COVER_ATTRS = new Set([...ALLOWED_ATTRS,
+  'id','viewbox','d','fill','fill-opacity','stroke','stroke-width','stroke-opacity','stroke-dasharray',
+  'stroke-linecap','stroke-linejoin','cx','cy','r','rx','ry','x','y','x1','x2','y1','y2','points','transform',
+  'offset','stop-color','stop-opacity','gradientunits','gradienttransform','text-anchor','font-family','font-size',
+  'font-weight','preserveaspectratio','xmlns','opacity','width','height','version','patternunits','clip-rule',
+  'fill-rule','dominant-baseline','letter-spacing','stroke-miterlimit','vector-effect']);
+/* أصناف التطبيق المحجوزة — تُرفض داخل الأغلفة المستوردة لمنع تضارب التنسيق */
+const RESERVED_CLASS_RE = /^(paper|cover|canvas|editor|library|toc|doc-|qa-|note|problem|layer|movable|quick|ccv|app-|view-|sheet-|toast|dialog|preview|shape|eq|watermark|blank-|page-|blank)/;
+
+function coverClassOk(c) { return !RESERVED_CLASS_RE.test(c); }
+
+function safeCoverStyle(raw) {
+  let s = String(raw || '');
+  s = s.replace(/javascript\s*:/gi, '');
+  s = s.replace(/expression\s*\([^)]*\)/gi, '');
+  s = s.replace(/position\s*:\s*fixed/gi, 'position:absolute');
+  s = s.replace(/url\(\s*(['"]?)([^'")]*)\1\s*\)/gi, (m, q, u) => /^data:image\//i.test(u.trim()) ? m : 'none');
+  return s.slice(0, 4000);
+}
+
+/* تحويل CSS الملف المستورد إلى CSS محصور داخل .ccv مع إزالة الخطير */
+function scopeCoverCss(css) {
+  css = String(css || '');
+  css = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  css = css.replace(/@import[^;]+;?/gi, '');
+  css = css.replace(/javascript\s*:/gi, '');
+  css = css.replace(/expression\s*\(/gi, '(');
+  css = css.replace(/-moz-binding[^;}]+;?/gi, '');
+  css = css.replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/gi, (m, q, u) => /^data:image\//i.test(u.trim()) ? m : 'none');
+  css = css.replace(/position\s*:\s*fixed/gi, 'position:absolute');
+  css = css.slice(0, 150000);
+
+  function scopeSelector(sel) {
+    return sel.split(',').map(part => {
+      let s = part.trim();
+      if (!s) return '';
+      const low = s.toLowerCase();
+      if (low === 'html' || low === 'body' || low === ':root' || low === 'html body' || low === '*') return '.ccv';
+      if (/^(html|body|:root)\b/.test(low)) return s.replace(/^(html|body|:root)/i, '.ccv');
+      s = s.replace(/(^|[\s>~+,])\.ccv\b/gi, '$1'); /* منع التكرار عند إعادة التطهير */
+      return '.ccv ' + s;
+    }).filter(Boolean).join(', ');
+  }
+
+  let out = '';
+  function walk(chunk) {
+    let idx = 0;
+    while (idx < chunk.length) {
+      const bracePos = chunk.indexOf('{', idx);
+      if (bracePos < 0) break;
+      const sel = chunk.slice(idx, bracePos).trim();
+      let depth = 1, j = bracePos + 1;
+      while (j < chunk.length && depth > 0) {
+        if (chunk[j] === '{') depth++;
+        else if (chunk[j] === '}') depth--;
+        j++;
+      }
+      const body = chunk.slice(bracePos + 1, j - 1);
+      if (sel.startsWith('@media') || sel.startsWith('@supports')) {
+        out += sel + '{';
+        walk(body);
+        out += '}';
+      } else if (sel.startsWith('@')) {
+        out += sel + '{' + body + '}';
+      } else {
+        const scoped = scopeSelector(sel);
+        if (scoped) out += scoped + '{' + body + '}';
+      }
+      idx = j;
+    }
+  }
+  walk(css);
+  return out;
+}
+
+function parseCoverFile(text) {
+  const doc = new DOMParser().parseFromString(String(text || ''), 'text/html');
+  let css = '';
+  Array.from(doc.querySelectorAll('style')).forEach(s => { css += s.textContent + '\n'; });
+  const bodyHtml = doc.body ? doc.body.innerHTML : '';
+  const title = (doc.title || '').trim().slice(0, 80);
+  return {
+    name: title || 'غلاف مستورد',
+    css: scopeCoverCss(css),
+    html: sanitizeHtml(bodyHtml, { svg: true })
+  };
+}
+
+function normalizeCustomCover(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const name = String(raw.name || 'غلاف مستورد').slice(0, 80);
+  const css = scopeCoverCss(String(raw.css || ''));
+  const html = sanitizeHtml(String(raw.html || ''), { svg: true });
+  if (!html.trim() && !css.trim()) return null;
+  return { id: (typeof raw.id === 'string' && raw.id) || uid(), name, css, html, createdAt: Number(raw.createdAt) || Date.now() };
+}
+
+function sanitizeHtml(html, opts) {
+  const allowSvg = !!(opts && opts.svg);
+  const tags = allowSvg ? COVER_TAGS : ALLOWED_TAGS;
+  const drop = allowSvg ? COVER_DROP_TAGS : DROP_TAGS;
+  const classes = allowSvg ? null : ALLOWED_CLASSES;
+  const attrs = allowSvg ? COVER_ATTRS : ALLOWED_ATTRS;
   const tpl = document.createElement('template');
   tpl.innerHTML = String(html || '');
 
@@ -3565,8 +3744,8 @@ function sanitizeHtml(html) {
     if (node.nodeType === 3) return;
     if (node.nodeType !== 1) { node.remove(); return; }
     const tag = node.tagName.toLowerCase();
-    if (DROP_TAGS.has(tag)) { node.remove(); return; }
-    if (!ALLOWED_TAGS.has(tag)) {
+    if (drop.has(tag)) { node.remove(); return; }
+    if (!tags.has(tag)) {
       const moved = Array.from(node.childNodes);
       node.replaceWith(...moved);
       moved.forEach(cleanNode);
@@ -3585,7 +3764,7 @@ function sanitizeHtml(html) {
       if (name.startsWith('on') || name === 'srcdoc') {
         node.removeAttribute(attr.name);
       } else if (name === 'style') {
-        const safe = safeStyle(value);
+        const safe = allowSvg ? safeCoverStyle(value) : safeStyle(value);
         if (safe) node.setAttribute('style', safe); else node.removeAttribute(attr.name);
       } else if (name === 'href') {
         if (!/^(https?:|mailto:|#|\/)/i.test(value.trim())) node.removeAttribute('href');
@@ -3594,13 +3773,13 @@ function sanitizeHtml(html) {
           node.removeAttribute('src');
         }
       } else if (name === 'class') {
-        const kept = value.split(/\s+/).filter(c => ALLOWED_CLASSES.has(c)).join(' ');
+        const kept = value.split(/\s+/).filter(c => classes ? classes.has(c) : coverClassOk(c)).join(' ');
         if (kept) node.setAttribute('class', kept); else node.removeAttribute('class');
       } else if (name === 'dir') {
         if (!/^(rtl|ltr|auto)$/i.test(value)) node.removeAttribute('dir');
       } else if (name === 'colspan' || name === 'rowspan') {
         if (!/^\d{1,2}$/.test(value)) node.removeAttribute(attr.name);
-      } else if (!ALLOWED_ATTRS.has(name)) {
+      } else if (!attrs.has(name)) {
         node.removeAttribute(attr.name);
       }
     });
@@ -3806,6 +3985,7 @@ function normalizeDoc(raw, preserveId) {
     font: FONT_CHOICES.includes(raw.font) ? raw.font : 'cairo',
     coverLayout: COVER_LAYOUTS.includes(raw.coverLayout) ? raw.coverLayout : 'classic',
     coverTemplate: COVER_TEMPLATES.includes(raw.coverTemplate) ? raw.coverTemplate : 'soft',
+    customCoverId: String(raw.customCoverId || '').slice(0, 40),
     subject: String(raw.subject || '').slice(0, 80),
     stage: String(raw.stage || '').slice(0, 80),
     edition: String(raw.edition || '').slice(0, 40),
@@ -3839,23 +4019,81 @@ function loadState() {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.docs)) {
         const docs = parsed.docs.map(doc => normalizeDoc(doc, true)).filter(Boolean);
-        return { docs };
+        const customCovers = Array.isArray(parsed.customCovers)
+          ? parsed.customCovers.map(normalizeCustomCover).filter(Boolean).slice(0, 30)
+          : [];
+        return { docs, customCovers };
       }
     }
   } catch (err) {
     console.warn('تعذّر قراءة التخزين المحلي:', err);
   }
-  return { docs: [seedDoc()] };
+  return { docs: [seedDoc()], customCovers: [] };
 }
 
 const state = loadState();
 state.activeId = null;
+state.customCovers = state.customCovers || [];
 
 let saveTimer = null;
+let desktopSaveTimer = null;
+
+/* حفظ آمن على القرص (نسخة سطح المكتب) + مرآة في المتصفح */
+function queueDesktopSave() {
+  if (!window.midadDesktop || !window.midadDesktop.storage) return;
+  clearTimeout(desktopSaveTimer);
+  desktopSaveTimer = setTimeout(() => {
+    try {
+      const json = JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [] });
+      window.midadDesktop.storage.write(json)
+        .then(ok => { if (ok === false) toast('تعذّر الحفظ في ملف البيانات الآمن.', 'error'); })
+        .catch(() => {});
+    } catch (err) { /* تجاهل */ }
+  }, 1200);
+}
+
+async function hydrateFromDesktop() {
+  if (!window.midadDesktop || !window.midadDesktop.storage) return;
+  try {
+    const raw = await window.midadDesktop.storage.read();
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.docs) && parsed.docs.length) {
+        const local = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch (err) { return null; } })();
+        const localSavedAt = local && local.savedAt ? local.savedAt : 0;
+        const fileSavedAt = parsed.savedAt || 0;
+        if (fileSavedAt >= localSavedAt) {
+          state.docs = parsed.docs.map(d => normalizeDoc(d, true)).filter(Boolean);
+          state.customCovers = Array.isArray(parsed.customCovers)
+            ? parsed.customCovers.map(normalizeCustomCover).filter(Boolean) : [];
+          persist();
+          if (document.body.dataset.view === 'editor' && activeDoc()) renderEditor(true);
+          renderLibrary();
+          toast('تم تحميل مشاريعك من ملف البيانات الآمن على القرص.');
+        }
+      }
+    } else if (state.docs.length) {
+      window.midadDesktop.storage.write(JSON.stringify({
+        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || []
+      })).catch(() => {});
+    }
+    /* نسخة احتياطية يومية تلقائية */
+    let lastBackup = 0;
+    try { lastBackup = Number(localStorage.getItem('midad.lastBackup')) || 0; } catch (err) { /* تجاهل */ }
+    if (Date.now() - lastBackup > 86400000 && state.docs.length) {
+      window.midadDesktop.storage.backup(JSON.stringify({
+        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || []
+      })).then(name => {
+        if (name) { try { localStorage.setItem('midad.lastBackup', String(Date.now())); } catch (err) { /* تجاهل */ } }
+      }).catch(() => {});
+    }
+  } catch (err) { /* تجاهل */ }
+}
 
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [] }));
+    queueDesktopSave();
     return true;
   } catch (err) {
     toast('تعذّر الحفظ في المتصفح. صدّر نسخة JSON لحماية عملك.', 'error');
@@ -3917,6 +4155,8 @@ const fontFamilySelect = $('#fontFamilySelect');
 const coverLayoutEl   = $('#coverLayout');
 const coverTemplateEl = $('#coverTemplate');
 const backTemplateEl  = $('#backTemplate');
+const customCoverSel  = $('#customCoverSel');
+const importCoverBtn  = $('#importCoverBtn');
 const coverElementsWrap = $('#coverElementsChecks');
 const openCoverDesignBtn = $('#openCoverDesignBtn');
 const coverDesignApplyBtn = $('#coverDesignApplyBtn');
@@ -4023,6 +4263,11 @@ const qaQuestion      = $('#qaQuestion');
 const qaAnswer        = $('#qaAnswer');
 const qaInsertBtn     = $('#qaInsertBtn');
 const coverDesignDialog = $('#coverDesignDialog');
+const coverImportDialog = $('#coverImportDialog');
+const coverImportList   = $('#coverImportList');
+const coverImportApplyBtn = $('#coverImportApplyBtn');
+const coverNameInput    = $('#coverNameInput');
+const coverHtmlFile     = $('#coverHtmlFile');
 const confirmDialog   = $('#confirmDialog');
 const confirmHeading  = $('#confirmHeading');
 const confirmText     = $('#confirmText');
@@ -4215,6 +4460,22 @@ libBrand.addEventListener('click', event => { event.preventDefault(); showLibrar
 editorBrand.addEventListener('click', event => { event.preventDefault(); showLibrary(); });
 
 /* ---------- المحرر: الرسم ---------- */
+function syncCustomCoverStyles() {
+  const existing = new Map();
+  $$('style[data-ccv]', document.head).forEach(s => existing.set(s.dataset.ccv, s));
+  (state.customCovers || []).forEach(cc => {
+    let s = existing.get(cc.id);
+    if (!s) {
+      s = document.createElement('style');
+      s.dataset.ccv = cc.id;
+      document.head.appendChild(s);
+    }
+    s.textContent = cc.css;
+    existing.delete(cc.id);
+  });
+  existing.forEach(s => s.remove());
+}
+
 function pagesBeforeSections(doc) {
   return (doc.showCover !== false ? 1 : 0) + (doc.showToc ? 1 : 0);
 }
@@ -4253,6 +4514,16 @@ function coverHtml(doc) {
   const has = el => !doc.coverElements || doc.coverElements.includes(el);
   const kicker = TYPE_KICKER[doc.type] || TYPE_KICKER.handout;
   const template = COVER_TEMPLATES.includes(doc.coverTemplate) ? doc.coverTemplate : 'soft';
+  if (template === 'custom') {
+    const cc = (state.customCovers || []).find(c => c.id === doc.customCoverId);
+    if (cc) {
+      syncCustomCoverStyles();
+      return '<article class="paper cover cover-custom" aria-label="غلاف مخصص">' +
+        pageToolsHtml('cover') +
+        '<div class="ccv-wrap"><div class="ccv" dir="rtl">' + cc.html + '</div></div>' +
+        '</article>';
+    }
+  }
   if (template === 'tech') return techCoverHtml(doc, total, kicker);
   const layout = COVER_LAYOUTS.includes(doc.coverLayout) ? doc.coverLayout : 'classic';
   let html = '<article class="paper cover cover-' + layout + '" aria-label="غلاف المستند">' +
@@ -6168,6 +6439,25 @@ window.addEventListener('resize', () => {
 });
 
 /* ---------- تصميم الغلاف ---------- */
+function renderCustomCoverOptions(selectedId) {
+  if (!customCoverSel) return;
+  const covers = state.customCovers || [];
+  customCoverSel.innerHTML = '<option value="">— لا يوجد غلاف مستورد بعد —</option>' +
+    covers.map(c => '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>').join('');
+  if (selectedId && covers.some(c => c.id === selectedId)) customCoverSel.value = selectedId;
+}
+
+function renderCoverImportList() {
+  if (!coverImportList) return;
+  const covers = state.customCovers || [];
+  coverImportList.innerHTML = covers.map(c => {
+    const inUse = state.docs.some(d => d.coverTemplate === 'custom' && d.customCoverId === c.id);
+    return '<div class="cover-chip"><b title="' + esc(c.name) + '">' + esc(c.name) + '</b>' +
+      (inUse ? '<span class="in-use">مُستخدَم</span>' : '') +
+      '<button type="button" data-del-cover="' + esc(c.id) + '">حذف</button></div>';
+  }).join('');
+}
+
 if (openCoverDesignBtn) {
   openCoverDesignBtn.addEventListener('click', () => {
     const doc = activeDoc();
@@ -6175,8 +6465,20 @@ if (openCoverDesignBtn) {
     if (coverLayoutEl) coverLayoutEl.value = doc.coverLayout || 'classic';
     if (coverTemplateEl) coverTemplateEl.value = doc.coverTemplate || 'soft';
     if (backTemplateEl) backTemplateEl.value = doc.backTemplate || 'tech';
+    renderCustomCoverOptions(doc.customCoverId || (state.customCovers[0] || {}).id || '');
     renderCoverElementsToggles(doc);
     coverDesignDialog.showModal();
+  });
+}
+
+if (importCoverBtn) {
+  importCoverBtn.addEventListener('click', () => {
+    renderCoverImportList();
+    coverNameInput.value = '';
+    coverHtmlFile.value = '';
+    coverImportApplyBtn.disabled = true;
+    pendingCover = null;
+    coverImportDialog.showModal();
   });
 }
 
@@ -6186,6 +6488,13 @@ if (coverDesignApplyBtn) {
     if (!doc) return;
     doc.coverLayout = COVER_LAYOUTS.includes(coverLayoutEl.value) ? coverLayoutEl.value : 'classic';
     doc.coverTemplate = COVER_TEMPLATES.includes(coverTemplateEl.value) ? coverTemplateEl.value : 'soft';
+    if (doc.coverTemplate === 'custom') {
+      doc.customCoverId = customCoverSel.value || '';
+      if (!doc.customCoverId || !(state.customCovers || []).some(c => c.id === doc.customCoverId)) {
+        toast('اختر غلافًا مستوردًا أولًا، أو استورد ملفًا جديدًا.', 'error');
+        doc.coverTemplate = 'soft';
+      }
+    }
     doc.backTemplate = BACK_TEMPLATES.includes(backTemplateEl.value) ? backTemplateEl.value : 'tech';
     const checked = [];
     if (coverElementsWrap) $$('input[data-cover-el]', coverElementsWrap).forEach(inp => {
@@ -6196,6 +6505,76 @@ if (coverDesignApplyBtn) {
     renderEditor(true);
     saveNow();
     toast('تم تطبيق تصميم الغلاف.');
+  });
+}
+
+/* ---------- استيراد أغلفة HTML ---------- */
+let pendingCover = null;
+
+if (coverHtmlFile) {
+  coverHtmlFile.addEventListener('change', async () => {
+    const file = coverHtmlFile.files && coverHtmlFile.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = parseCoverFile(text);
+      if (!parsed.html.trim()) throw new Error('empty');
+      pendingCover = parsed;
+      if (!coverNameInput.value.trim()) coverNameInput.value = parsed.name;
+      coverImportApplyBtn.disabled = false;
+      toast('تمت قراءة الملف — اضغط «استيراد القالب» للحفظ.');
+    } catch (err) {
+      pendingCover = null;
+      coverImportApplyBtn.disabled = true;
+      toast('تعذّر قراءة الملف. تأكد أنه ملف HTML سليم.', 'error');
+    } finally {
+      coverHtmlFile.value = '';
+    }
+  });
+}
+
+if (coverImportApplyBtn) {
+  coverImportApplyBtn.addEventListener('click', () => {
+    if (!pendingCover) return;
+    if ((state.customCovers || []).length >= 30) { toast('الحد الأقصى ٣٠ غلافًا مستوردًا.', 'error'); return; }
+    const cc = normalizeCustomCover({
+      name: coverNameInput.value.trim() || pendingCover.name,
+      css: pendingCover.css,
+      html: pendingCover.html
+    });
+    if (!cc) { toast('ملف غير صالح.', 'error'); return; }
+    state.customCovers = (state.customCovers || []).concat([cc]);
+    pendingCover = null;
+    persist();
+    syncCustomCoverStyles();
+    renderCoverImportList();
+    renderCustomCoverOptions(cc.id);
+    coverImportDialog.close();
+    toast('استُورد القالب «' + cc.name + '» — اختره ثم اضغط «تطبيق التصميم».');
+  });
+}
+
+if (coverImportList) {
+  coverImportList.addEventListener('click', async event => {
+    const btn = event.target.closest('[data-del-cover]');
+    if (!btn) return;
+    const id = btn.dataset.delCover;
+    const cc = (state.customCovers || []).find(c => c.id === id);
+    const usedBy = state.docs.filter(d => d.coverTemplate === 'custom' && d.customCoverId === id);
+    const confirmed = await askConfirm({
+      title: 'حذف غلاف مستورد',
+      text: 'سيُحذف القالب «' + ((cc && cc.name) || '') + '»' + (usedBy.length ? ' وستعود مشاريعه (' + toAr(usedBy.length) + ') إلى القالب الناعم.' : '.'),
+      label: 'حذف'
+    });
+    if (!confirmed) return;
+    state.customCovers = (state.customCovers || []).filter(c => c.id !== id);
+    usedBy.forEach(d => { d.coverTemplate = 'soft'; d.customCoverId = ''; });
+    persist();
+    syncCustomCoverStyles();
+    renderCoverImportList();
+    renderCustomCoverOptions('');
+    if (usedBy.some(d => d.id === state.activeId)) renderEditor(true);
+    toast('حُذف القالب المستورد.');
   });
 }
 
@@ -6860,13 +7239,14 @@ function exportHtml() {
     '.canvas{width:min(794px,100%)!important;margin:0 auto!important;gap:24px!important}',
     '.paper [contenteditable]:empty::before,.paper-body:empty::before,.blank-body:empty::before,.cover-title:empty::before,.cover-subtitle:empty::before,.paper-head h2:empty::before{content:none!important}',
     '@media print{body{padding:0;background:#fff}.canvas{width:auto!important;gap:0!important}}'
-  ].join('\n');
+  ];
+  (state.customCovers || []).forEach(cc => exportStyles.push('/* غلاف مستورد: ' + cc.name + ' */\n' + cc.css));
   const html = '<!DOCTYPE html>\n<html lang="ar" dir="rtl">\n<head>\n' +
     '<meta charset="UTF-8" />\n' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
     '<title>' + esc(doc.title) + '</title>\n' +
     '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />\n' +
-    '<style>' + css + '\n' + exportStyles + '\n</style>\n' +
+    '<style>' + css + '\n' + exportStyles.join('\n') + '\n</style>\n' +
     '</head>\n<body class="export-page">\n' +
     '<main class="view-editor"><div class="editor-main"><div class="canvas-wrap">' + clone.outerHTML + '</div></div></main>\n' +
     '</body>\n</html>';
@@ -6888,6 +7268,21 @@ function exportJson() {
   toast('تم تنزيل النسخة الاحتياطية.');
 }
 
+/* نسخة احتياطية كاملة: كل المشاريع + الأغلفة المستوردة */
+function exportFullBackup() {
+  const payload = {
+    app: 'midad',
+    version: 1,
+    kind: 'backup',
+    exportedAt: new Date().toISOString(),
+    docs: state.docs,
+    customCovers: state.customCovers || []
+  };
+  const stamp = new Date().toISOString().slice(0, 10);
+  downloadBlob('midad-backup-' + stamp + '.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' }));
+  toast('نُزّلت نسخة كاملة (' + toAr(state.docs.length) + ' مشروع' + (state.customCovers && state.customCovers.length ? ' + ' + toAr(state.customCovers.length) + ' غلاف مستورد' : '') + ').');
+}
+
 function closeExportMenu() {
   exportMenu.hidden = true;
   exportBtn.setAttribute('aria-expanded', 'false');
@@ -6906,6 +7301,8 @@ document.addEventListener('click', event => {
 
 exportHtmlBtn.addEventListener('click', () => { closeExportMenu(); exportHtml(); });
 exportJsonBtn.addEventListener('click', () => { closeExportMenu(); exportJson(); });
+const exportBackupBtn = $('#exportBackupBtn');
+if (exportBackupBtn) exportBackupBtn.addEventListener('click', () => { closeExportMenu(); exportFullBackup(); });
 importJsonBtn.addEventListener('click', () => { closeExportMenu(); importFile.click(); });
 
 /* ---------- الاستيراد ---------- */
@@ -6915,6 +7312,24 @@ async function handleImport() {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
+    /* نسخة احتياطية كاملة: دمج ذكي حسب المعرّفات (لا يُحذف شيء) */
+    if (data && (data.kind === 'backup' || (Array.isArray(data.docs) && Array.isArray(data.customCovers)))) {
+      const incomingDocs = (data.docs || []).map(d => normalizeDoc(d, true)).filter(Boolean);
+      const incomingCovers = (data.customCovers || []).map(normalizeCustomCover).filter(Boolean);
+      if (!incomingDocs.length && !incomingCovers.length) throw new Error('empty');
+      const byId = new Map(state.docs.map(d => [d.id, d]));
+      incomingDocs.forEach(d => { if (!d.createdAt) d.createdAt = Date.now(); d.updatedAt = Date.now(); byId.set(d.id, d); });
+      state.docs = Array.from(byId.values());
+      const coverById = new Map((state.customCovers || []).map(c => [c.id, c]));
+      incomingCovers.forEach(c => coverById.set(c.id, c));
+      state.customCovers = Array.from(coverById.values());
+      persist();
+      syncCustomCoverStyles();
+      renderLibrary();
+      toast('دُمجت النسخة الاحتياطية: ' + toAr(incomingDocs.length) + ' مشروع و' + toAr(incomingCovers.length) + ' غلاف مستورد.');
+      importFile.value = '';
+      return;
+    }
     let raws = [];
     if (Array.isArray(data)) raws = data;
     else if (Array.isArray(data.docs)) raws = data.docs;
@@ -6977,6 +7392,7 @@ function init() {
   try {
     if (!localStorage.getItem(STORE_KEY)) persist();
   } catch (err) { /* ignore */ }
+  hydrateFromDesktop();
 
   const match = (location.hash || '').match(/^#doc=(.+)$/);
   if (match) {
