@@ -50,6 +50,41 @@ function wireStorage() {
   ipcMain.handle('midad:storage-path', () => dataDir());
 }
 
+/* ---------- خطوط ويندوز المثبّتة ---------- */
+let systemFontsCache = null;
+
+function listSystemFonts() {
+  if (systemFontsCache) return systemFontsCache;
+  try {
+    const out = require('child_process').execFileSync(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command',
+        "Add-Type -AssemblyName System.Drawing; (New-Object System.Drawing.Text.InstalledFontCollection).Families | ForEach-Object { $_.Name }"],
+      { encoding: 'utf8', timeout: 20000, windowsHide: true }
+    );
+    systemFontsCache = String(out).split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .sort((a, b) => a.localeCompare(b, 'ar'))
+      .slice(0, 600);
+  } catch (err) {
+    /* بديل: أسماء ملفات خطوط ويندوز */
+    try {
+      const dir = 'C:/Windows/Fonts';
+      systemFontsCache = fs.readdirSync(dir)
+        .filter(f => /\.(ttf|otf|ttc)$/i.test(f))
+        .map(f => f.replace(/\.(ttf|otf|ttc)$/i, ''))
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort((a, b) => a.localeCompare(b, 'ar'))
+        .slice(0, 600);
+    } catch (err2) {
+      systemFontsCache = [];
+    }
+  }
+  return systemFontsCache;
+}
+
+ipcMain.handle('midad:system-fonts', () => listSystemFonts());
+
 /* ---------- حفظ واسترجاع أبعاد النافذة ---------- */
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
 
@@ -132,6 +167,31 @@ function wireDownloads() {
   });
 }
 
+/* ---------- قائمة النقر الأيمن (نسخ/قص/لصق/…) ---------- */
+function wireContextMenu() {
+  win.webContents.on('context-menu', (event, params) => {
+    const items = [];
+    const editable = params.isEditable;
+    const hasSel = (params.selectionText || '').trim().length > 0;
+
+    if (editable) {
+      if (hasSel) items.push({ label: 'قص', role: 'cut' });
+      items.push({ label: 'لصق', role: 'paste' });
+      if (hasSel) items.push({ label: 'لصق بنفس التنسيق', role: 'pasteAndMatchStyle' });
+    }
+    if (hasSel) items.push({ label: 'نسخ', role: 'copy' });
+    if (params.linkURL) items.push({ label: 'نسخ عنوان الرابط', role: 'copyLink' });
+    if (items.length) items.push({ type: 'separator' });
+    items.push({ label: 'تحديد الكل', role: 'selectAll' });
+    if (editable && hasSel) items.push({
+      label: 'إلغاء التحديد',
+      click: () => win.webContents.executeJavaScript('window.getSelection().removeAllRanges()').catch(() => {})
+    });
+
+    Menu.buildFromTemplate(items).popup({ window: win });
+  });
+}
+
 /* ---------- التحديث التلقائي ---------- */
 function setupAutoUpdater() {
   if (!app.isPackaged) return;
@@ -177,12 +237,23 @@ function setupAutoUpdater() {
 
   autoUpdater.on('download-progress', progress => {
     logUpdate('تنزيل التحديث: ' + Math.round(progress.percent) + '%');
-    if (win && !win.isDestroyed()) win.setProgressBar(progress.percent / 100);
+    if (win && !win.isDestroyed()) {
+      win.setProgressBar(progress.percent / 100);
+      win.webContents.send('midad:update-progress', {
+        percent: progress.percent,
+        speed: progress.bytesPerSecond,
+        mbDone: progress.transferred,
+        mbTotal: progress.total
+      });
+    }
   });
 
   autoUpdater.on('update-downloaded', info => {
     logUpdate('اكتمل تنزيل ' + info.version);
-    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    if (win && !win.isDestroyed()) {
+      win.setProgressBar(-1);
+      win.webContents.send('midad:update-progress', { done: true, version: info.version });
+    }
     if (manualUpdateCheck) manualUpdateCheck = false;
     dialog.showMessageBox(win, {
       type: 'info',
@@ -199,7 +270,10 @@ function setupAutoUpdater() {
 
   autoUpdater.on('error', err => {
     logUpdate('خطأ في التحديث: ' + (err && err.message));
-    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    if (win && !win.isDestroyed()) {
+      win.setProgressBar(-1);
+      win.webContents.send('midad:update-progress', { failed: true });
+    }
     if (manualUpdateCheck) {
       manualUpdateCheck = false;
       dialog.showMessageBox(win, {
@@ -322,6 +396,7 @@ if (!gotLock) {
     wireDownloads();
     buildMenu();
     createWindow();
+    wireContextMenu();
     setupAutoUpdater();
 
     app.on('activate', () => {
