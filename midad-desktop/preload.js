@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('midadDesktop', {
   isDesktop: true,
-  version: '1.0.0',
+  version: '1.1.0',
   /* التخزين الآمن: ملفات JSON في مجلد المستخدم بدل ذاكرة المتصفح */
   storage: {
     read: () => ipcRenderer.invoke('midad:storage-read'),
@@ -18,6 +18,6 @@ contextBridge.exposeInMainWorld('midadDesktop', {
       ipcRenderer.on('midad:update-progress', (event, data) => { try { cb(data); } catch (err) { /* تجاهل */ } });
     }
   },
-  /* خطوط ويندوز المثبّتة */
+  /* خطوط النظام المثبّتة (ويندوز/لينكس) */
   systemFonts: () => ipcRenderer.invoke('midad:system-fonts')
 });

@@ -1,16 +1,23 @@
 {
   "name": "midad-studio",
   "productName": "Midad Studio",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "مِداد ستوديو — استوديو تأليف الملازم الدراسية",
-  "author": "مِداد",
+  "author": {
+    "name": "مِداد",
+    "email": "zulf96@users.noreply.github.com"
+  },
   "license": "MIT",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "pack": "electron-builder --win --publish never",
+    "pack": "electron-builder --publish never",
     "dist": "electron-builder --win --publish never",
     "release": "electron-builder --win --publish always",
+    "dist:win": "electron-builder --win --publish never",
+    "release:win": "electron-builder --win --publish always",
+    "dist:linux": "electron-builder --linux --publish never",
+    "release:linux": "electron-builder --linux --publish always",
     "dist:portable": "electron-builder --win portable --publish never"
   },
   "dependencies": {
@@ -29,7 +36,8 @@
     "files": [
       "main.js",
       "preload.js",
-      "app/**/*"
+      "app/**/*",
+      "build/icon.png"
     ],
     "publish": [
       {
@@ -56,6 +64,32 @@
       "createStartMenuShortcut": true,
       "shortcutName": "مِداد ستوديو",
       "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Office",
+      "synopsis": "استوديو تأليف الملازم الدراسية العربية",
+      "description": "تأليف الملازم الدراسية العربية وتنسيقها وتصديرها وطباعتها على A4.",
+      "icon": "build/icon.png",
+      "maintainer": "Midad Studio <zulf96@users.noreply.github.com>",
+      "executableName": "midad-studio",
+      "artifactName": "Midad-Studio-${version}-${arch}.${ext}",
+      "desktop": {
+        "Name": "مِداد ستوديو",
+        "GenericName": "استوديو تأليف الملازم",
+        "Comment": "تأليف الملازم الدراسية العربية وطباعتها",
+        "Categories": "Office;Education;",
+        "Keywords": "تعليم;ملازم;مستندات;طباعة;"
+      }
     }
   }
 }

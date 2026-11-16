@@ -50,36 +50,61 @@ function wireStorage() {
   ipcMain.handle('midad:storage-path', () => dataDir());
 }
 
-/* ---------- خطوط ويندوز المثبّتة ---------- */
+/* ---------- خطوط النظام المثبّتة (ويندوز / لينكس) ---------- */
 let systemFontsCache = null;
+
+/* فحص مجلدات الخطوط — بديل عندما لا يتوفر fc-list أو PowerShell */
+function scanFontDirs(dirs) {
+  const found = [];
+  const walk = dir => {
+    let entries = [];
+    try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch (err) { return; }
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.(ttf|otf|ttc)$/i.test(entry.name)) found.push(entry.name.replace(/\.[^.]+$/, ''));
+    }
+  };
+  dirs.forEach(walk);
+  return found;
+}
 
 function listSystemFonts() {
   if (systemFontsCache) return systemFontsCache;
-  try {
-    const out = require('child_process').execFileSync(
-      'powershell.exe',
-      ['-NoProfile', '-NonInteractive', '-Command',
-        "Add-Type -AssemblyName System.Drawing; (New-Object System.Drawing.Text.InstalledFontCollection).Families | ForEach-Object { $_.Name }"],
-      { encoding: 'utf8', timeout: 20000, windowsHide: true }
-    );
-    systemFontsCache = String(out).split(/\r?\n/).map(s => s.trim()).filter(Boolean)
-      .filter((v, i, a) => a.indexOf(v) === i)
-      .sort((a, b) => a.localeCompare(b, 'ar'))
-      .slice(0, 600);
-  } catch (err) {
-    /* بديل: أسماء ملفات خطوط ويندوز */
+  let names = [];
+  if (process.platform === 'win32') {
     try {
-      const dir = 'C:/Windows/Fonts';
-      systemFontsCache = fs.readdirSync(dir)
-        .filter(f => /\.(ttf|otf|ttc)$/i.test(f))
-        .map(f => f.replace(/\.(ttf|otf|ttc)$/i, ''))
-        .filter((v, i, a) => a.indexOf(v) === i)
-        .sort((a, b) => a.localeCompare(b, 'ar'))
-        .slice(0, 600);
-    } catch (err2) {
-      systemFontsCache = [];
+      const out = require('child_process').execFileSync(
+        'powershell.exe',
+        ['-NoProfile', '-NonInteractive', '-Command',
+          "Add-Type -AssemblyName System.Drawing; (New-Object System.Drawing.Text.InstalledFontCollection).Families | ForEach-Object { $_.Name }"],
+        { encoding: 'utf8', timeout: 20000, windowsHide: true }
+      );
+      names = String(out).split(/\r?\n/);
+    } catch (err) {
+      names = scanFontDirs(['C:/Windows/Fonts']);
+    }
+  } else {
+    /* لينكس: fontconfig أولًا (أسماء العائلات)، ثم فحص مجلدات المستخدم والنظام */
+    try {
+      const out = require('child_process').execFileSync(
+        'fc-list', ['--format=%{family}\n'],
+        { encoding: 'utf8', timeout: 20000 }
+      );
+      names = String(out).split(/\r?\n/).flatMap(line => line.split(','));
+    } catch (err) {
+      names = scanFontDirs([
+        '/usr/share/fonts',
+        '/usr/local/share/fonts',
+        path.join(app.getPath('home'), '.local/share/fonts'),
+        path.join(app.getPath('home'), '.fonts')
+      ]);
     }
   }
+  systemFontsCache = names.map(s => String(s).trim()).filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .sort((a, b) => a.localeCompare(b, 'ar'))
+    .slice(0, 600);
   return systemFontsCache;
 }
 
@@ -116,6 +141,11 @@ function logUpdate(message) {
 }
 
 /* ---------- النافذة ---------- */
+function appIconPath() {
+  const icon = path.join(__dirname, 'build', 'icon.png');
+  try { return fs.existsSync(icon) ? icon : undefined; } catch (err) { return undefined; }
+}
+
 function createWindow() {
   const state = loadWindowState();
   win = new BrowserWindow({
@@ -127,6 +157,7 @@ function createWindow() {
     minHeight: 560,
     backgroundColor: '#f7f9fa',
     title: 'مِداد ستوديو',
+    icon: appIconPath(),
     show: false,
     autoHideMenuBar: false,
     webPreferences: {
@@ -193,8 +224,19 @@ function wireContextMenu() {
 }
 
 /* ---------- التحديث التلقائي ---------- */
+const RELEASES_URL = 'https://github.com/zulf96/midad/releases/latest';
+
+/* electron-updater يدعم ويندوز و AppImage؛ حزمة .deb تُحدَّث بتنزيل الحزمة الجديدة */
+function autoUpdateSupported() {
+  return process.platform !== 'linux' || !!process.env.APPIMAGE;
+}
+
 function setupAutoUpdater() {
   if (!app.isPackaged) return;
+  if (!autoUpdateSupported()) {
+    logUpdate('التحديث التلقائي غير مدعوم في هذه الحزمة (deb) — استخدم AppImage أو نزّل يدويًا.');
+    return;
+  }
   let autoUpdater;
   try {
     autoUpdater = require('electron-updater').autoUpdater;
@@ -299,6 +341,21 @@ function checkForUpdatesManually() {
       message: 'أنت تشغّل نسخة التطوير.',
       detail: 'فحص التحديثات متاح في النسخة المثبَّتة فقط.',
       buttons: ['حسنًا']
+    });
+    return;
+  }
+  if (!autoUpdateSupported()) {
+    dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'التحديثات',
+      message: 'التحديث التلقائي غير متاح في حزمة .deb.',
+      detail: 'نزّل أحدث إصدار (AppImage أو deb) من صفحة الإصدارات. ' +
+        'حزمة AppImage هي الوحيدة التي تُحدِّث نفسها تلقائيًا.',
+      buttons: ['فتح صفحة التنزيلات', 'إغلاق'],
+      defaultId: 0,
+      cancelId: 1
+    }).then(({ response }) => {
+      if (response === 0) shell.openExternal(RELEASES_URL);
     });
     return;
   }

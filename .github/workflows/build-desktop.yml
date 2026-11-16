@@ -1,0 +1,92 @@
+name: بناء نسخ سطح المكتب
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: بناء (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: ويندوز
+            artifact: midad-windows
+            command: npm run dist
+            files: |
+              midad-desktop/release/*.exe
+              midad-desktop/release/latest.yml
+              midad-desktop/release/*.blockmap
+          - os: ubuntu-latest
+            label: لينكس
+            artifact: midad-linux
+            command: npm run dist:linux
+            files: |
+              midad-desktop/release/*.AppImage
+              midad-desktop/release/*.deb
+              midad-desktop/release/latest-linux.yml
+              midad-desktop/release/*.blockmap
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تثبيت Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: متطلبات حزم لينكس
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot
+          sudo apt-get install -y libfuse2 || sudo apt-get install -y libfuse2t64 || true
+
+      - name: تثبيت الاعتماديات
+        run: npm install
+        working-directory: midad-desktop
+
+      - name: بناء الحزم وملفات التحديث
+        run: ${{ matrix.command }}
+        working-directory: midad-desktop
+
+      - name: رفع المخرجات كأرشيف
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  release:
+    name: نشر الإصدار
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: تنزيل مخرجات البناء
+        uses: actions/download-artifact@v4
+        with:
+          pattern: midad-*
+          path: artifacts
+          merge-multiple: true
+
+      - name: عرض الملفات المنشورة
+        run: ls -la artifacts
+
+      - name: نشر الإصدار (ويندوز + لينكس)
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

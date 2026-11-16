@@ -1,0 +1,5 @@
+node_modules/
+midad-desktop/release/
+midad-desktop/.electron-builder-cache/
+*.log
+.DS_Store

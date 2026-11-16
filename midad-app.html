@@ -5058,7 +5058,7 @@ function renderCustomFontsList(doc) {
   ).join('');
 }
 
-/* ----- تعبئة خانة الخطوط: مدمجة + مرفوعة + خطوط ويندوز (سطح المكتب) ----- */
+/* ----- تعبئة خانة الخطوط: مدمجة + مرفوعة + خطوط النظام المثبّتة (سطح المكتب) ----- */
 let systemFontsCache = null;
 let systemFontsLoading = null;
 
@@ -5076,7 +5076,7 @@ function populateFontOptions(doc) {
       '</optgroup>';
   }
   if (systemFontsCache && systemFontsCache.length) {
-    html += '<optgroup label="خطوط ويندوز المثبّتة">' +
+    html += '<optgroup label="خطوط النظام المثبّتة">' +
       systemFontsCache.slice(0, 400).map(n => '<option value="sys:' + esc(n) + '">' + esc(n) + '</option>').join('') +
       '</optgroup>';
   }
