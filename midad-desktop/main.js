@@ -1,10 +1,54 @@
 /* مِداد ستوديو — عملية الإلكترون الرئيسية */
-const { app, BrowserWindow, Menu, dialog, session, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, session, shell, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
 let win = null;
 let manualUpdateCheck = false;
+
+/* ---------- التخزين الآمن: مجلد «مِداد ستوديو» في المستندات ---------- */
+function dataDir() {
+  return path.join(app.getPath('documents'), 'مِداد ستوديو');
+}
+function dataFile() {
+  return path.join(dataDir(), 'midad-data.json');
+}
+function backupsDir() {
+  return path.join(dataDir(), 'نسخ احتياطية');
+}
+const BACKUPS_TO_KEEP = 12;
+
+function wireStorage() {
+  ipcMain.handle('midad:storage-read', () => {
+    try { return fs.readFileSync(dataFile(), 'utf8'); } catch (err) { return null; }
+  });
+  ipcMain.handle('midad:storage-write', (event, data) => {
+    try {
+      fs.mkdirSync(dataDir(), { recursive: true });
+      const tmp = dataFile() + '.tmp';
+      fs.writeFileSync(tmp, String(data == null ? '' : data), 'utf8');
+      fs.renameSync(tmp, dataFile());
+      return true;
+    } catch (err) {
+      logUpdate('فشل حفظ البيانات: ' + (err && err.message));
+      return false;
+    }
+  });
+  ipcMain.handle('midad:storage-backup', (event, data) => {
+    try {
+      fs.mkdirSync(backupsDir(), { recursive: true });
+      const name = 'midad-backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+      fs.writeFileSync(path.join(backupsDir(), name), String(data == null ? '' : data), 'utf8');
+      const files = fs.readdirSync(backupsDir()).filter(f => f.startsWith('midad-backup-')).sort();
+      while (files.length > BACKUPS_TO_KEEP) fs.unlinkSync(path.join(backupsDir(), files.shift()));
+      return name;
+    } catch (err) {
+      logUpdate('فشل النسخ الاحتياطي: ' + (err && err.message));
+      return null;
+    }
+  });
+  ipcMain.handle('midad:storage-path', () => dataDir());
+}
 
 /* ---------- حفظ واسترجاع أبعاد النافذة ---------- */
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
@@ -206,6 +250,11 @@ function buildMenu() {
           }
         },
         { type: 'separator' },
+        {
+          label: 'فتح مجلد البيانات',
+          click: () => { shell.openPath(dataDir()); }
+        },
+        { type: 'separator' },
         { role: 'close', label: 'إغلاق' }
       ]
     },
@@ -269,6 +318,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    wireStorage();
     wireDownloads();
     buildMenu();
     createWindow();
