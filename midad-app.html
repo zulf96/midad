@@ -145,6 +145,22 @@ img{ max-width:100%; }
 .brand-copy{ display:flex; flex-direction:column; line-height:1.25; }
 .brand-name{ font-family:var(--font-head); font-weight:800; font-size:17px; color:var(--navy); }
 .brand-sub{ font-size:9.5px; color:var(--muted); }
+.zoom-group{
+  display:flex; align-items:center; gap:1px;
+  padding:2px; border:1px solid var(--line-strong); border-radius:10px; background:#fff;
+}
+.zoom-btn{
+  width:26px; height:26px; border-radius:7px; border:0; background:none;
+  color:var(--navy); font-size:15px; font-weight:700; line-height:1;
+  cursor:pointer; font-family:inherit;
+}
+.zoom-btn:hover{ background:#f2f7f9; color:var(--coral-ink); }
+.zoom-label{
+  min-width:44px; height:26px; text-align:center; border:0; background:none;
+  font-family:var(--font-head); font-weight:800; font-size:11px; color:var(--navy);
+  cursor:pointer;
+}
+.zoom-label:hover{ color:var(--coral-ink); }
 .header-spacer{ flex:1 1 auto; min-width:8px; }
 .header-actions{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
 .divider-v{ width:1px; height:26px; background:var(--line); margin:0 2px; }
@@ -518,7 +534,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   font-style:normal; font-size:10.5px; font-weight:600; color:var(--green-deep);
 }
 .add-section-btn{
-  width:100%; margin-top:7px; padding:8px;
+  padding:8px;
   display:flex; align-items:center; justify-content:center; gap:6px;
   border:1px dashed var(--line-strong); border-radius:9px;
   font-size:11.5px; font-weight:700; color:var(--navy);
@@ -528,21 +544,25 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   border-color:rgba(255,110,64,.5); background:#fff8f5; color:var(--coral-ink);
 }
 .add-section-btn svg{ width:14px; height:14px; }
-.add-blank-btn{ margin-top:6px; }
+.add-section-actions{ display:flex; gap:7px; margin-top:7px; }
+.add-section-actions .add-section-btn{ flex:1 1 0; min-width:0; margin-top:0; }
 .add-blank-btn svg{ color:var(--green-deep); }
 
-.side-stats{
-  display:grid; grid-template-columns:1fr 1fr; gap:7px;
+/* شريط إحصاءات المستند — أسفل لوحة التحرير بدل اللوحة الجانبية */
+.doc-stats-bar{
+  position:sticky; bottom:10px; z-index:30;
+  width:max-content; max-width:100%; margin:14px auto 0;
+  display:flex; flex-wrap:wrap; gap:4px 14px; align-items:center; justify-content:center;
+  padding:7px 16px; border-radius:999px;
+  background:var(--chrome,#fff); border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);
+  font-size:11px; color:var(--muted);
+  backdrop-filter:blur(6px);
 }
-.side-stat{
-  padding:9px 10px; border-radius:10px;
-  background:#fff; border:1px solid var(--line);
+.doc-stats-bar b{
+  font-family:var(--font-head); font-weight:800; color:var(--navy); font-size:12.5px;
 }
-.side-stat b{
-  display:block; font-family:var(--font-head); font-size:16px; font-weight:800;
-  color:var(--navy); line-height:1.35;
-}
-.side-stat span{ font-size:9.5px; color:var(--muted); }
+.doc-stats-bar .dsb-item{ white-space:nowrap; }
 
 .setting-row{
   display:flex; align-items:center; justify-content:space-between; gap:10px;
@@ -568,6 +588,14 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 .swatch[data-accent="indigo"]{ background:#4361ee; }
 .swatch[data-accent="slate"]{ background:#64748b; }
 .swatch[data-accent="crimson"]{ background:#d7263d; }
+.accent-row{ display:flex; align-items:center; gap:7px; }
+.accent-row .mini-color{ flex:0 0 auto; }
+.accent-row .mini-color.active{ box-shadow:0 0 0 2px var(--navy); border-color:var(--navy); }
+.canvas[data-accent="custom"]{
+  --accent:var(--custom-accent,#ff6e40);
+  --accent-ink:color-mix(in srgb, var(--custom-accent,#ff6e40) 76%, #000);
+  --accent-soft:color-mix(in srgb, var(--custom-accent,#ff6e40) 12%, #fff);
+}
 .mini-select{
   min-width:86px; max-width:118px; height:27px;
   border:1px solid var(--line-strong); border-radius:7px;
@@ -575,6 +603,20 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   padding:0 5px;
 }
 .mini-select:focus{ outline:none; border-color:rgba(255,110,64,.55); box-shadow:0 0 0 2px rgba(255,110,64,.1); }
+.margins-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:4px 10px;
+  max-width:150px; flex:0 0 auto;
+}
+.margins-grid label{
+  display:flex; align-items:center; justify-content:flex-end; gap:5px;
+  font-size:10px; color:#5b707b; white-space:nowrap;
+}
+.margins-grid input{
+  width:44px; height:24px; border:1px solid var(--line-strong); border-radius:6px;
+  padding:0 4px; font-size:10.5px; font-family:inherit; text-align:center; color:#425967;
+  background:#fff;
+}
+.margins-grid input:focus{ outline:none; border-color:rgba(255,110,64,.55); box-shadow:0 0 0 2px rgba(255,110,64,.1); }
 .switch{
   position:relative; width:34px; height:19px; flex:0 0 auto;
   border-radius:999px; background:#d8e3e8;
@@ -1854,13 +1896,70 @@ dialog::backdrop{
   inset-block-end:-2px; inset-inline-end:-2px; border-width:0 2px 2px 0;
 }
 .canvas[data-frame="gradient"] .page-frame{
-  display:block; border:0; padding:0;
+  display:block; border:var(--frame-w,3px) solid transparent;
+  border-image:linear-gradient(135deg,var(--frame-line),var(--accent),var(--frame-line)) 1;
 }
-.canvas[data-frame="gradient"] .page-frame::before{
-  content:""; position:absolute; inset:0; border-radius:3px;
-  border:var(--frame-w,3px) solid transparent;
-  background:linear-gradient(#fff,#fff) padding-box,
-    linear-gradient(135deg,var(--frame-line),var(--accent),var(--frame-line)) border-box;
+/* ----- التدرّج اللوني في كل الأطواق (border-image وخلفيات فقط — تُطبع دائمًا) ----- */
+.canvas[data-frame-gradient="on"]{ --frame-c1:var(--frame-line); --frame-c2:var(--accent); }
+.canvas[data-frame-gradient="on"][data-frame="thin"] .page-frame,
+.canvas[data-frame-gradient="on"][data-frame="classic"] .page-frame,
+.canvas[data-frame-gradient="on"][data-frame="ornate"] .page-frame,
+.canvas[data-frame-gradient="on"][data-frame="shadowbox"] .page-frame,
+.canvas[data-frame-gradient="on"][data-frame="grid"] .page-frame,
+.canvas[data-frame-gradient="on"][data-frame="double"] .page-frame{
+  border-style:solid; border-color:transparent;
+  border-image:linear-gradient(135deg,var(--frame-c1),var(--frame-c2),var(--frame-c1)) 1;
+}
+.canvas[data-frame-gradient="on"][data-frame="double"] .page-frame::before{
+  content:""; position:absolute; inset:calc(var(--frame-w,2px) * 1.6 + 1px);
+  border:1px solid var(--frame-c1); pointer-events:none;
+}
+.canvas[data-frame-gradient="on"][data-frame="dashed"] .page-frame{ border:0; }
+.canvas[data-frame-gradient="on"][data-frame="dashed"] .page-frame::before,
+.canvas[data-frame-gradient="on"][data-frame="dashed"] .page-frame::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+}
+.canvas[data-frame-gradient="on"][data-frame="dashed"] .page-frame::before{
+  background:
+    repeating-linear-gradient(90deg,var(--frame-c1) 0 9px,var(--frame-c2) 9px 18px) left top/100% var(--frame-w,2px) no-repeat,
+    repeating-linear-gradient(90deg,var(--frame-c2) 0 9px,var(--frame-c1) 9px 18px) left bottom/100% var(--frame-w,2px) no-repeat;
+}
+.canvas[data-frame-gradient="on"][data-frame="dashed"] .page-frame::after{
+  background:
+    repeating-linear-gradient(0deg,var(--frame-c1) 0 9px,var(--frame-c2) 9px 18px) left top/var(--frame-w,2px) 100% no-repeat,
+    repeating-linear-gradient(0deg,var(--frame-c2) 0 9px,var(--frame-c1) 9px 18px) right top/var(--frame-w,2px) 100% no-repeat;
+}
+.canvas[data-frame-gradient="on"][data-frame="corners"] .page-frame{
+  background:
+    linear-gradient(135deg,var(--frame-c2),var(--frame-c1)) left top/30px 2px no-repeat,
+    linear-gradient(45deg,var(--frame-c1),var(--frame-c2)) left top/2px 30px no-repeat,
+    linear-gradient(225deg,var(--frame-c2),var(--frame-c1)) right top/30px 2px no-repeat,
+    linear-gradient(315deg,var(--frame-c1),var(--frame-c2)) right top/2px 30px no-repeat,
+    linear-gradient(45deg,var(--frame-c2),var(--frame-c1)) left bottom/30px 2px no-repeat,
+    linear-gradient(135deg,var(--frame-c1),var(--frame-c2)) left bottom/2px 30px no-repeat,
+    linear-gradient(315deg,var(--frame-c2),var(--frame-c1)) right bottom/30px 2px no-repeat,
+    linear-gradient(225deg,var(--frame-c1),var(--frame-c2)) right bottom/2px 30px no-repeat;
+}
+.canvas[data-frame-gradient="on"][data-frame="ornate"] .page-frame::before,
+.canvas[data-frame-gradient="on"][data-frame="ornate"] .page-frame::after{
+  border-color:transparent;
+  border-image:linear-gradient(135deg,var(--frame-c2),var(--frame-c1)) 1;
+}
+.canvas[data-frame-gradient="on"][data-frame="waves"] .page-frame{
+  background:
+    radial-gradient(circle at 6px 6px, var(--frame-c2) 2.4px, transparent 2.6px) left top/14px 14px repeat-x,
+    radial-gradient(circle at 6px 6px, var(--frame-c1) 2.4px, transparent 2.6px) left bottom/14px 14px repeat-x;
+}
+.canvas[data-frame-gradient="on"][data-frame="waves"] .page-frame::before{
+  background:radial-gradient(circle at 6px 6px, var(--frame-c2) 2.4px, transparent 2.6px) center/14px 14px repeat-y;
+}
+.canvas[data-frame-gradient="on"][data-frame="waves"] .page-frame::after{
+  background:radial-gradient(circle at 6px 6px, var(--frame-c1) 2.4px, transparent 2.6px) center/14px 14px repeat-y;
+}
+.canvas[data-frame-gradient="on"][data-frame="grid"] .page-frame{
+  background-image:
+    linear-gradient(var(--frame-c2) .5px, transparent .5px),
+    linear-gradient(90deg, var(--frame-c2) .5px, transparent .5px);
 }
 .canvas[data-frame="shadowbox"] .page-frame{
   display:block; border:var(--frame-w,1px) solid var(--frame-line);
@@ -2249,14 +2348,15 @@ dialog::backdrop{
   .app-header, .view-library, .editor-sidebar, .toolbar-wrap,
   .quick-bar, .tb-popover,
   .sidebar-overlay, .toast-region, .preview-dialog, .sheet-tools,
-  .doc-card-actions, .sidebar-toggle, .export-menu, .empty-library{ display:none !important; }
+  .doc-card-actions, .sidebar-toggle, .export-menu, .empty-library,
+  .doc-stats-bar{ display:none !important; }
 
   .view-editor{ display:block !important; max-width:none; margin:0; min-height:0; }
   .editor-main{ padding:0 !important; }
   .canvas-wrap{ padding:0 !important; }
   .canvas{
     display:block !important; width:auto !important; margin:0 !important;
-    gap:0 !important; font-size:10.8pt; --frame-inset:8mm;
+    gap:0 !important; font-size:10.8pt; --frame-inset:8mm; zoom:1 !important;
   }
   .paper{
     width:210mm !important; min-height:297mm !important;
@@ -2465,6 +2565,11 @@ dialog::backdrop{
       <button class="icon-btn sidebar-toggle" id="sidebarToggle" type="button" aria-label="فتح لوحة المستند" aria-expanded="false" aria-controls="editorSidebar">
         <svg aria-hidden="true"><use href="#i-menu"/></svg>
       </button>
+      <div class="zoom-group" id="zoomGroup" role="group" aria-label="تكبير الصفحة وتصغيرها">
+        <button class="zoom-btn" id="zoomOutBtn" type="button" title="تصغير" aria-label="تصغير الصفحة">−</button>
+        <button class="zoom-label" id="zoomResetBtn" type="button" title="إعادة الحجم الأصلي (١٠٠٪)">١٠٠٪</button>
+        <button class="zoom-btn" id="zoomInBtn" type="button" title="تكبير" aria-label="تكبير الصفحة">+</button>
+      </div>
       <button class="btn btn-ghost" id="previewBtn" type="button" title="معاينة المستند">
         <svg aria-hidden="true"><use href="#i-eye"/></svg>
         <span class="btn-text">معاينة</span>
@@ -2476,6 +2581,9 @@ dialog::backdrop{
           <svg aria-hidden="true" style="width:12px;height:12px"><use href="#i-chevron-down"/></svg>
         </button>
         <div class="export-menu" id="exportMenu" role="menu" hidden>
+          <button type="button" role="menuitem" id="exportPdfBtn">
+            <svg aria-hidden="true"><use href="#i-printer"/></svg> حفظ PDF
+          </button>
           <button type="button" role="menuitem" id="exportHtmlBtn">
             <svg aria-hidden="true"><use href="#i-book"/></svg> ملف HTML مستقل
           </button>
@@ -2587,23 +2695,13 @@ dialog::backdrop{
     <div class="sidebar-block">
       <div class="sidebar-label">محتويات المستند <span class="count" id="outlineCount">0</span></div>
       <div class="outline-list" id="outlineList"></div>
-      <button class="add-section-btn" type="button" id="addSectionBtn">
-        <svg aria-hidden="true"><use href="#i-plus"/></svg>
-        إضافة قسم
-      </button>
-      <button class="add-section-btn add-blank-btn" type="button" id="addBlankPageBtn">
-        <svg aria-hidden="true"><use href="#i-page"/></svg>
-        إضافة صفحة فارغة
-      </button>
-    </div>
-
-    <div class="sidebar-block">
-      <div class="sidebar-label">إحصاءات المستند</div>
-      <div class="side-stats">
-        <div class="side-stat"><b id="statWords">0</b><span>كلمة</span></div>
-        <div class="side-stat"><b id="statSections">0</b><span>قسم</span></div>
-        <div class="side-stat"><b id="statPages">0</b><span>صفحة A4</span></div>
-        <div class="side-stat"><b id="statRead">0</b><span>دقيقة قراءة</span></div>
+      <div class="add-section-actions">
+        <button class="add-section-btn icon-only" type="button" id="addSectionBtn" title="إضافة قسم" aria-label="إضافة قسم">
+          <svg aria-hidden="true"><use href="#i-plus"/></svg>
+        </button>
+        <button class="add-section-btn add-blank-btn icon-only" type="button" id="addBlankPageBtn" title="إضافة صفحة فارغة" aria-label="إضافة صفحة فارغة">
+          <svg aria-hidden="true"><use href="#i-page"/></svg>
+        </button>
       </div>
     </div>
 
@@ -2611,7 +2709,8 @@ dialog::backdrop{
       <div class="sidebar-label">إعدادات المظهر</div>
       <div class="setting-row">
         <span>لون الهوية</span>
-        <div class="swatches" id="accentSwatches" role="group" aria-label="لون الهوية">
+        <div class="accent-row">
+          <div class="swatches" id="accentSwatches" role="group" aria-label="لون الهوية">
           <button class="swatch" type="button" data-accent="coral" aria-label="مرجاني" title="مرجاني"></button>
           <button class="swatch" type="button" data-accent="green" aria-label="أخضر" title="أخضر"></button>
           <button class="swatch" type="button" data-accent="navy" aria-label="كحلي" title="كحلي"></button>
@@ -2622,6 +2721,8 @@ dialog::backdrop{
           <button class="swatch" type="button" data-accent="indigo" aria-label="نيلي" title="نيلي"></button>
           <button class="swatch" type="button" data-accent="slate" aria-label="رمادي" title="رمادي"></button>
           <button class="swatch" type="button" data-accent="crimson" aria-label="قرمزي" title="قرمزي"></button>
+          </div>
+          <input class="mini-color" type="color" id="customAccentInput" value="#ff6e40" aria-label="لون هوية مخصص" title="لون هوية مخصص (RGB)" />
         </div>
       </div>
       <div class="setting-row">
@@ -2653,6 +2754,10 @@ dialog::backdrop{
       <div class="field" style="margin-top:4px">
         <label for="footerAuthorInput">اسم المؤلف / المدرس في جميع الصفحات</label>
         <input id="footerAuthorInput" type="text" maxlength="80" placeholder="يظهر في تذييل كل صفحة" />
+      </div>
+      <div class="setting-row">
+        <span>شعار مِداد واسمه في الغلاف</span>
+        <button class="switch" type="button" id="brandSwitch" role="switch" aria-checked="true" aria-label="إظهار شعار مِداد واسمه في الغلاف"></button>
       </div>
       <div class="setting-row">
         <span>علامة مائية</span>
@@ -2693,12 +2798,33 @@ dialog::backdrop{
         </select>
       </div>
       <div class="setting-row">
+        <span>تدرّج لوني للإطار</span>
+        <button class="switch" type="button" id="frameGradSwitch" role="switch" aria-checked="true" aria-label="تدرّج لوني في كل الأطواق"></button>
+      </div>
+      <div class="setting-row">
         <span>هوامش الصفحة</span>
         <select class="mini-select" id="marginSelect" aria-label="هوامش الصفحة">
           <option value="narrow">ضيقة</option>
           <option value="normal">عادية</option>
           <option value="wide">واسعة</option>
+          <option value="custom">مخصّصة</option>
         </select>
+      </div>
+      <div class="setting-row">
+        <span>الهوامش (مم)</span>
+        <div class="margins-grid" id="marginsGrid" aria-label="الهوامش بالاتجاهات الأربعة">
+          <label><input type="number" id="margT" min="0" max="80" step="1" aria-label="الهامش العلوي" /> أعلى</label>
+          <label><input type="number" id="margR" min="0" max="80" step="1" aria-label="الهامش الأيمن" /> أيمن</label>
+          <label><input type="number" id="margB" min="0" max="80" step="1" aria-label="الهامش السفلي" /> أسفل</label>
+          <label><input type="number" id="margL" min="0" max="80" step="1" aria-label="الهامش الأيسر" /> أيسر</label>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>حذف الهوامش</span>
+        <button class="mini-btn" type="button" id="margDeleteBtn" aria-label="حذف الهوامش">
+          <svg aria-hidden="true"><use href="#i-trash"/></svg>
+          حذف
+        </button>
       </div>
       <div class="setting-row">
         <span>ألوان مخصصة</span>
@@ -2897,6 +3023,12 @@ dialog::backdrop{
 
     <div class="canvas-wrap">
       <div class="canvas" id="docCanvas" data-accent="coral" data-font="md" aria-label="محتوى المستند"></div>
+      <div class="doc-stats-bar" id="docStatsBar" aria-label="إحصاءات المستند">
+        <span class="dsb-item"><b id="statWords">0</b> كلمة</span>
+        <span class="dsb-item"><b id="statSections">0</b> قسم</span>
+        <span class="dsb-item"><b id="statPages">0</b> صفحة A4</span>
+        <span class="dsb-item"><b id="statRead">0</b> دقيقة قراءة</span>
+      </div>
     </div>
   </div>
 </main>
@@ -3630,7 +3762,27 @@ const ACCENTS = {
 };
 const ACCENT_KEYS = Object.keys(ACCENTS);
 const FRAME_KEYS = ['none', 'thin', 'double', 'dashed', 'corners', 'classic', 'ornate', 'gradient', 'shadowbox', 'waves', 'grid'];
-const MARGIN_KEYS = ['narrow', 'normal', 'wide'];
+const MARGIN_KEYS = ['narrow', 'normal', 'wide', 'custom'];
+/* الهوامش الافتراضية بالملّيمترات (t أعلى، r أيمن، b أسفل، l أيسر) */
+const MARGIN_MM = {
+  narrow: { t: 10, r: 12, b: 10, l: 12 },
+  normal: { t: 15, r: 16, b: 15, l: 16 },
+  wide:   { t: 20, r: 22, b: 20, l: 22 }
+};
+function normalizeMarginsMm(raw) {
+  const base = MARGIN_MM[MARGIN_KEYS.includes(raw.margins) ? raw.margins : 'normal'] || MARGIN_MM.normal;
+  const src = raw && typeof raw.marginsMm === 'object' && raw.marginsMm ? raw.marginsMm : {};
+  const num = v => {
+    const n = Math.round(Number(v) * 10) / 10;
+    return isFinite(n) ? Math.min(80, Math.max(0, n)) : null;
+  };
+  return {
+    t: num(src.t) != null ? num(src.t) : base.t,
+    r: num(src.r) != null ? num(src.r) : base.r,
+    b: num(src.b) != null ? num(src.b) : base.b,
+    l: num(src.l) != null ? num(src.l) : base.l
+  };
+}
 const COVER_LAYOUTS = ['classic', 'modern', 'academic', 'minimal', 'banner', 'editorial'];
 const COVER_TEMPLATES = ['soft', 'tech', 'custom'];
 const BACK_TEMPLATES = ['soft', 'tech'];
@@ -3986,11 +4138,14 @@ function seedDoc() {
     institution: 'كلية العلوم — قسم الرياضيات',
     year: '2026',
     accent: 'coral',
+    customAccent: '',
     fontSize: 'md',
     frame: 'none',
     frameColor: '#1e3d59',
     frameWidth: 2,
+    frameGradient: true,
     margins: 'normal',
+    marginsMm: { t: 15, r: 16, b: 15, l: 16 },
     showPageNumbers: true,
     showToc: true,
     showCover: true,
@@ -4088,12 +4243,15 @@ function normalizeDoc(raw, preserveId) {
     author: String(raw.author || '').slice(0, 80),
     institution: String(raw.institution || '').slice(0, 100),
     year: String(raw.year || '').slice(0, 20),
-    accent: ACCENT_KEYS.includes(raw.accent) ? raw.accent : 'coral',
+    accent: [...ACCENT_KEYS, 'custom'].includes(raw.accent) ? raw.accent : 'coral',
+    customAccent: /^#[0-9a-fA-F]{6}$/.test(raw.customAccent) ? raw.customAccent : '',
     fontSize: ['sm', 'md', 'lg'].includes(raw.fontSize) ? raw.fontSize : 'md',
     frame: FRAME_KEYS.includes(raw.frame) ? raw.frame : 'none',
     frameColor: /^#[0-9a-fA-F]{6}$/.test(raw.frameColor) ? raw.frameColor : '#1e3d59',
     frameWidth: Math.min(8, Math.max(1, Number(raw.frameWidth) || 2)),
     margins: MARGIN_KEYS.includes(raw.margins) ? raw.margins : 'normal',
+    marginsMm: normalizeMarginsMm(raw),
+    frameGradient: raw.frameGradient === undefined ? true : !!raw.frameGradient,
     font: isValidFontValue(raw.font) ? raw.font : 'cairo',
     coverLayout: COVER_LAYOUTS.includes(raw.coverLayout) ? raw.coverLayout : 'classic',
     coverTemplate: COVER_TEMPLATES.includes(raw.coverTemplate) ? raw.coverTemplate : 'soft',
@@ -4252,6 +4410,7 @@ const previewBtn      = $('#previewBtn');
 const exportBtn       = $('#exportBtn');
 const exportMenu      = $('#exportMenu');
 const exportHtmlBtn   = $('#exportHtmlBtn');
+const exportPdfBtn    = $('#exportPdfBtn');
 const exportJsonBtn   = $('#exportJsonBtn');
 const importJsonBtn   = $('#importJsonBtn');
 const printBtn        = $('#printBtn');
@@ -4266,6 +4425,12 @@ const accentSwatches  = $('#accentSwatches');
 const fontScale       = $('#fontScale');
 const frameSelect     = $('#frameSelect');
 const marginSelect    = $('#marginSelect');
+const frameGradSwitch = $('#frameGradSwitch');
+const margTEl         = $('#margT');
+const margREl         = $('#margR');
+const margBEl         = $('#margB');
+const margLEl         = $('#margL');
+const margDeleteBtn   = $('#margDeleteBtn');
 const frameColorEl    = $('#frameColor');
 const frameWidthEl    = $('#frameWidth');
 const fontSelectEl    = $('#fontSelect');
@@ -4280,6 +4445,11 @@ const openCoverDesignBtn = $('#openCoverDesignBtn');
 const coverDesignApplyBtn = $('#coverDesignApplyBtn');
 const openWatermarkBtn = $('#openWatermarkBtn');
 const footerAuthorInput = $('#footerAuthorInput');
+const zoomInBtn       = $('#zoomInBtn');
+const zoomOutBtn      = $('#zoomOutBtn');
+const zoomResetBtn    = $('#zoomResetBtn');
+const customAccentInput = $('#customAccentInput');
+const brandSwitch     = $('#brandSwitch');
 const watermarkDialog  = $('#watermarkDialog');
 const wmType           = $('#wmType');
 const wmText           = $('#wmText');
@@ -4945,6 +5115,8 @@ function syncEditorChrome(doc) {
   $$('button', fontScale).forEach(btn => btn.classList.toggle('active', btn.dataset.font === doc.fontSize));
   if (frameSelect) frameSelect.value = doc.frame;
   if (marginSelect) marginSelect.value = doc.margins;
+  syncMarginInputs(doc);
+  if (frameGradSwitch) frameGradSwitch.setAttribute('aria-checked', String(doc.frameGradient !== false));
   if (fontSelectEl) { populateFontOptions(doc); fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo'; }
   if (coverLayoutEl) coverLayoutEl.value = doc.coverLayout;
   if (coverTemplateEl) coverTemplateEl.value = doc.coverTemplate || 'soft';
@@ -4956,6 +5128,11 @@ function syncEditorChrome(doc) {
   if (coverSwitch) coverSwitch.setAttribute('aria-checked', String(doc.showCover !== false));
   if (backSwitch) backSwitch.setAttribute('aria-checked', String(!!doc.showBackCover));
   if (footerAuthorInput) footerAuthorInput.value = doc.footerAuthor || '';
+  if (customAccentInput) {
+    customAccentInput.value = doc.accent === 'custom' ? (doc.customAccent || '#ff6e40') : (doc.customAccent || '#ff6e40');
+    customAccentInput.classList.toggle('active', doc.accent === 'custom');
+  }
+  if (brandSwitch) brandSwitch.setAttribute('aria-checked', String(brandVisible(doc)));
   if (wmType) syncWatermarkUi();
   docTypeBadge.textContent = TYPES[doc.type] || TYPES.handout;
   renderCustomColorsList(doc);
@@ -4963,13 +5140,55 @@ function syncEditorChrome(doc) {
   renderCoverElementsToggles(doc);
 }
 
+/* تطبيق الهوامش: قيم مخصّصة بالملّيمترات تُحقن كمتغيّرات CSS، والقوالب الجاهزة تعود لقيم الأنماط */
+function marginsMmOf(doc) {
+  return (doc && doc.marginsMm) || MARGIN_MM[MARGIN_KEYS.includes(doc && doc.margins) ? doc.margins : 'normal'] || MARGIN_MM.normal;
+}
+
+function padString(mm) {
+  return mm.t + 'mm ' + mm.r + 'mm ' + mm.b + 'mm ' + mm.l + 'mm';
+}
+
+function applyMargins(doc) {
+  if (!docCanvas) return;
+  if (doc && doc.margins === 'custom') {
+    const pad = padString(marginsMmOf(doc));
+    docCanvas.style.setProperty('--page-pad', pad);
+    docCanvas.style.setProperty('--print-pad', pad);
+  } else {
+    docCanvas.style.removeProperty('--page-pad');
+    docCanvas.style.removeProperty('--print-pad');
+  }
+}
+
+function syncMarginInputs(doc) {
+  const mm = marginsMmOf(doc);
+  if (margTEl) margTEl.value = String(mm.t);
+  if (margREl) margREl.value = String(mm.r);
+  if (margBEl) margBEl.value = String(mm.b);
+  if (margLEl) margLEl.value = String(mm.l);
+}
+
+/* ظهور شعار «مِداد» واسمه في الغلاف = وجود العنصرين معًا */
+function brandVisible(doc) {
+  const list = (doc && doc.coverElements) || [];
+  return list.includes('brand') && list.includes('stamp');
+}
+
 function renderEditor(rebuild) {
   const doc = activeDoc();
   if (!doc) { showLibrary(); return; }
   docCanvas.dataset.accent = doc.accent;
+  if (doc.accent === 'custom' && /^#[0-9a-fA-F]{6}$/.test(doc.customAccent || '')) {
+    docCanvas.style.setProperty('--custom-accent', doc.customAccent);
+  } else {
+    docCanvas.style.removeProperty('--custom-accent');
+  }
   docCanvas.dataset.font = doc.fontSize;
   docCanvas.dataset.frame = doc.frame;
   docCanvas.dataset.margins = doc.margins;
+  docCanvas.dataset.frameGradient = doc.frameGradient === false ? 'off' : 'on';
+  applyMargins(doc);
   docCanvas.dataset.fontName = doc.font;
   const fontStack = fontStackFor(doc);
   if (fontStack) docCanvas.style.setProperty('--doc-font', fontStack);
@@ -7318,6 +7537,75 @@ accentSwatches.addEventListener('click', event => {
   scheduleSave();
 });
 
+/* لون هوية مخصص من مربع الألوان */
+if (customAccentInput) {
+  customAccentInput.addEventListener('input', () => {
+    const doc = activeDoc();
+    if (!doc) return;
+    if (!/^#[0-9a-fA-F]{6}$/.test(customAccentInput.value)) return;
+    doc.accent = 'custom';
+    doc.customAccent = customAccentInput.value;
+    docCanvas.dataset.accent = 'custom';
+    docCanvas.style.setProperty('--custom-accent', doc.customAccent);
+    syncEditorChrome(doc);
+    scheduleSave();
+  });
+}
+
+/* مفتاح شعار مِداد واسمه في الغلاف: يتحكم في عنصري brand و stamp معًا */
+if (brandSwitch) {
+  brandSwitch.addEventListener('click', () => {
+    const doc = activeDoc();
+    if (!doc) return;
+    const show = !brandVisible(doc);
+    let list = (doc.coverElements || []).slice();
+    ['brand', 'stamp'].forEach(el => {
+      const i = list.indexOf(el);
+      if (show && i < 0) list.push(el);
+      if (!show && i >= 0) list.splice(i, 1);
+    });
+    doc.coverElements = list;
+    brandSwitch.setAttribute('aria-checked', String(show));
+    renderCoverElementsToggles(doc);
+    renderEditor(true);
+    scheduleSave();
+  });
+}
+
+/* ----- تكبير الصفحة وتصغيرها (يُحفظ لكل التطبيق ولا يؤثر في الطباعة) ----- */
+const ZOOM_KEY = 'midad.canvasZoom';
+const ZOOM_MIN = 0.5, ZOOM_MAX = 2;
+
+function loadZoom() {
+  let z = 1;
+  try { z = Number(localStorage.getItem(ZOOM_KEY)) || 1; } catch (err) { z = 1; }
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(z * 10) / 10));
+}
+
+function applyZoom() {
+  if (!docCanvas) return;
+  docCanvas.style.zoom = String(canvasZoom);
+  /* العرض النسبي (100%) يُلغي أثر zoom — نثبّت عرض A4 المطلق عند التكبير/التصغير */
+  docCanvas.style.width = canvasZoom === 1 ? '' : '794px';
+  if (zoomResetBtn) zoomResetBtn.textContent = toAr(Math.round(canvasZoom * 100)) + '٪';
+  try { localStorage.setItem(ZOOM_KEY, String(canvasZoom)); } catch (err) { /* تجاهل */ }
+}
+
+let canvasZoom = loadZoom();
+if (zoomInBtn) zoomInBtn.addEventListener('click', () => {
+  canvasZoom = Math.min(ZOOM_MAX, Math.round((canvasZoom + 0.1) * 10) / 10);
+  applyZoom();
+});
+if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => {
+  canvasZoom = Math.max(ZOOM_MIN, Math.round((canvasZoom - 0.1) * 10) / 10);
+  applyZoom();
+});
+if (zoomResetBtn) zoomResetBtn.addEventListener('click', () => {
+  canvasZoom = 1;
+  applyZoom();
+});
+applyZoom();
+
 fontScale.addEventListener('click', event => {
   const btn = event.target.closest('[data-font]');
   const doc = activeDoc();
@@ -7339,10 +7627,69 @@ frameSelect.addEventListener('change', () => {
 marginSelect.addEventListener('change', () => {
   const doc = activeDoc();
   if (!doc) return;
-  doc.margins = MARGIN_KEYS.includes(marginSelect.value) ? marginSelect.value : 'normal';
+  const val = MARGIN_KEYS.includes(marginSelect.value) ? marginSelect.value : 'normal';
+  doc.margins = val;
+  if (val !== 'custom') {
+    /* القالب الجاهز يعيد ضبط الاتجاهات الأربعة إلى قيمه الافتراضية */
+    doc.marginsMm = Object.assign({}, MARGIN_MM[val]);
+    syncMarginInputs(doc);
+  }
   docCanvas.dataset.margins = doc.margins;
+  applyMargins(doc);
   scheduleSave();
 });
+
+/* الهوامش بالاتجاهات الأربعة: أي تعديل يجعل الهوامش مخصّصة */
+function readMarginInputs() {
+  const clamp = v => {
+    const n = Math.round(Number(v) * 10) / 10;
+    return isFinite(n) ? Math.min(80, Math.max(0, n)) : 0;
+  };
+  return {
+    t: clamp(margTEl ? margTEl.value : 0),
+    r: clamp(margREl ? margREl.value : 0),
+    b: clamp(margBEl ? margBEl.value : 0),
+    l: clamp(margLEl ? margLEl.value : 0)
+  };
+}
+
+function applyCustomMargins() {
+  const doc = activeDoc();
+  if (!doc) return;
+  doc.margins = 'custom';
+  doc.marginsMm = readMarginInputs();
+  syncMarginInputs(doc);  /* إظهار القيم المقيَّدة في المدخلات */
+  if (marginSelect) marginSelect.value = 'custom';
+  docCanvas.dataset.margins = 'custom';
+  applyMargins(doc);
+  scheduleSave();
+}
+
+[margTEl, margREl, margBEl, margLEl].forEach(el => {
+  if (el) el.addEventListener('input', applyCustomMargins);
+});
+
+if (margDeleteBtn) {
+  margDeleteBtn.addEventListener('click', () => {
+    if (margTEl) margTEl.value = '0';
+    if (margREl) margREl.value = '0';
+    if (margBEl) margBEl.value = '0';
+    if (margLEl) margLEl.value = '0';
+    applyCustomMargins();
+    toast('حُذفت هوامش الصفحة — المحتوى الآن بكامل عرض الورقة.');
+  });
+}
+
+if (frameGradSwitch) {
+  frameGradSwitch.addEventListener('click', () => {
+    const doc = activeDoc();
+    if (!doc) return;
+    doc.frameGradient = doc.frameGradient === false;
+    docCanvas.dataset.frameGradient = doc.frameGradient ? 'on' : 'off';
+    frameGradSwitch.setAttribute('aria-checked', String(!!doc.frameGradient));
+    scheduleSave();
+  });
+}
 
 pageNumSwitch.addEventListener('click', () => {
   const doc = activeDoc();
@@ -7524,6 +7871,8 @@ $$('dialog').forEach(dialog => {
 function prepareClone() {
   const clone = docCanvas.cloneNode(true);
   clone.removeAttribute('id');
+  clone.style.zoom = '';       /* المعاينة والتصدير بالحجم الأصلي */
+  clone.style.width = '';
   clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
   clone.querySelectorAll('.sheet-tools').forEach(el => el.remove());
   clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(el => el.remove());
@@ -7546,6 +7895,27 @@ function printDoc() {
   if (!activeDoc()) return;
   saveNow();
   if (previewDialog.open) previewDialog.close();
+  setTimeout(() => window.print(), 80);
+}
+
+/* حفظ مباشر بصيغة PDF: في سطح المكتب يُكتب الملف فورًا، وفي المتصفح عبر نافذة الطباعة */
+async function savePdf() {
+  const doc = activeDoc();
+  if (!doc) return;
+  saveNow();
+  if (previewDialog.open) previewDialog.close();
+  const name = safeFileName(doc.title) + '.pdf';
+  if (window.midadDesktop && typeof window.midadDesktop.savePdf === 'function') {
+    try {
+      const saved = await window.midadDesktop.savePdf(name);
+      if (saved) toast('تم حفظ ملف PDF في: ' + saved);
+      else toast('أُلغي حفظ PDF.');
+    } catch (err) {
+      toast('تعذّر حفظ PDF: ' + (err && err.message ? err.message : 'خطأ غير معروف'), 'error');
+    }
+    return;
+  }
+  toast('من نافذة الطباعة اختر «حفظ كملف PDF» كوجهة.');
   setTimeout(() => window.print(), 80);
 }
 
@@ -7585,8 +7955,9 @@ function exportHtml() {
     '.view-editor{display:block!important;max-width:none!important;min-height:0!important;margin:0!important}',
     '.editor-main{padding:0!important}',
     '.canvas-wrap{padding:0!important}',
-    '.canvas{width:min(794px,100%)!important;margin:0 auto!important;gap:24px!important}',
+    '.canvas{width:min(794px,100%)!important;margin:0 auto!important;gap:24px!important;zoom:1!important}',
     '.paper [contenteditable]:empty::before,.paper-body:empty::before,.blank-body:empty::before,.cover-title:empty::before,.cover-subtitle:empty::before,.paper-head h2:empty::before{content:none!important}',
+    '.doc-stats-bar{display:none!important}',
     '@media print{body{padding:0;background:#fff}.canvas{width:auto!important;gap:0!important}}'
   ];
   (doc.customFonts || []).forEach(f => {
@@ -7652,6 +8023,7 @@ document.addEventListener('click', event => {
 });
 
 exportHtmlBtn.addEventListener('click', () => { closeExportMenu(); exportHtml(); });
+if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => { closeExportMenu(); savePdf(); });
 exportJsonBtn.addEventListener('click', () => { closeExportMenu(); exportJson(); });
 const exportBackupBtn = $('#exportBackupBtn');
 if (exportBackupBtn) exportBackupBtn.addEventListener('click', () => { closeExportMenu(); exportFullBackup(); });
