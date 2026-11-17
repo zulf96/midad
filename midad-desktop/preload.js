@@ -19,5 +19,7 @@ contextBridge.exposeInMainWorld('midadDesktop', {
     }
   },
   /* خطوط النظام المثبّتة (ويندوز/لينكس) */
-  systemFonts: () => ipcRenderer.invoke('midad:system-fonts')
+  systemFonts: () => ipcRenderer.invoke('midad:system-fonts'),
+  /* حفظ مباشر بصيغة PDF (printToPDF) — يعيد المسار أو null */
+  savePdf: suggested => ipcRenderer.invoke('midad:save-pdf', suggested)
 });

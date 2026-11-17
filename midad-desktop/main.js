@@ -110,6 +110,30 @@ function listSystemFonts() {
 
 ipcMain.handle('midad:system-fonts', () => listSystemFonts());
 
+/* ---------- حفظ مباشر بصيغة PDF (بدون نافذة الطباعة) ---------- */
+ipcMain.handle('midad:save-pdf', async (event, suggested) => {
+  if (!win || win.isDestroyed()) return null;
+  const name = String(suggested || 'مستند.pdf');
+  const savePath = dialog.showSaveDialogSync(win, {
+    title: 'حفظ بصيغة PDF',
+    defaultPath: path.join(app.getPath('documents'), 'مِداد ستوديو', name),
+    filters: [{ name: 'PDF', extensions: ['pdf'] }]
+  });
+  if (!savePath) return null;
+  try {
+    const data = await win.webContents.printToPDF({
+      printBackground: true,
+      preferCSSPageSize: true
+    });
+    fs.writeFileSync(savePath, Buffer.from(data));
+    logUpdate('حُفظ PDF: ' + savePath);
+    return savePath;
+  } catch (err) {
+    logUpdate('فشل حفظ PDF: ' + (err && err.message));
+    return null;
+  }
+});
+
 /* ---------- حفظ واسترجاع أبعاد النافذة ---------- */
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
 
