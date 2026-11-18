@@ -6,7 +6,7 @@
 <title>مِداد — استوديو تأليف الملازم والكتب الدراسية</title>
 <meta name="description" content="مِداد: تطبيق عربي يعمل في المتصفح لتأليف الملازم والكتب الدراسية، مع حفظ تلقائي وتصدير PDF بمقاس A4." />
 <meta name="theme-color" content="#1e3d59" />
-<meta name="color-scheme" content="light" />
+<meta name="color-scheme" content="light dark" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231e3d59'/%3E%3Cpath d='M20 46V18h6l8 14 8-14h6v28h-6V28l-8 13-8-13v18z' fill='%23ffffff'/%3E%3Ccircle cx='48' cy='48' r='7' fill='%23ff6e40'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1735,7 +1735,7 @@ dialog::backdrop{
 
 /* ----- شريط تقدم تنزيل التحديث (سطح المكتب) ----- */
 #updateBanner{
-  position:fixed; top:14px; inset-inline-start:50%; transform:translateX(-50%);
+  position:fixed; top:14px; left:50%; transform:translateX(-50%);
   display:flex; align-items:center; gap:10px;
   padding:10px 16px; border-radius:12px;
   background:var(--navy-deep); color:#fff;
@@ -1748,6 +1748,60 @@ dialog::backdrop{
 .ub-bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.18); overflow:hidden; }
 .ub-fill{ height:100%; width:0%; border-radius:99px; background:var(--coral); transition:width .35s ease; }
 @media print{ #updateBanner{ display:none !important; } }
+
+/* نافذة حقوق المبرمج */
+.credits-dialog .dialog-card{ width:min(520px,calc(100vw - 28px)); }
+.credits-top{ display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.credits-mark{
+  width:48px; height:48px; flex:none; display:grid; place-items:center;
+  border-radius:3px; background:var(--navy); color:#fff;
+  font-family:var(--font-head); font-weight:800; font-size:24px;
+}
+.credits-top h3{ font-size:18px; }
+.credits-top p{ font-size:11.5px; color:var(--muted); }
+.credits-list{ display:grid; gap:8px; margin:14px 0; }
+.credits-row{
+  display:flex; justify-content:space-between; gap:12px;
+  padding:9px 12px; border:1px solid var(--line); border-radius:3px;
+  font-size:12px; background:rgba(127,127,127,.05);
+}
+.credits-row span{ color:var(--muted); }
+.credits-row b, .credits-row strong{ color:var(--navy); }
+.credits-rights{
+  padding:12px; border-inline-start:3px solid var(--accent,var(--coral));
+  background:rgba(127,127,127,.07); border-radius:3px;
+  font-size:12px; line-height:1.9;
+}
+.credits-link{
+  display:inline-flex; align-items:center; gap:6px; margin-top:12px;
+  font-size:12px; font-weight:700; color:var(--navy);
+  border-bottom:1px solid currentColor;
+}
+.credits-note{ margin-top:12px; font-size:11px; color:var(--muted); }
+
+/* إشعار التحديث الجديد — ثلاثة خيارات واضحة */
+#updatePrompt{
+  position:fixed; top:14px; left:50%; transform:translateX(-50%);
+  z-index:9500; width:min(560px,calc(100vw - 24px));
+  display:flex; align-items:center; flex-wrap:wrap; gap:10px;
+  padding:12px 14px; border-radius:4px;
+  background:#12293c; color:#fff; border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 20px 50px -20px rgba(0,0,0,.7);
+  font-size:12px; direction:rtl;
+}
+#updatePrompt[hidden]{ display:none !important; }
+.up-icon{
+  width:32px; height:32px; flex:none; display:grid; place-items:center;
+  border-radius:3px; background:rgba(255,255,255,.12); color:#7fd4ff;
+}
+.up-icon svg{ width:17px; height:17px; }
+.up-copy{ display:flex; flex-direction:column; min-width:160px; flex:1 1 180px; line-height:1.5; }
+.up-copy strong{ font-family:var(--font-head); font-size:13px; }
+.up-copy span{ color:#cfe0ee; font-size:11px; }
+.up-actions{ display:flex; gap:6px; flex-wrap:wrap; margin-inline-start:auto; }
+.up-actions .btn{ min-height:30px; padding:4px 10px; font-size:11px; }
+.up-actions .btn-navy{ background:var(--coral); color:#12293c; }
+@media print{ #updatePrompt{ display:none !important; } }
 
 /* ----- شريحة اللصق (بعد نسخ عنصر) ----- */
 #pasteChip{
@@ -1807,6 +1861,15 @@ dialog::backdrop{
   .search-field{ flex:1 1 170px; width:auto; }
   .doc-grid{ grid-template-columns:1fr; }
   .header-inner{ padding:0 12px; gap:8px; }
+  .header-inner{ overflow-x:auto; overflow-y:hidden; scrollbar-width:none; }
+  .header-inner::-webkit-scrollbar{ display:none; }
+  .header-actions{ flex:0 0 auto; }
+  #creditsBtn, #creditsBtnEditor{ display:none; }
+  .header-actions #previewBtn, .header-actions #printBtn{ display:none; }
+  .header-actions{ gap:6px; }
+  .header-actions .divider-v{ display:none; }
+  #editorHeader .brand-copy{ display:none; }
+  #editorHeader #saveState{ display:none; }
   .brand-sub{ display:none; }
   .header-actions .btn .btn-text{ display:none; }
   .header-actions .btn{ padding:8px 10px; }
@@ -1831,6 +1894,7 @@ dialog::backdrop{
 @media (max-width:460px){
   .header-actions{ gap:4px; }
   .divider-v{ display:none; }
+  .header-actions #zoomGroup{ display:none; }
   .lib-hero h1{ font-size:24px; }
   .lib-hero-stats{ flex-wrap:wrap; }
   .lib-stat + .lib-stat{ border-inline-start:0; }
@@ -2335,6 +2399,264 @@ dialog::backdrop{
 .check-col label{ display:flex; align-items:center; gap:7px; font-size:12px; color:#3a4d58; }
 
 /* ============================================================
+   10ب — مظهر شبيه بـ Adobe + الوضع الليلي للواجهة فقط
+   (صفحات المستند تبقى بيضاء تمامًا ولا تتأثر بأي وضع)
+   ============================================================ */
+:root{
+  --ui-bg:#e9e9e9;
+  --ui-panel:#fafafa;
+  --ui-chrome:#f4f4f4;
+  --ui-workspace:#cfcfcf;
+  --ui-ink:#2b2b2b;
+  --ui-muted:#6d6d6d;
+  --ui-line:#d6d6d6;
+  --ui-line-strong:#bdbdbd;
+  --ui-accent:#1473e6;
+  --ui-accent-ink:#0b5bb5;
+  --ui-accent-soft:#e8f1fd;
+}
+body[data-night="on"]{
+  --ui-bg:#1c1c1c;
+  --ui-panel:#252525;
+  --ui-chrome:#2b2b2b;
+  --ui-workspace:#1a1a1a;
+  --ui-ink:#e7e7e7;
+  --ui-muted:#a6a6a6;
+  --ui-line:#3b3b3b;
+  --ui-line-strong:#535353;
+  --ui-accent:#4c9aff;
+  --ui-accent-ink:#8dc2ff;
+  --ui-accent-soft:#1d3552;
+}
+body[data-ui="adobe"]{
+  background:var(--ui-bg) !important;
+  color:var(--ui-ink);
+  font-family:var(--font-body);
+  color-scheme:light;
+}
+body[data-night="on"]{ color-scheme:dark; }
+/* تحويل ألوان الواجهة فقط — لا نلمس .canvas ولا ما بداخلها من صفحات */
+body[data-ui="adobe"] :is(
+  .app-header, .editor-sidebar, .view-library, .toolbar-wrap,
+  dialog:not(#previewDialog), .quick-bar, .tb-popover, .export-menu,
+  .toast-region, #updateBanner, #updatePrompt, #pasteChip,
+  #docStatsBar, .sidebar-overlay
+){
+  --navy:var(--ui-ink);
+  --navy-deep:var(--ui-ink);
+  --navy-soft:var(--ui-accent);
+  --ink:var(--ui-ink);
+  --muted:var(--ui-muted);
+  --line:var(--ui-line);
+  --line-strong:var(--ui-line-strong);
+  --chrome:var(--ui-chrome);
+  --bg:var(--ui-bg);
+  --coral:var(--ui-accent);
+  --coral-deep:var(--ui-accent-ink);
+  --coral-ink:var(--ui-accent-ink);
+  --green-soft:var(--ui-accent-soft);
+  --shadow-sm:none;
+  color:var(--ui-ink);
+}
+body[data-ui="adobe"] .header-actions .btn{ min-height:32px; padding:5px 11px; font-size:12px; }
+body[data-ui="adobe"] .header-actions .btn svg{ width:15px; height:15px; }
+body[data-ui="adobe"] .header-actions .icon-btn{ width:32px; height:32px; }
+body[data-ui="adobe"] .zoom-group{ height:28px; }
+body[data-ui="adobe"] :is(.zoom-btn,.zoom-label){ height:24px; }
+body[data-ui="adobe"] .app-header{
+  height:52px; --header-h:52px;
+  border-bottom:1px solid var(--ui-line);
+  background:var(--ui-chrome);
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+}
+body[data-ui="adobe"] .header-inner{ padding:0 14px; gap:10px; }
+body[data-ui="adobe"] :is(.btn,.icon-btn,.mini-btn,.chip,.zoom-group,.swatch,.dialog-close,.outline-item,.add-section-btn,.sidebar-label .count,.field input,.field select,.field textarea,.search-field){
+  border-radius:3px !important;
+}
+body[data-ui="adobe"] .btn-primary{
+  background:var(--ui-accent); color:#fff; box-shadow:none;
+}
+body[data-ui="adobe"] .btn-primary:hover{ background:var(--ui-accent-ink); box-shadow:none; }
+body[data-ui="adobe"] .btn-ghost,
+body[data-ui="adobe"] .btn-soft{ background:var(--ui-panel); border-color:var(--ui-line-strong); color:var(--ui-ink); }
+body[data-ui="adobe"] .btn-ghost:hover{ background:var(--ui-accent-soft); border-color:var(--ui-accent); color:var(--ui-ink); }
+body[data-ui="adobe"] .brand-mark{
+  width:30px; height:30px; border-radius:3px; font-size:15px;
+  background:var(--ui-accent); box-shadow:none;
+}
+body[data-ui="adobe"] .brand-mark::after{ display:none; }
+body[data-ui="adobe"] .brand-name{ font-size:13.5px; }
+body[data-ui="adobe"] .brand-sub{ font-size:8.5px; color:var(--ui-muted); }
+body[data-ui="adobe"] .doc-title-input{ font-size:13px; }
+body[data-ui="adobe"] .editor-sidebar{
+  background:var(--ui-panel); border-inline-end:1px solid var(--ui-line);
+  padding-top:14px;
+}
+body[data-ui="adobe"] .sidebar-label{
+  font-size:9.5px; color:var(--ui-muted);
+  padding-bottom:6px; border-bottom:1px solid var(--ui-line);
+}
+body[data-ui="adobe"] .outline-item{ color:var(--ui-ink); border:1px solid transparent; }
+body[data-ui="adobe"] .outline-item:hover{ background:var(--ui-accent-soft); border-color:var(--ui-line); }
+body[data-ui="adobe"] .toolbar-wrap{
+  background:var(--ui-chrome); border-bottom:1px solid var(--ui-line);
+  backdrop-filter:none; -webkit-backdrop-filter:none;
+}
+body[data-ui="adobe"] .editor-toolbar{
+  background:var(--ui-panel); border-color:var(--ui-line);
+  border-radius:3px; box-shadow:none;
+}
+body[data-ui="adobe"] .tb-row-advanced{ border-top-color:var(--ui-line); }
+body[data-ui="adobe"] .tb-btn{
+  color:var(--ui-ink); border-radius:3px;
+}
+body[data-ui="adobe"] .tb-btn:hover{ background:var(--ui-accent-soft); color:var(--ui-ink); }
+body[data-ui="adobe"] .tb-btn.is-active{ background:var(--ui-accent-soft); color:var(--ui-accent-ink); }
+body[data-ui="adobe"] .tb-btn.insert{ background:var(--ui-accent-soft); color:var(--ui-accent-ink); }
+body[data-ui="adobe"] .tb-select{
+  background:var(--ui-panel); color:var(--ui-ink); border-color:var(--ui-line-strong); border-radius:3px;
+}
+body[data-ui="adobe"] .add-section-btn{ border-style:solid; background:var(--ui-panel); }
+body[data-ui="adobe"] .canvas-wrap{
+  background:var(--ui-workspace);
+  background-image:none;
+}
+body[data-ui="adobe"] .paper{
+  border-radius:2px;
+  box-shadow:0 4px 18px rgba(0,0,0,.28);
+}
+body[data-ui="adobe"] .lib-hero,
+body[data-ui="adobe"] .template-card,
+body[data-ui="adobe"] .doc-card,
+body[data-ui="adobe"] .lib-stat{
+  border-radius:3px; box-shadow:none;
+  background:var(--ui-panel);
+  border:1px solid var(--ui-line);
+  color:var(--ui-ink);
+}
+body[data-ui="adobe"] :is(.lib-hero h1,.template-card h3,.doc-card h3,.lib-stat b){ color:var(--ui-ink); }
+body[data-ui="adobe"] .template-card:hover,
+body[data-ui="adobe"] .doc-card:hover{ border-color:var(--ui-accent); }
+body[data-ui="adobe"] .doc-stats-bar,
+body[data-ui="adobe"] .toast,
+body[data-ui="adobe"] #updateBanner,
+body[data-ui="adobe"] #updatePrompt{
+  border-radius:3px; box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+body[data-ui="adobe"] dialog:not(#previewDialog) .dialog-card{
+  background:var(--ui-panel); border:1px solid var(--ui-line);
+  border-radius:4px; box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+body[data-ui="adobe"] dialog::backdrop{ background:rgba(0,0,0,.6); }
+body[data-ui="adobe"] .night-toggle[aria-pressed="true"]{
+  background:var(--ui-accent-soft); color:var(--ui-accent-ink);
+}
+/* زر الوضع الليلي في الترويسة */
+.night-toggle svg{ width:16px; height:16px; }
+/* --- اتساق عناصر الواجهة: أزرار، حقول، قوائم، بطاقات، إشعارات --- */
+body[data-ui="adobe"] :is(.field input,.field select,.field textarea,.mini-select,.tb-select,.search-field input,.margins-grid input){
+  background:var(--ui-panel); color:var(--ui-ink); border-color:var(--ui-line-strong);
+}
+body[data-ui="adobe"] .field > label{ color:var(--ui-ink); }
+body[data-ui="adobe"] .search-field svg{ color:var(--ui-muted); }
+body[data-ui="adobe"] .doc-title-input:hover{ background:var(--ui-accent-soft); }
+body[data-ui="adobe"] .save-state{ color:var(--ui-muted); }
+body[data-ui="adobe"] .sidebar-label .count{ color:var(--ui-ink); background:var(--ui-accent-soft); }
+body[data-ui="adobe"] .outline-item.is-blank{ color:var(--ui-muted); }
+body[data-ui="adobe"] .outline-item .o-num{
+  background:var(--ui-accent-soft); border-color:var(--ui-line);
+  color:var(--ui-accent-ink);
+}
+body[data-ui="adobe"] .outline-item.is-blank .o-num{
+  background:rgba(127,127,127,.08); border-color:var(--ui-line);
+  color:var(--ui-muted);
+}
+body[data-ui="adobe"] .badge{ background:var(--ui-accent-soft); color:var(--ui-ink); }
+body[data-ui="adobe"] .badge.coral,
+body[data-ui="adobe"] .badge.green{ color:var(--ui-accent-ink); }
+body[data-ui="adobe"] .switch{ background:var(--ui-line-strong); }
+body[data-ui="adobe"] .switch[aria-checked="true"]{ background:var(--ui-accent); }
+body[data-ui="adobe"] .chip{ background:var(--ui-panel); color:var(--ui-ink); border-color:var(--ui-line-strong); }
+body[data-ui="adobe"] .chip:hover{ border-color:var(--ui-accent); }
+body[data-ui="adobe"] .chip.active{ background:var(--ui-accent); border-color:var(--ui-accent); color:#fff; }
+body[data-ui="adobe"] .export-menu{ background:var(--ui-panel); border-color:var(--ui-line); border-radius:3px; }
+body[data-ui="adobe"] .export-menu button{ color:var(--ui-ink); border-radius:3px; }
+body[data-ui="adobe"] .export-menu button:hover{ background:var(--ui-accent-soft); }
+body[data-ui="adobe"] .export-menu button svg{ color:var(--ui-ink); }
+body[data-ui="adobe"] .tb-popover{ background:var(--ui-panel); border-color:var(--ui-line); border-radius:3px; }
+body[data-ui="adobe"] .pop-swatch{ border-color:var(--ui-panel); box-shadow:0 0 0 1px var(--ui-line-strong); }
+body[data-ui="adobe"] .pop-border{ background:var(--ui-panel); color:var(--ui-ink); border-color:var(--ui-line); }
+body[data-ui="adobe"] .pop-border:hover{ background:var(--ui-accent-soft); border-color:var(--ui-accent); }
+body[data-ui="adobe"] .pop-clear{ background:var(--ui-accent-soft); color:var(--ui-ink); }
+body[data-ui="adobe"] .toast{ background:#12293c; color:#fff; }
+body[data-ui="adobe"] .quick-bar{ background:#1b1b1b; border-color:#3a3a3a; }
+body[data-ui="adobe"] #updateBanner{ background:#12293c; }
+body[data-ui="adobe"] .template-option .opt-body,
+body[data-ui="adobe"] .eq-preset,
+body[data-ui="adobe"] .shape-option,
+body[data-ui="adobe"] .image-preview{ background:var(--ui-panel); color:var(--ui-ink); border-color:var(--ui-line); }
+body[data-ui="adobe"] .template-option .opt-icon{ background:var(--ui-accent-soft); border-color:var(--ui-line); color:var(--ui-accent-ink); }
+body[data-ui="adobe"] .template-option input:checked + .opt-body{ border-color:var(--ui-accent); background:var(--ui-accent-soft); box-shadow:0 0 0 3px rgba(20,115,230,.18); }
+body[data-ui="adobe"] .shape-option:hover, body[data-ui="adobe"] .shape-option.active{ background:var(--ui-accent-soft); color:var(--ui-accent-ink); border-color:var(--ui-accent); }
+body[data-ui="adobe"] :is(.check-line,.check-col label){ color:var(--ui-ink); }
+body[data-ui="adobe"] :is(.field input,.field select,.field textarea,.mini-select,.tb-select,.search-field input,.margins-grid input):focus{
+  outline:none; border-color:var(--ui-accent); box-shadow:0 0 0 3px var(--ui-accent-soft);
+}
+body[data-ui="adobe"] .template-card, body[data-ui="adobe"] .doc-card{ background:var(--ui-panel); }
+body[data-ui="adobe"] .template-card:hover{ border-color:var(--ui-accent); box-shadow:none; }
+body[data-ui="adobe"] .doc-card:hover{ border-color:var(--ui-accent); box-shadow:none; }
+
+/* --- إصلاحات الوضع الليلي: ألوان ثابتة داكنة للعناصر العائمة --- */
+body[data-night="on"] .zoom-group{ background:#1b1b1b; border-color:#444; }
+body[data-night="on"] :is(.zoom-btn,.zoom-label){ color:#e7e7e7; }
+body[data-night="on"] .zoom-btn:hover{ background:rgba(255,255,255,.08); color:#fff; }
+body[data-night="on"] .tb-sep{ background:#3d3d3d; }
+body[data-night="on"] .tb-row-advanced{ border-top-color:#383838; }
+body[data-night="on"] .tb-btn{ color:#e7e7e7; }
+body[data-night="on"] .tb-btn:hover{ background:rgba(255,255,255,.08); color:#fff; }
+body[data-night="on"] .tb-btn.is-active{ background:rgba(76,154,255,.22); color:#8dc2ff; }
+body[data-night="on"] .tb-btn.insert{ background:rgba(76,154,255,.12); color:#8dc2ff; }
+body[data-night="on"] .brand-name{ color:#fff; }
+body[data-night="on"] .brand-sub{ color:#a6a6a6; }
+body[data-night="on"] .doc-title-input{ color:#fff; }
+body[data-night="on"] .doc-title-input:hover{ background:rgba(255,255,255,.06); }
+body[data-night="on"] .doc-title-input:focus{ background:#1b1b1b; border-color:#4c9aff; box-shadow:0 0 0 3px rgba(76,154,255,.25); }
+body[data-night="on"] .editor-sidebar{ background:#232323; scrollbar-color:#666 #232323; }
+body[data-night="on"] .editor-sidebar::-webkit-scrollbar-thumb{ background:#5a5a5a; }
+body[data-night="on"] .sidebar-label{ color:#a6a6a6; border-bottom-color:#383838; }
+body[data-night="on"] .setting-row{ border-top-color:#333; }
+body[data-night="on"] .add-section-btn{ background:#2a2a2a; color:#e7e7e7; border-color:#444; }
+body[data-night="on"] .add-section-btn:hover{ background:#333; color:#fff; }
+body[data-night="on"] .mini-btn{ background:#2a2a2a; color:#e7e7e7; border-color:#444; }
+body[data-night="on"] .mini-btn:hover{ background:#333; color:#fff; border-color:#555; }
+body[data-night="on"] :is(.mini-select,.tb-select,.search-field input,.margins-grid input,.field input,.field select,.field textarea){
+  background:#1b1b1b; color:#e7e7e7; border-color:#444;
+}
+body[data-night="on"] .sidebar-delete{ color:#ff9a7d; }
+body[data-night="on"] .sidebar-delete:hover{ background:rgba(255,154,125,.12); }
+body[data-night="on"] dialog:not(#previewDialog) .dialog-card{ background:#232323; border-color:#3d3d3d; }
+body[data-night="on"] .dialog-head p{ color:#aaa; }
+body[data-night="on"] .dialog-close{ color:#bbb; }
+body[data-night="on"] .dialog-close:hover{ background:#333; color:#fff; }
+body[data-night="on"] .field > label{ color:#ddd; }
+body[data-night="on"] .credits-row{ background:rgba(255,255,255,.04); border-color:#3d3d3d; }
+body[data-night="on"] .credits-rights{ background:rgba(255,255,255,.05); }
+body[data-night="on"] .hint{ color:#999; }
+body[data-night="on"] .eq-preset span, body[data-night="on"] .shape-option{ color:#ddd; }
+body[data-night="on"] .image-preview{ background:#1e1e1e; border-color:#3d3d3d; }
+body[data-night="on"] .doc-stats-bar{ background:#2a2a2a; border-color:#444; color:#ccc; }
+body[data-night="on"] .doc-stats-bar b{ color:#fff; }
+body[data-night="on"] .toast{ background:#12293c; color:#fff; }
+body[data-night="on"] .quick-bar{ background:#1b1b1b; border-color:#444; }
+body[data-night="on"] .qb-btn{ color:#fff; }
+body[data-night="on"] .tb-popover{ background:#252525; border-color:#444; }
+body[data-night="on"] .pop-head{ color:#fff; }
+body[data-night="on"] .pop-border{ background:#1e1e1e; color:#e7e7e7; border-color:#444; }
+body[data-night="on"] .pop-clear{ background:#2e2e2e; color:#ddd; }
+body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154,255,.2); color:#8dc2ff; }
+
+
+/* ============================================================
    11 — الطباعة A4
    ============================================================ */
 @page{ size:A4; margin:0; }
@@ -2455,7 +2777,8 @@ dialog::backdrop{
 
 </style>
 </head>
-<body data-view="library">
+<body data-view="library" data-ui="adobe" data-night="off">
+<script>try{document.body.dataset.night=localStorage.getItem('midad.uiNight')==='on'?'on':'off';document.documentElement.style.colorScheme=document.body.dataset.night==='on'?'dark':'light';}catch(err){document.body.dataset.night='off';}</script>
 
 <!-- أيقونات -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -2516,6 +2839,8 @@ dialog::backdrop{
   <symbol id="i-frame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><rect x="7" y="7" width="10" height="10" rx="1"/></symbol>
   <symbol id="i-line-height" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 19h16M12 7v10M9 10l3-3 3 3M9 14l3 3 3-3"/></symbol>
   <symbol id="i-font-size" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18 7 6h2l4 12M5 13h6M16 18l2.5-8h1L22 18M17 15h5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></symbol>
 </svg>
 
 <!-- ترويسة المكتبة -->
@@ -2530,6 +2855,13 @@ dialog::backdrop{
     </a>
     <div class="header-spacer"></div>
     <div class="header-actions">
+      <button class="icon-btn night-toggle" id="nightModeBtn" type="button" aria-pressed="false" aria-label="الوضع الليلي للواجهة" title="الوضع الليلي للواجهة (القوائم فقط)">
+        <svg aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <button class="icon-btn" id="creditsBtn" type="button" aria-label="عن مِداد وحقوق المبرمج" title="عن مِداد وحقوق المبرمج">
+        <svg aria-hidden="true"><use href="#i-help"/></svg>
+      </button>
+      <div class="divider-v" aria-hidden="true"></div>
       <button class="btn btn-ghost" id="importBtn" type="button" title="استيراد نسخة احتياطية">
         <svg aria-hidden="true"><use href="#i-upload"/></svg>
         <span class="btn-text">استيراد</span>
@@ -2602,6 +2934,13 @@ dialog::backdrop{
       <button class="btn btn-primary" id="printBtn" type="button">
         <svg aria-hidden="true"><use href="#i-printer"/></svg>
         <span class="btn-text">طباعة / PDF</span>
+      </button>
+      <div class="divider-v" aria-hidden="true"></div>
+      <button class="icon-btn night-toggle" id="nightModeBtnEditor" type="button" aria-pressed="false" aria-label="الوضع الليلي للواجهة" title="الوضع الليلي للواجهة (القوائم فقط)">
+        <svg aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <button class="icon-btn" id="creditsBtnEditor" type="button" aria-label="عن مِداد وحقوق المبرمج" title="عن مِداد وحقوق المبرمج">
+        <svg aria-hidden="true"><use href="#i-help"/></svg>
       </button>
     </div>
   </div>
@@ -2684,6 +3023,7 @@ dialog::backdrop{
   <p class="library-footnote">
     <svg aria-hidden="true"><use href="#i-check"/></svg>
     <span id="storageFootnote">يُحفظ عملك تلقائيًا داخل متصفحك — دون حساب أو اتصال بالإنترنت. في نسخة سطح المكتب تُحفظ مشاريعك في ملف آمن داخل مجلد «مِداد ستوديو» في مستنداتك.</span> احتفظ بنسخة JSON احتياطية بين الحين والآخر.
+    <button class="link-btn" id="creditsFootBtn" type="button">حقوق المبرمج</button>
   </p>
 </main>
 
@@ -2913,20 +3253,6 @@ dialog::backdrop{
             <button class="tb-btn" type="button" data-cmd="removeFormat" title="إزالة كل التنسيق" aria-label="إزالة كل التنسيق"><svg aria-hidden="true"><use href="#i-clear"/></svg></button>
           </div>
           <span class="tb-sep" aria-hidden="true"></span>
-          <div class="tb-group">
-            <button class="tb-btn insert" type="button" data-insert="equation" title="معادلة رياضية" aria-label="معادلة رياضية"><svg aria-hidden="true"><use href="#i-sigma"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="table" title="جدول" aria-label="جدول"><svg aria-hidden="true"><use href="#i-table"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="image" title="إدراج صورة" aria-label="إدراج صورة"><svg aria-hidden="true"><use href="#i-image"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="shape" title="إدراج شكل" aria-label="إدراج شكل"><svg aria-hidden="true"><use href="#i-shapes"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="note" title="ملاحظة" aria-label="إدراج ملاحظة"><svg aria-hidden="true"><use href="#i-alert"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="qa" title="سؤال وجواب" aria-label="سؤال وجواب"><svg aria-hidden="true"><use href="#i-help"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="problem" title="مسألة علمية محلولة" aria-label="مسألة علمية محلولة"><svg aria-hidden="true"><use href="#i-pen"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="symbol" title="الرموز العلمية" aria-label="الرموز العلمية"><svg aria-hidden="true"><use href="#i-sigma"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
-            <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
-          </div>
-        </div>
-        <div class="tb-row tb-row-advanced">
           <div class="tb-group" role="group" aria-label="محاذاة النص">
             <button class="tb-btn" type="button" data-align="right" title="محاذاة إلى اليمين" aria-label="محاذاة إلى اليمين"><svg aria-hidden="true"><use href="#i-align-right"/></svg></button>
             <button class="tb-btn" type="button" data-align="center" title="توسيط" aria-label="توسيط"><svg aria-hidden="true"><use href="#i-align-center"/></svg></button>
@@ -2948,7 +3274,8 @@ dialog::backdrop{
             <button class="tb-btn" type="button" data-cmd="superscript" title="أس أعلى" aria-label="أس أعلى"><svg aria-hidden="true"><use href="#i-superscript"/></svg></button>
             <button class="tb-btn" type="button" data-cmd="subscript" title="أس أسفل" aria-label="أس أسفل"><svg aria-hidden="true"><use href="#i-subscript"/></svg></button>
           </div>
-          <span class="tb-sep" aria-hidden="true"></span>
+        </div>
+        <div class="tb-row tb-row-advanced">
           <div class="tb-group" role="group" aria-label="الألوان">
             <button class="tb-btn" type="button" data-popover="text" title="لون النص" aria-label="لون النص"><svg aria-hidden="true"><use href="#i-color"/></svg></button>
             <button class="tb-btn" type="button" data-popover="highlight" title="تظليل النص" aria-label="تظليل النص"><svg aria-hidden="true"><use href="#i-highlight"/></svg></button>
@@ -2994,6 +3321,19 @@ dialog::backdrop{
               <option value="loose">واسع ٢.١</option>
               <option value="xloose">واسع جدًا ٢.٤</option>
             </select>
+          </div>
+          <span class="tb-sep" aria-hidden="true"></span>
+<div class="tb-group">
+            <button class="tb-btn insert" type="button" data-insert="equation" title="معادلة رياضية" aria-label="معادلة رياضية"><svg aria-hidden="true"><use href="#i-sigma"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="table" title="جدول" aria-label="جدول"><svg aria-hidden="true"><use href="#i-table"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="image" title="إدراج صورة" aria-label="إدراج صورة"><svg aria-hidden="true"><use href="#i-image"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="shape" title="إدراج شكل" aria-label="إدراج شكل"><svg aria-hidden="true"><use href="#i-shapes"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="note" title="ملاحظة" aria-label="إدراج ملاحظة"><svg aria-hidden="true"><use href="#i-alert"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="qa" title="سؤال وجواب" aria-label="سؤال وجواب"><svg aria-hidden="true"><use href="#i-help"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="problem" title="مسألة علمية محلولة" aria-label="مسألة علمية محلولة"><svg aria-hidden="true"><use href="#i-pen"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="symbol" title="الرموز العلمية" aria-label="الرموز العلمية"><svg aria-hidden="true"><use href="#i-sigma"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
         </div>
       </div>
@@ -3706,6 +4046,54 @@ dialog::backdrop{
     <div class="ub-bar" aria-hidden="true"><div class="ub-fill" id="updateBannerFill"></div></div>
   </div>
 </div>
+
+<!-- إشعار تحديث جديد (نسخة سطح المكتب فقط) -->
+<div id="updatePrompt" role="status" aria-live="polite" aria-labelledby="upTitle" hidden>
+  <span class="up-icon" aria-hidden="true"><svg><use href="#i-download"/></svg></span>
+  <span class="up-copy">
+    <strong id="upTitle">تحديث جديد متاح لمِداد</strong>
+    <span id="upVersion">يتوفر إصدار أحدث — اختر ما تريد.</span>
+  </span>
+  <span class="up-actions">
+    <button class="btn btn-sm btn-navy" type="button" id="upInstallBtn">تحديث الآن</button>
+    <button class="btn btn-sm btn-ghost" type="button" id="upLaterBtn">تذكّرني لاحقًا</button>
+    <button class="btn btn-sm btn-ghost" type="button" id="upIgnoreBtn">تجاهل</button>
+  </span>
+</div>
+
+<!-- عن مِداد وحقوق المبرمج -->
+<dialog id="creditsDialog" class="credits-dialog" aria-labelledby="creditsHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="creditsHeading">عن مِداد وحقوق المبرمج</h2>
+        <p>معلومات البرنامج والتطوير والحقوق.</p>
+      </div>
+      <button class="dialog-close" type="button" id="creditsCloseX" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="credits-top">
+      <span class="credits-mark" aria-hidden="true">م</span>
+      <div>
+        <h3>مِداد ستوديو</h3>
+        <p>استوديو تأليف الملازم والكتب الدراسية</p>
+      </div>
+    </div>
+    <div class="credits-list">
+      <div class="credits-row"><span>الإصدار</span><b id="creditsVersion">1.1.0</b></div>
+      <div class="credits-row"><span>المطوّر</span><strong>zulf96</strong></div>
+      <div class="credits-row"><span>التقنية</span><strong>HTML5 · Electron — يعمل دون اتصال</strong></div>
+    </div>
+    <p class="credits-rights">© ٢٠٢٦ جميع الحقوق محفوظة. حُقوق المبرمج والتصميم والتطوير لهذا البرنامج محفوظة لمطوّره «zulf96».</p>
+    <a class="credits-link" href="https://github.com/zulf96/midad" target="_blank" rel="noopener noreferrer">صفحة المشروع على GitHub <svg aria-hidden="true" style="width:13px;height:13px"><use href="#i-chevron-right"/></svg></a>
+    <p class="credits-note">تُحفظ مشاريعك على جهازك فقط. لا تُرسل بياناتك إلى أي خادم.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" id="creditsCheckBtn">
+        <svg aria-hidden="true"><use href="#i-download"/></svg> التحقق من التحديثات
+      </button>
+      <button class="btn btn-navy" type="button" id="creditsCloseBtn">إغلاق</button>
+    </div>
+  </div>
+</dialog>
 
 <!-- شريحة اللصق بعد نسخ عنصر -->
 <button id="pasteChip" type="button" hidden>
@@ -4565,6 +4953,12 @@ const previewScroll   = $('#previewScroll');
 const previewPrintBtn = $('#previewPrintBtn');
 const toastRegion     = $('#toastRegion');
 const importFile      = $('#importFile');
+const nightModeBtns    = [$('#nightModeBtn'), $('#nightModeBtnEditor')].filter(Boolean);
+const creditsBtns      = [$('#creditsBtn'), $('#creditsBtnEditor'), $('#creditsFootBtn')].filter(Boolean);
+const creditsDialog    = $('#creditsDialog');
+const updatePrompt     = $('#updatePrompt');
+const upVersion        = $('#upVersion');
+const upInstallBtn     = $('#upInstallBtn');
 
 /* ---------- التنبيهات ---------- */
 function toast(message, kind = 'ok') {
@@ -8137,6 +8531,146 @@ window.addEventListener('midad-update-progress', e => showUpdateProgress(e && e.
 if (window.midadDesktop && window.midadDesktop.updates && window.midadDesktop.updates.onProgress) {
   window.midadDesktop.updates.onProgress(showUpdateProgress);
 }
+
+/* ---------- الدفعة ١٧: الوضع الليلي للواجهة + حقوق المبرمج + إشعار التحديث ---------- */
+function setUiNight(on) {
+  const active = !!on;
+  document.body.dataset.night = active ? 'on' : 'off';
+  try { document.documentElement.style.colorScheme = active ? 'dark' : 'light'; } catch (err) { /* تجاهل */ }
+  nightModeBtns.forEach(btn => {
+    btn.setAttribute('aria-pressed', String(active));
+    btn.setAttribute('aria-label', active ? 'إيقاف الوضع الليلي للواجهة' : 'الوضع الليلي للواجهة');
+    btn.title = active ? 'الوضع الليلي للواجهة (القوائم فقط)' : 'الوضع الليلي للواجهة (القوائم فقط)';
+    const use = btn.querySelector('use');
+    if (use) use.setAttribute('href', active ? '#i-sun' : '#i-moon');
+  });
+  try { localStorage.setItem('midad.uiNight', active ? 'on' : 'off'); } catch (err) { /* تجاهل */ }
+}
+nightModeBtns.forEach(btn => btn.addEventListener('click', () => setUiNight(document.body.dataset.night !== 'on')));
+setUiNight(document.body.dataset.night === 'on');
+
+function openCredits() {
+  if (!creditsDialog) return;
+  const verEl = $('#creditsVersion');
+  if (verEl) verEl.textContent = toAr((window.midadDesktop && window.midadDesktop.version) || '1.1.0');
+  if (typeof creditsDialog.showModal === 'function') creditsDialog.showModal();
+  else creditsDialog.setAttribute('open', '');
+}
+creditsBtns.forEach(btn => btn.addEventListener('click', openCredits));
+['creditsCloseBtn', 'creditsCloseX'].forEach(id => {
+  const btn = document.getElementById(id);
+  if (btn) btn.addEventListener('click', () => creditsDialog.close());
+});
+
+/* إشعار التحديث: ثلاثة قرارات واضحة للمستخدم */
+const UPDATE_SNOOZE_KEY = 'midad.update.snoozedUntil';
+const UPDATE_IGNORE_KEY = 'midad.update.ignoredVersion';
+let pendingUpdate = null;
+
+function showUpdatePrompt(info) {
+  info = info || {};
+  const version = String(info.version || '');
+  if (!version || !updatePrompt) return;
+  try {
+    if (sessionStorage.getItem(UPDATE_IGNORE_KEY) === version) return;
+    if (Number(localStorage.getItem(UPDATE_SNOOZE_KEY) || 0) > Date.now()) return;
+  } catch (err) { /* تجاهل */ }
+  pendingUpdate = info;
+  if (upVersion) upVersion.textContent = 'الإصدار ' + toAr(version) + ' متاح الآن — اختر ما تريد.';
+  if (upInstallBtn) { upInstallBtn.disabled = false; upInstallBtn.textContent = 'تحديث الآن'; }
+  updatePrompt.hidden = false;
+}
+
+function hideUpdatePrompt(mode) {
+  if (!updatePrompt) return;
+  updatePrompt.hidden = true;
+  try {
+    if (mode === 'ignore' && pendingUpdate) sessionStorage.setItem(UPDATE_IGNORE_KEY, String(pendingUpdate.version));
+    if (mode === 'later') localStorage.setItem(UPDATE_SNOOZE_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+  } catch (err) { /* تجاهل */ }
+  if (mode === 'ignore') toast('تم تجاهل هذا التحديث لهذه الجلسة.');
+  if (mode === 'later') toast('سيُذكَّر بالتحديث بعد ٢٤ ساعة.');
+}
+
+const upIgnoreBtn = $('#upIgnoreBtn');
+const upLaterBtn  = $('#upLaterBtn');
+if (upIgnoreBtn) upIgnoreBtn.addEventListener('click', () => hideUpdatePrompt('ignore'));
+if (upLaterBtn) upLaterBtn.addEventListener('click', () => hideUpdatePrompt('later'));
+
+function updateApi() {
+  const d = window.midadDesktop;
+  return (d && d.updates) || null;
+}
+
+if (upInstallBtn) {
+  upInstallBtn.addEventListener('click', () => {
+    const api = updateApi();
+    if (!api || !api.install) { toast('التحديث متاح في نسخة سطح المكتب فقط.', 'error'); return; }
+    upInstallBtn.disabled = true;
+    upInstallBtn.textContent = 'جارٍ التنزيل…';
+    updatePrompt.hidden = true;
+    try {
+      const result = api.install();
+      if (result && typeof result.then === 'function') {
+        result.then(ok => {
+          if (ok === false) {
+            upInstallBtn.disabled = false;
+            upInstallBtn.textContent = 'تحديث الآن';
+            toast('تعذّر بدء تنزيل التحديث.', 'error');
+          } else {
+            toast('بدأ تنزيل التحديث في الخلفية — سيُثبَّت بعد اكتماله.');
+          }
+        }).catch(() => {
+          upInstallBtn.disabled = false;
+          upInstallBtn.textContent = 'تحديث الآن';
+          toast('تعذّر بدء تنزيل التحديث.', 'error');
+        });
+      } else {
+        toast('بدأ تنزيل التحديث في الخلفية — سيُثبَّت بعد اكتماله.');
+      }
+    } catch (err) {
+      upInstallBtn.disabled = false;
+      upInstallBtn.textContent = 'تحديث الآن';
+      toast('تعذّر بدء تنزيل التحديث.', 'error');
+    }
+  });
+}
+
+function handleUpdateResult(res) {
+  res = res || {};
+  if (res.status === 'found') { showUpdatePrompt(res); return; }
+  if (res.status === 'none') {
+    toast('أنت تستخدم أحدث إصدار (' + toAr((window.midadDesktop && window.midadDesktop.version) || '1.1.0') + ').');
+  } else if (res.status === 'error') {
+    toast('تعذّر التحقق من التحديثات — تحقّق من اتصالك بالإنترنت.', 'error');
+  } else if (res.status === 'unsupported') {
+    toast('التحديث التلقائي غير متاح في هذه الحزمة — نزّل من صفحة الإصدارات.', 'error');
+  } else if (res.status === 'checking') {
+    toast('جارٍ التحقق من التحديثات…');
+  }
+}
+
+const creditsCheckBtn = $('#creditsCheckBtn');
+if (creditsCheckBtn) {
+  creditsCheckBtn.addEventListener('click', () => {
+    const api = updateApi();
+    if (!api || !api.check) { toast('التحقق من التحديثات متاح في نسخة سطح المكتب فقط.', 'error'); return; }
+    try {
+      const result = api.check();
+      toast('جارٍ التحقق من التحديثات…');
+      if (result && typeof result.then === 'function') result.then(handleUpdateResult).catch(() => handleUpdateResult({ status: 'error' }));
+    } catch (err) {
+      toast('تعذّر التحقق من التحديثات.', 'error');
+    }
+  });
+}
+
+/* جسر الإلكترون: الإشعارات التأتية من العملية الرئيسية */
+window.addEventListener('midad-update-found', event => showUpdatePrompt(event && event.detail));
+window.addEventListener('midad-update-check-result', event => handleUpdateResult(event && event.detail));
+const upd = updateApi();
+if (upd && typeof upd.onAvailable === 'function') upd.onAvailable(info => showUpdatePrompt(info));
+if (upd && typeof upd.onCheckResult === 'function') upd.onCheckResult(res => handleUpdateResult(res));
 
 /* شريحة اللصق */
 const pasteChip = document.getElementById('pasteChip');
