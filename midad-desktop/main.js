@@ -5,6 +5,7 @@ const fs = require('fs');
 
 let win = null;
 let manualUpdateCheck = false;
+let installRequested = false;
 
 /* ---------- التخزين الآمن: مجلد «مِداد ستوديو» في المستندات ---------- */
 function dataDir() {
@@ -255,6 +256,64 @@ function autoUpdateSupported() {
   return process.platform !== 'linux' || !!process.env.APPIMAGE;
 }
 
+/* إرسال نتيجة فحص التحديث إلى الواجهة (إشعار داخل التطبيق بدل نوافذ منبثقة) */
+function sendUpdateResult(status, extra) {
+  if (!win || win.isDestroyed()) return;
+  win.webContents.send('midad:update-check-result', Object.assign({ status: status }, extra || {}));
+}
+
+/* أوامر التحديث التي تستدعيها الواجهة */
+function wireUpdateIpc() {
+  ipcMain.handle('midad:update-check', () => {
+    if (!app.isPackaged || !autoUpdateSupported()) {
+      sendUpdateResult('unsupported');
+      return false;
+    }
+    manualUpdateCheck = true;
+    try {
+      const { autoUpdater } = require('electron-updater');
+      autoUpdater.checkForUpdates().catch(err => {
+        manualUpdateCheck = false;
+        logUpdate(err && err.message);
+        sendUpdateResult('error');
+      });
+    } catch (err) {
+      manualUpdateCheck = false;
+      logUpdate(err && err.message);
+      sendUpdateResult('error');
+      return false;
+    }
+    return true;
+  });
+
+  ipcMain.handle('midad:update-install', () => {
+    if (!app.isPackaged || !autoUpdateSupported()) {
+      shell.openExternal(RELEASES_URL);
+      return false;
+    }
+    try {
+      const { autoUpdater } = require('electron-updater');
+      installRequested = true;
+      autoUpdater.downloadUpdate().catch(err => {
+        installRequested = false;
+        logUpdate(err && err.message);
+        sendUpdateResult('error');
+      });
+      return true;
+    } catch (err) {
+      installRequested = false;
+      logUpdate(err && err.message);
+      sendUpdateResult('error');
+      return false;
+    }
+  });
+
+  ipcMain.handle('midad:open-releases', () => {
+    shell.openExternal(RELEASES_URL);
+    return true;
+  });
+}
+
 function setupAutoUpdater() {
   if (!app.isPackaged) return;
   if (!autoUpdateSupported()) {
@@ -269,22 +328,25 @@ function setupAutoUpdater() {
     return;
   }
 
-  autoUpdater.autoDownload = true;
+  /* التنزيل يتم فقط بعد موافقة المستخدم عبر الإشعار داخل التطبيق */
+  autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
 
-  autoUpdater.on('checking-for-update', () => logUpdate('جارٍ فحص التحديثات...'));
+  autoUpdater.on('checking-for-update', () => logUpdate('فحص خلفي للتحديثات...'));
 
   autoUpdater.on('update-available', info => {
-    logUpdate('يتوفر إصدار ' + info.version);
+    logUpdate('يتوفر إصدار ' + info.version + ' (فحص خلفي — بلا نافذة منبثقة)');
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('midad:update-found', {
+        version: info.version,
+        releaseName: info.releaseName || '',
+        releaseDate: info.releaseDate || '',
+        notes: typeof info.releaseNotes === 'string' ? info.releaseNotes.slice(0, 500) : ''
+      });
+    }
     if (manualUpdateCheck) {
       manualUpdateCheck = false;
-      dialog.showMessageBox(win, {
-        type: 'info',
-        title: 'تحديث متوفر',
-        message: 'يتوفر إصدار جديد: ' + info.version,
-        detail: 'يجري تنزيله الآن في الخلفية. ستصلك رسالة عند اكتمال التنزيل.',
-        buttons: ['حسنًا']
-      });
+      sendUpdateResult('found', { version: info.version });
     }
   });
 
@@ -292,12 +354,7 @@ function setupAutoUpdater() {
     logUpdate('لا يوجد تحديث — الإصدار الحالي هو الأحدث.');
     if (manualUpdateCheck) {
       manualUpdateCheck = false;
-      dialog.showMessageBox(win, {
-        type: 'info',
-        title: 'التحديثات',
-        message: 'أنت تستخدم أحدث إصدار (' + app.getVersion() + ').',
-        buttons: ['حسنًا']
-      });
+      sendUpdateResult('none');
     }
   });
 
@@ -321,34 +378,23 @@ function setupAutoUpdater() {
       win.webContents.send('midad:update-progress', { done: true, version: info.version });
     }
     if (manualUpdateCheck) manualUpdateCheck = false;
-    dialog.showMessageBox(win, {
-      type: 'info',
-      title: 'التحديث جاهز',
-      message: 'اكتمل تنزيل الإصدار ' + info.version,
-      detail: 'سيُثبَّت تلقائيًا عند إغلاق التطبيق، أو أعد التشغيل الآن لتطبيقه فورًا.',
-      buttons: ['إعادة التشغيل الآن', 'لاحقًا'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) autoUpdater.quitAndInstall(false, true);
-    });
+    /* التثبيت لا يتم إلا بعد ضغط المستخدم «تحديث الآن» */
+    if (installRequested) {
+      installRequested = false;
+      autoUpdater.quitAndInstall(false, true);
+    }
   });
 
   autoUpdater.on('error', err => {
     logUpdate('خطأ في التحديث: ' + (err && err.message));
+    installRequested = false;
     if (win && !win.isDestroyed()) {
       win.setProgressBar(-1);
       win.webContents.send('midad:update-progress', { failed: true });
     }
     if (manualUpdateCheck) {
       manualUpdateCheck = false;
-      dialog.showMessageBox(win, {
-        type: 'error',
-        title: 'تعذّر التحديث',
-        message: 'لم نتمكن من التحقق من التحديثات.',
-        detail: 'تأكد من اتصال الإنترنت ثم حاول لاحقًا.\n' + (err && err.message ? String(err.message) : ''),
-        buttons: ['حسنًا']
-      });
+      sendUpdateResult('error');
     }
   });
 
@@ -475,6 +521,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     wireStorage();
     wireDownloads();
+    wireUpdateIpc();
     buildMenu();
     createWindow();
     wireContextMenu();
