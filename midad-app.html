@@ -7,6 +7,7 @@
 <meta name="description" content="مِداد: تطبيق عربي يعمل في المتصفح لتأليف الملازم والكتب الدراسية، مع حفظ تلقائي وتصدير PDF بمقاس A4." />
 <meta name="theme-color" content="#1e3d59" />
 <meta name="color-scheme" content="light dark" />
+<style id="pageSizePrint">@page{ size:A4 portrait; margin:0; }</style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231e3d59'/%3E%3Cpath d='M20 46V18h6l8 14 8-14h6v28h-6V28l-8 13-8-13v18z' fill='%23ffffff'/%3E%3Ccircle cx='48' cy='48' r='7' fill='%23ff6e40'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -764,6 +765,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 
 .canvas-wrap{ padding:24px 24px 70px; }
 .canvas{
+  --page-w:794px; --page-h:1123px; --print-w:210mm; --print-h:297mm;
   --accent:var(--coral);
   --accent-ink:var(--coral-ink);
   --accent-soft:#fff2ec;
@@ -771,7 +773,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   --print-pad:15mm 16mm;
   --frame-inset:12px;
   --frame-line:color-mix(in srgb, var(--accent) 48%, #c9d6dc);
-  width:min(794px,100%); margin:0 auto;
+  width:min(var(--page-w),100%); margin:0 auto;
   display:flex; flex-direction:column; gap:24px;
   font-size:15px;
 }
@@ -795,7 +797,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
    ============================================================ */
 .paper{
   position:relative;
-  width:100%; min-height:min(1123px,132vw);
+  width:100%; min-height:min(var(--page-h),132vw);
   scroll-margin-top:calc(var(--header-h) + 72px);
   padding:var(--page-pad);
   display:flex; flex-direction:column;
@@ -991,7 +993,10 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 }
 
 /* رأس القسم وتذييله */
-.section-paper{ min-height:min(1123px,132vw); }
+.section-paper{ min-height:min(var(--page-h),132vw); }
+.section-paper.is-continuation .paper-head{ padding-bottom:9px; margin-bottom:15px; }
+.section-paper.is-continuation .sec-index{ font-size:15px; color:var(--accent-ink); background:var(--accent-soft); }
+.section-paper.is-continuation .paper-head h2{ font-size:.92em; opacity:.82; }
 .paper-head{
   display:flex; align-items:flex-start; gap:12px;
   padding-bottom:14px; margin-bottom:22px;
@@ -1268,8 +1273,11 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 .cover-custom{ padding:0 !important; }
 .cover-custom::before, .cover-custom::after{ content:none !important; }
 .cover-custom .page-frame, .cover-custom .paper-foot{ display:none !important; }
-.ccv-wrap{ position:absolute; inset:0; overflow:hidden; background:#fff; }
-.ccv{ width:794px; min-height:1123px; position:relative; }
+.ccv-wrap{ position:absolute; inset:0; overflow:hidden; background:#fff; display:grid; place-items:center; }
+.ccv{
+  width:794px; min-height:1123px; position:relative;
+  transform:scale(var(--cover-scale,1)); transform-origin:center center;
+}
 .back-tech .paper-foot{ color:#8fa3b8; border-top-color:rgba(226,232,240,.15); }
 .back-tech .paper-foot b{ color:#E2E8F0; opacity:1; }
 .back-tech .paper-foot .foot-author{ color:#8fa3b8; }
@@ -1868,6 +1876,7 @@ dialog::backdrop{
   .header-actions #previewBtn, .header-actions #printBtn{ display:none; }
   .header-actions{ gap:6px; }
   .header-actions .divider-v{ display:none; }
+  .header-actions #zoomGroup{ display:none; }
   #editorHeader .brand-copy{ display:none; }
   #editorHeader #saveState{ display:none; }
   .brand-sub{ display:none; }
@@ -1894,7 +1903,7 @@ dialog::backdrop{
 @media (max-width:460px){
   .header-actions{ gap:4px; }
   .divider-v{ display:none; }
-  .header-actions #zoomGroup{ display:none; }
+
   .lib-hero h1{ font-size:24px; }
   .lib-hero-stats{ flex-wrap:wrap; }
   .lib-stat + .lib-stat{ border-inline-start:0; }
@@ -2657,9 +2666,44 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
 
 
 /* ============================================================
+   10ب — البحث داخل المستند
+   ============================================================ */
+::highlight(midad-find){ background:rgba(255,213,79,.55); color:inherit; }
+::highlight(midad-find-current){ background:rgba(255,110,64,.8); color:#fff; }
+.find-mark{ background:rgba(255,213,79,.55); color:inherit; }
+.find-mark.is-current{ background:rgba(255,110,64,.8); color:#fff; }
+.find-dialog{
+  position:fixed; top:170px; left:50%;
+  transform:translateX(-50%); width:min(560px,calc(100vw - 28px));
+  margin:0; padding:0; border:0; background:transparent; overflow:visible;
+  z-index:2147483647;
+}
+.find-dialog::backdrop{ background:transparent; }
+.find-bar{
+  display:flex; align-items:center; gap:7px; padding:9px 11px;
+  background:var(--ui-panel,#fff); border:1px solid var(--ui-line-strong,var(--line-strong));
+  border-radius:11px; box-shadow:0 18px 44px -22px rgba(18,41,60,.6);
+}
+.find-bar svg{ width:16px; height:16px; color:var(--ui-muted,var(--muted)); flex:0 0 auto; }
+.find-bar input{
+  flex:1 1 auto; min-width:0; height:32px; padding:4px 8px;
+  border:1px solid var(--ui-line-strong,var(--line-strong)); border-radius:7px;
+  background:var(--ui-panel,#fff); color:var(--ui-ink,var(--ink)); font-family:inherit; font-size:13px;
+}
+.find-bar input:focus{ outline:none; border-color:var(--ui-accent,var(--coral)); }
+.find-count{ font-size:11px; font-weight:700; color:var(--ui-muted,var(--muted)); white-space:nowrap; min-width:48px; text-align:center; }
+.find-bar button{
+  width:30px; height:30px; flex:0 0 auto; border:1px solid var(--ui-line,var(--line));
+  border-radius:7px; background:var(--ui-panel,#fff); color:var(--ui-ink,var(--ink));
+  cursor:pointer; font-size:15px; font-weight:700; display:grid; place-items:center;
+}
+.find-bar button:hover{ background:var(--ui-accent-soft,var(--accent-soft)); border-color:var(--ui-accent,var(--coral)); }
+.find-trigger svg{ width:17px; height:17px; }
+
+/* ============================================================
    11 — الطباعة A4
    ============================================================ */
-@page{ size:A4; margin:0; }
+@page{ margin:0; }
 
 @media print{
   html, body{ background:#fff !important; }
@@ -2681,7 +2725,7 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
     gap:0 !important; font-size:10.8pt; --frame-inset:8mm; zoom:1 !important;
   }
   .paper{
-    width:210mm !important; min-height:297mm !important;
+    width:var(--print-w,210mm) !important; min-height:var(--print-h,297mm) !important;
     margin:0 !important; padding:var(--print-pad,15mm 16mm) !important;
     border:0 !important; border-radius:0 !important;
     box-shadow:none !important;
@@ -2707,7 +2751,10 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
   .cover-foot{ font-size:7.5pt; }
   .cover-custom{ padding:0 !important; }
   .cover-custom .page-frame, .cover-custom .paper-foot{ display:none !important; }
-  .ccv{ width:794px; min-height:1123px; }
+  .ccv{
+    width:794px; min-height:1123px;
+    transform:scale(var(--cover-scale,1)); transform-origin:center center;
+  }
   .cover-tech, .back-tech{
     padding:14mm !important;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
@@ -2894,6 +2941,9 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
     </span>
     <div class="header-spacer"></div>
     <div class="header-actions">
+      <button class="icon-btn find-trigger" id="findBtn" type="button" aria-label="بحث داخل المستند" title="بحث داخل المستند (Ctrl+F)">
+        <svg aria-hidden="true"><use href="#i-search"/></svg>
+      </button>
       <button class="icon-btn sidebar-toggle" id="sidebarToggle" type="button" aria-label="فتح لوحة المستند" aria-expanded="false" aria-controls="editorSidebar">
         <svg aria-hidden="true"><use href="#i-menu"/></svg>
       </button>
@@ -3160,6 +3210,23 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
         </div>
       </div>
       <div class="setting-row">
+        <span>مقاس الصفحة</span>
+        <select class="mini-select" id="pageSizeSelect" aria-label="مقاس الصفحة">
+          <option value="A4">A4</option>
+          <option value="A5">A5</option>
+          <option value="Letter">Letter</option>
+          <option value="Legal">Legal</option>
+          <option value="B5">B5</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>اتجاه الصفحة</span>
+        <select class="mini-select" id="orientationSelect" aria-label="اتجاه الصفحة">
+          <option value="portrait">عمودي</option>
+          <option value="landscape">أفقي</option>
+        </select>
+      </div>
+      <div class="setting-row">
         <span>حذف الهوامش</span>
         <button class="mini-btn" type="button" id="margDeleteBtn" aria-label="حذف الهوامش">
           <svg aria-hidden="true"><use href="#i-trash"/></svg>
@@ -3366,7 +3433,7 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
       <div class="doc-stats-bar" id="docStatsBar" aria-label="إحصاءات المستند">
         <span class="dsb-item"><b id="statWords">0</b> كلمة</span>
         <span class="dsb-item"><b id="statSections">0</b> قسم</span>
-        <span class="dsb-item"><b id="statPages">0</b> صفحة A4</span>
+        <span class="dsb-item"><b id="statPages">0</b> صفحة <span id="statPageSize">A4</span></span>
         <span class="dsb-item"><b id="statRead">0</b> دقيقة قراءة</span>
       </div>
     </div>
@@ -3376,6 +3443,17 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
 <!-- ============================================================
      النوافذ
      ============================================================ -->
+<dialog id="findDialog" class="find-dialog" aria-label="بحث داخل المستند">
+  <div class="find-bar">
+    <svg aria-hidden="true"><use href="#i-search"/></svg>
+    <input type="search" id="findInput" placeholder="ابحث في المستند…" aria-label="كلمة البحث" autocomplete="off" />
+    <span class="find-count" id="findCount">— / —</span>
+    <button type="button" id="findPrev" title="السابق" aria-label="النتيجة السابقة">↑</button>
+    <button type="button" id="findNext" title="التالي" aria-label="النتيجة التالية">↓</button>
+    <button type="button" id="findClose" title="إغلاق" aria-label="إغلاق البحث">×</button>
+  </div>
+</dialog>
+
 <dialog id="newDocDialog" aria-labelledby="newDocHeading">
   <form class="dialog-card" id="newDocForm" novalidate>
     <div class="dialog-head">
@@ -3465,6 +3543,25 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
           <option value="indigo">نيلي</option>
           <option value="slate">رمادي</option>
           <option value="crimson">قرمزي</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="newPageSize">مقاس الصفحة</label>
+        <select id="newPageSize" name="pageSize">
+          <option value="A4">A4 — ٢١٠ × ٢٩٧ مم</option>
+          <option value="A5">A5 — ١٤٨ × ٢١٠ مم</option>
+          <option value="Letter">Letter — ٢١٫٦ × ٢٧٫٩ سم</option>
+          <option value="Legal">Legal — ٢١٫٦ × ٣٥٫٦ سم</option>
+          <option value="B5">B5 — ١٧٦ × ٢٥٠ مم</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="newOrientation">اتجاه الصفحة</label>
+        <select id="newOrientation" name="orientation">
+          <option value="portrait">عمودي</option>
+          <option value="landscape">أفقي</option>
         </select>
       </div>
     </div>
@@ -4157,6 +4254,27 @@ const MARGIN_MM = {
   normal: { t: 15, r: 16, b: 15, l: 16 },
   wide:   { t: 20, r: 22, b: 20, l: 22 }
 };
+/* مقاسات الورق بالبكسل (96dpi) وبالملّيمترات للطباعة */
+const PAGE_SIZES = {
+  A4:     { w: 794, h: 1123, mmw: 210,   mmh: 297 },
+  A5:     { w: 560, h: 794,  mmw: 148,   mmh: 210 },
+  Letter: { w: 816, h: 1056, mmw: 215.9, mmh: 279.4 },
+  Legal:  { w: 816, h: 1344, mmw: 215.9, mmh: 355.6 },
+  B5:     { w: 666, h: 945,  mmw: 176,   mmh: 250 }
+};
+function pageDims(doc) {
+  const key = (doc && doc.pageSize) in PAGE_SIZES ? doc.pageSize : 'A4';
+  const base = PAGE_SIZES[key];
+  const land = !!doc && doc.orientation === 'landscape';
+  return {
+    w: land ? base.h : base.w,
+    h: land ? base.w : base.h,
+    mmw: land ? base.mmh : base.mmw,
+    mmh: land ? base.mmw : base.mmh,
+    name: key,
+    css: key + (land ? ' landscape' : ' portrait')
+  };
+}
 function normalizeMarginsMm(raw) {
   const base = MARGIN_MM[MARGIN_KEYS.includes(raw.margins) ? raw.margins : 'normal'] || MARGIN_MM.normal;
   const src = raw && typeof raw.marginsMm === 'object' && raw.marginsMm ? raw.marginsMm : {};
@@ -4511,7 +4629,7 @@ function templateSections(kind) {
     ];
   }
 
-  return [ mk('المقدمة', '<p>ابدأ الكتابة هنا…</p>') ];
+  return [ mk('المقدمة', '') ];
 }
 
 /* ---------- مستند تعريفي أول ---------- */
@@ -4534,6 +4652,8 @@ function seedDoc() {
     frameGradient: true,
     margins: 'normal',
     marginsMm: { t: 15, r: 16, b: 15, l: 16 },
+    pageSize: 'A4',
+    orientation: 'portrait',
     showPageNumbers: true,
     showToc: true,
     showCover: true,
@@ -4619,7 +4739,8 @@ function normalizeDoc(raw, preserveId) {
         id: uid(),
         title: String((s && s.title) || '').slice(0, 200),
         body: sanitizeHtml(String((s && s.body) || '')),
-        blank: !!(s && s.blank)
+        blank: !!(s && s.blank),
+        continuation: !!(s && s.continuation)
       }))
     : [];
   const now = Date.now();
@@ -4639,6 +4760,8 @@ function normalizeDoc(raw, preserveId) {
     frameWidth: Math.min(8, Math.max(1, Number(raw.frameWidth) || 2)),
     margins: MARGIN_KEYS.includes(raw.margins) ? raw.margins : 'normal',
     marginsMm: normalizeMarginsMm(raw),
+    pageSize: (raw.pageSize in PAGE_SIZES) ? raw.pageSize : 'A4',
+    orientation: raw.orientation === 'landscape' ? 'landscape' : 'portrait',
     frameGradient: raw.frameGradient === undefined ? true : !!raw.frameGradient,
     font: isValidFontValue(raw.font) ? raw.font : 'cairo',
     coverLayout: COVER_LAYOUTS.includes(raw.coverLayout) ? raw.coverLayout : 'classic',
@@ -4808,6 +4931,13 @@ const addSectionBtn   = $('#addSectionBtn');
 const statWords       = $('#statWords');
 const statSections    = $('#statSections');
 const statPages       = $('#statPages');
+const statPageSize    = $('#statPageSize');
+const pageSizeSelect  = $('#pageSizeSelect');
+const orientationSelect = $('#orientationSelect');
+const findBtn         = $('#findBtn');
+const findDialog      = $('#findDialog');
+const findInput       = $('#findInput');
+const findCount       = $('#findCount');
 const statRead        = $('#statRead');
 const accentSwatches  = $('#accentSwatches');
 const fontScale       = $('#fontScale');
@@ -5425,7 +5555,7 @@ function backCoverHtml(doc) {
 function tocItemsHtml(doc) {
   const entries = doc.sections
     .map((section, index) => ({ section, index }))
-    .filter(entry => !entry.section.blank);
+    .filter(entry => !entry.section.blank && !entry.section.continuation);
   return entries.map((entry, order) =>
     '<div class="toc-item">' +
       '<span class="t-num">' + toAr(order + 1) + '</span>' +
@@ -5438,7 +5568,7 @@ function tocItemsHtml(doc) {
 
 function tocHtml(doc) {
   const total = sheetCount(doc);
-  const contentCount = doc.sections.filter(section => !section.blank).length;
+  const contentCount = doc.sections.filter(section => !section.blank && !section.continuation).length;
   return '<article class="paper toc-paper" aria-label="فهرس المحتويات">' +
     frameHtml() + pageToolsHtml('toc') +
     '<div class="toc-head">' +
@@ -5454,7 +5584,7 @@ function sectionHtml(doc, section, index) {
   if (section.blank) return blankSectionHtml(doc, section, index);
   const total = sheetCount(doc);
   const contentNumber = doc.sections.slice(0, index + 1).filter(s => !s.blank).length;
-  return '<article class="paper section-paper" data-sec-paper="' + section.id + '">' +
+  return '<article class="paper section-paper' + (section.continuation ? ' is-continuation' : '') + '" data-sec-paper="' + section.id + '">' +
     frameHtml() +
     '<div class="paper-head">' +
       '<span class="sec-index" aria-hidden="true">' + toAr(contentNumber) + '</span>' +
@@ -5498,7 +5628,7 @@ function updateStats() {
   if (!doc) return;
   const words = docWords(doc);
   statWords.textContent = toAr(words);
-  statSections.textContent = toAr(doc.sections.filter(s => !s.blank).length);
+  statSections.textContent = toAr(doc.sections.filter(s => !s.blank && !s.continuation).length);
   statPages.textContent = toAr(sheetCount(doc));
   statRead.textContent = toAr(Math.max(1, Math.round(words / 180)));
 }
@@ -5509,6 +5639,8 @@ function syncEditorChrome(doc) {
   $$('button', fontScale).forEach(btn => btn.classList.toggle('active', btn.dataset.font === doc.fontSize));
   if (frameSelect) frameSelect.value = doc.frame;
   if (marginSelect) marginSelect.value = doc.margins;
+  if (pageSizeSelect) pageSizeSelect.value = pageDims(doc).name;
+  if (orientationSelect) orientationSelect.value = doc.orientation === 'landscape' ? 'landscape' : 'portrait';
   syncMarginInputs(doc);
   if (frameGradSwitch) frameGradSwitch.setAttribute('aria-checked', String(doc.frameGradient !== false));
   if (fontSelectEl) { populateFontOptions(doc); fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo'; }
@@ -5555,6 +5687,19 @@ function applyMargins(doc) {
   }
 }
 
+function applyPageSize(doc) {
+  if (!docCanvas) return;
+  const d = pageDims(doc);
+  docCanvas.style.setProperty('--page-w', d.w + 'px');
+  docCanvas.style.setProperty('--page-h', d.h + 'px');
+  docCanvas.style.setProperty('--print-w', d.mmw + 'mm');
+  docCanvas.style.setProperty('--print-h', d.mmh + 'mm');
+  const ps = $('#pageSizePrint');
+  if (ps) ps.textContent = '@page{ size:' + d.css + '; margin:0; }';
+  if (statPageSize) statPageSize.textContent = d.name;
+  docCanvas.style.setProperty('--cover-scale', String(Math.min(d.w / 794, d.h / 1123)));
+}
+
 function syncMarginInputs(doc) {
   const mm = marginsMmOf(doc);
   if (margTEl) margTEl.value = String(mm.t);
@@ -5583,6 +5728,7 @@ function renderEditor(rebuild) {
   docCanvas.dataset.margins = doc.margins;
   docCanvas.dataset.frameGradient = doc.frameGradient === false ? 'off' : 'on';
   applyMargins(doc);
+  applyPageSize(doc);
   docCanvas.dataset.fontName = doc.font;
   const fontStack = fontStackFor(doc);
   if (fontStack) docCanvas.style.setProperty('--doc-font', fontStack);
@@ -5593,6 +5739,7 @@ function renderEditor(rebuild) {
   docCanvas.style.setProperty('--frame-w', (Number(doc.frameWidth) || 2) + 'px');
   docCanvas.classList.toggle('hide-foot', doc.showPageNumbers === false);
   if (rebuild !== false) {
+    if (typeof clearFind === 'function') clearFind();
     const pages =
       (doc.showCover !== false ? coverHtml(doc) : '') +
       (doc.showToc ? tocHtml(doc) : '') +
@@ -5847,11 +5994,169 @@ function syncBodyFromDom(body) {
   const section = doc.sections.find(s => s.id === body.dataset.sec);
   if (!section) return;
   const clone = body.cloneNode(true);
-  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(el => el.remove());
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools,.find-mark').forEach(el => el.remove());
   $$('.el-selected', clone).forEach(el => el.classList.remove('el-selected'));
   section.body = clone.innerHTML;
+  if (autoSplitOverflow(body, section)) return;
   updateStats();
   scheduleSave();
+}
+
+/* يزيل النص التمهيدي «ابدأ الكتابة هنا…» من المستندات القديمة عند أول كتابة */
+function clearLegacyPlaceholder(body) {
+  if (!body) return;
+  const prefix = /^\s*(?:ابدأ الكتابة هنا…|اكتب هنا…)/;
+  Array.prototype.slice.call(body.childNodes).forEach(node => {
+    const text = node.nodeType === 3 ? node.textContent : (node.nodeType === 1 && !node.children.length ? node.textContent : '');
+    if (!text || !prefix.test(text)) return;
+    const rest = text.replace(prefix, '').trim();
+    if (node.nodeType === 3) {
+      if (rest) node.textContent = rest;
+      else node.remove();
+    } else {
+      if (rest) node.textContent = rest;
+      else node.remove();
+    }
+  });
+}
+
+/* ---------- تقسيم تلقائي للصفحات عند امتلاء الورقة أثناء الكتابة ---------- */
+const AUTOPAGE_GAP = 30;
+
+/* يقسّم فقرة نصية طويلة جدًا عند أقرب كلمة قبل حدّ الصفحة، ويعيد جزأيها */
+function splitLongTextBlock(el, limit) {
+  if (!el || el.children.length) return null;
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let textNode;
+  while ((textNode = walker.nextNode())) {
+    const text = textNode.textContent || '';
+    if (text.trim().length < 12) continue;
+    let lo = 0, hi = text.length, best = 0;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const range = document.createRange();
+      range.setStart(textNode, 0);
+      range.setEnd(textNode, mid);
+      if (range.getBoundingClientRect().bottom <= limit - 2) { best = mid; lo = mid + 1; }
+      else hi = mid - 1;
+    }
+    let cut = best;
+    while (cut > 0 && !/\s/.test(text[cut - 1])) cut -= 1;
+    if (cut < 8) cut = best;
+    if (cut <= 0 || cut >= text.length) continue;
+    const tailNode = textNode.splitText(cut);
+    const tail = el.cloneNode(false);
+    tail.textContent = '';
+    tail.appendChild(tailNode);
+    return { first: el.innerHTML, tail: tail.outerHTML };
+  }
+  return null;
+}
+
+/* يقيس تجاوز المحتوى ويعيد قطع HTML موزّعة على الصفحات دون أي تعديل محفوظ */
+function buildOverflowChunks(body) {
+  const paper = body.closest('.paper');
+  if (!paper || !paper.classList.contains('section-paper')) return null;
+  const pr = paper.getBoundingClientRect();
+  const br = body.getBoundingClientRect();
+  const minH = parseFloat(getComputedStyle(paper).minHeight) || 1123;
+  const scale = paper.offsetHeight ? pr.height / paper.offsetHeight : (Number(canvasZoom) || 1);
+  if (pr.height <= minH * scale + 4) return null;
+  const capacity = minH * scale - (br.top - pr.top) - (pr.bottom - br.bottom) - AUTOPAGE_GAP * scale;
+  if (capacity < 120) return null;
+  const children = Array.prototype.slice.call(body.children);
+  if (!children.length) return null;
+
+  const chunks = [];
+  let base = br.top;
+  let i = 0;
+  while (i < children.length) {
+    let end = i;
+    while (end + 1 < children.length &&
+           children[end + 1].getBoundingClientRect().bottom - base <= capacity) end += 1;
+    if (end === i) {
+      const split = splitLongTextBlock(children[i], base + capacity);
+      if (!split) return null;
+      chunks.push(split.first, split.tail);
+      i += 1;
+      base = children[i - 1].getBoundingClientRect().bottom;
+      continue;
+    }
+    chunks.push(children.slice(i, end + 1).map(c => c.outerHTML).join(''));
+    base = children[end].getBoundingClientRect().bottom;
+    i = end + 1;
+  }
+  const meaningful = html => !!String(html || '').replace(/<br\s*\/?>\s*|&nbsp;|\s/gi, '');
+  if (chunks.length < 2 || chunks.some(c => !meaningful(c))) return null;
+  return chunks;
+}
+
+/* يطبّق القطع على نموذج المستند ويُنشئ صفحات تكملة */
+function applySplitChunks(doc, section, chunks) {
+  const idx = doc.sections.findIndex(item => item.id === section.id);
+  if (idx < 0) return null;
+  section.body = chunks[0];
+  const baseTitle = String(section.title || '').replace(/\s*[—-]\s*تكملة(?:\s*\(\d+\))?\s*$/, '') || 'قسم بدون عنوان';
+  const additions = chunks.slice(1).map((html, k) => ({
+    id: uid(),
+    title: (baseTitle + ' — تكملة' + (k ? ' (' + (k + 1) + ')' : '')).slice(0, 200),
+    body: html,
+    blank: false,
+    continuation: true
+  }));
+  additions.forEach((next, k) => doc.sections.splice(idx + 1 + k, 0, next));
+  return additions;
+}
+
+/* أثناء الكتابة: يقسّم فورًا ويضع المؤشر في الصفحة الجديدة */
+function autoSplitOverflow(body, section) {
+  const doc = activeDoc();
+  if (!doc || !body || !section || doc.sections.length >= 118) return false;
+  const chunks = buildOverflowChunks(body);
+  if (!chunks) return false;
+  const additions = applySplitChunks(doc, section, chunks);
+  if (!additions) return false;
+  renderEditor(true);
+  scheduleSave();
+  const nextBody = docCanvas.querySelector('[data-sec-paper="' + additions[0].id + '"] .paper-body');
+  if (nextBody) {
+    nextBody.focus();
+    const range = document.createRange();
+    const first = nextBody.firstElementChild;
+    range.selectNodeContents(first && first.firstChild ? first : nextBody);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    requestAnimationFrame(() => nextBody.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
+  toast('امتلأت الصفحة — أُنشئت صفحة جديدة تلقائيًا وأُكمل المحتوى فيها.');
+  return true;
+}
+
+/* إعادة توزيع صامتة لكل الصفحات (عند تغيير المقاس أو الاتجاه) */
+function autoPaginateAll() {
+  const doc = activeDoc();
+  if (!doc || doc.sections.length >= 118) return false;
+  let changed = false;
+  let guard = 0;
+  while (guard++ < 60) {
+    let did = false;
+    $$('.paper-body', docCanvas).forEach(body => {
+      if (did) return;
+      const chunks = buildOverflowChunks(body);
+      if (!chunks) return;
+      const section = doc.sections.find(item => item.id === body.dataset.sec);
+      if (!section) return;
+      applySplitChunks(doc, section, chunks);
+      did = true;
+    });
+    if (!did) break;
+    changed = true;
+    renderEditor(true);
+  }
+  if (changed) scheduleSave();
+  return changed;
 }
 
 /* ---------- أدوات التنسيق المتقدمة ---------- */
@@ -6176,12 +6481,10 @@ docCanvas.addEventListener('input', event => {
       updateOutline();
       updateTocDom();
     } else {
+      clearLegacyPlaceholder(el);
       renumberQuestions();
-      const clean = el.cloneNode(true);
-      clean.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(x => x.remove());
-      $$('.el-selected', clean).forEach(x => x.classList.remove('el-selected'));
-      section.body = clean.innerHTML;
-      updateStats();
+      syncBodyFromDom(el);
+      return;
     }
     scheduleSave();
   }
@@ -6988,7 +7291,7 @@ function movableKindLabel(el) {
 /* استنساخ نظيف: بلا مقابض تحريك ولا تحديد ولا طبقات */
 function cloneMovableHtml(el) {
   const clone = el.cloneNode(true);
-  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(x => x.remove());
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools,.find-mark').forEach(x => x.remove());
   clone.classList.remove('movable', 'el-selected');
   clone.removeAttribute('data-move');
   return clone.outerHTML;
@@ -7980,7 +8283,7 @@ function applyZoom() {
   if (!docCanvas) return;
   docCanvas.style.zoom = String(canvasZoom);
   /* العرض النسبي (100%) يُلغي أثر zoom — نثبّت عرض A4 المطلق عند التكبير/التصغير */
-  docCanvas.style.width = canvasZoom === 1 ? '' : '794px';
+  docCanvas.style.width = canvasZoom === 1 ? '' : (pageDims(activeDoc()).w + 'px');
   if (zoomResetBtn) zoomResetBtn.textContent = toAr(Math.round(canvasZoom * 100)) + '٪';
   try { localStorage.setItem(ZOOM_KEY, String(canvasZoom)); } catch (err) { /* تجاهل */ }
 }
@@ -8061,6 +8364,23 @@ function applyCustomMargins() {
 
 [margTEl, margREl, margBEl, margLEl].forEach(el => {
   if (el) el.addEventListener('input', applyCustomMargins);
+
+  [pageSizeSelect, orientationSelect].forEach(sel => {
+    if (!sel) return;
+    sel.addEventListener('change', () => {
+      const doc = activeDoc();
+      if (!doc) return;
+      doc.pageSize = pageSizeSelect.value;
+      doc.orientation = orientationSelect.value;
+      applyPageSize(doc);
+      renderEditor(true);
+      const reflowed = autoPaginateAll();
+      const d = pageDims(doc);
+      toast(reflowed
+        ? 'مقاس الصفحة: ' + d.name + ' — ' + (doc.orientation === 'landscape' ? 'أفقي' : 'عمودي') + ' — أُعيد توزيع الصفحات.'
+        : 'مقاس الصفحة: ' + d.name + ' — ' + (doc.orientation === 'landscape' ? 'أفقي' : 'عمودي') + '.');
+    });
+  });
 });
 
 if (margDeleteBtn) {
@@ -8187,6 +8507,8 @@ function openNewDoc(template) {
   newInstitution.value = '';
   newYear.value = String(new Date().getFullYear());
   newAccent.value = 'coral';
+  $('#newPageSize').value = 'A4';
+  $('#newOrientation').value = 'portrait';
   newDocDialog.showModal();
   setTimeout(() => newTitle.focus(), 60);
 }
@@ -8208,6 +8530,8 @@ newDocForm.addEventListener('submit', event => {
     institution: newInstitution.value.trim(),
     year: newYear.value.trim(),
     accent: newAccent.value,
+    pageSize: $('#newPageSize').value,
+    orientation: $('#newOrientation').value,
     type: template === 'blank' ? 'handout' : template,
     showToc: true,
     sections: templateSections(template)
@@ -8269,7 +8593,7 @@ function prepareClone() {
   clone.style.width = '';
   clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
   clone.querySelectorAll('.sheet-tools').forEach(el => el.remove());
-  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools').forEach(el => el.remove());
+  clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools,.find-mark').forEach(el => el.remove());
   $$('.el-selected', clone).forEach(el => el.classList.remove('el-selected'));
   clone.querySelectorAll('.paper-body').forEach(el => {
     if (!el.textContent.trim() && !el.querySelector('table,.eq,.callout,.note,.problem-box,.qa-item,hr,figure,img,.shape')) el.innerHTML = '';
@@ -8341,15 +8665,17 @@ function downloadBlob(filename, blob) {
 function exportHtml() {
   const doc = activeDoc();
   if (!doc) return;
-  const css = document.querySelector('style').textContent;
+  const css = document.querySelector('style:not(#pageSizePrint)').textContent;
   const clone = prepareClone();
+  const page = pageDims(doc);
   const exportStyles = [
     '/* ملف مُصدَّر من مِداد */',
     'body{background:#eef3f6;margin:0;padding:26px}',
     '.view-editor{display:block!important;max-width:none!important;min-height:0!important;margin:0!important}',
     '.editor-main{padding:0!important}',
     '.canvas-wrap{padding:0!important}',
-    '.canvas{width:min(794px,100%)!important;margin:0 auto!important;gap:24px!important;zoom:1!important}',
+    '.canvas{width:min(var(--page-w,794px),100%)!important;margin:0 auto!important;gap:24px!important;zoom:1!important}',
+    '@page{size:' + page.css + ';margin:0}',
     '.paper [contenteditable]:empty::before,.paper-body:empty::before,.blank-body:empty::before,.cover-title:empty::before,.cover-subtitle:empty::before,.paper-head h2:empty::before{content:none!important}',
     '.doc-stats-bar{display:none!important}',
     '@media print{body{padding:0;background:#fff}.canvas{width:auto!important;gap:0!important}}'
@@ -8499,6 +8825,144 @@ window.addEventListener('beforeunload', () => {
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && activeDoc()) persist();
+});
+
+/* ---------- البحث داخل المستند ---------- */
+let findRanges = [];
+let findIndex = 0;
+
+function clearFind() {
+  if (typeof unwrapFindMarks === 'function') unwrapFindMarks();
+  findRanges = [];
+  findIndex = 0;
+  try {
+    if (window.CSS && CSS.highlights) {
+      CSS.highlights.delete('midad-find');
+      CSS.highlights.delete('midad-find-current');
+    }
+  } catch (err) { /* تجاهل */ }
+  if (findCount) findCount.textContent = '— / —';
+}
+
+function unwrapFindMarks() {
+  $$('.find-mark', docCanvas).forEach(mark => {
+    const parent = mark.parentNode;
+    if (!parent) return;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    mark.remove();
+  });
+}
+
+function paintFindMarks(currentIndex) {
+  unwrapFindMarks();
+  findRanges.forEach((range, index) => {
+    try {
+      const mark = document.createElement('span');
+      mark.className = 'find-mark' + (index === currentIndex ? ' is-current' : '');
+      range.surroundContents(mark);
+    } catch (err) { /* نطاق يعبر عناصر متعددة */ }
+  });
+}
+
+function paintFind() {
+  try {
+    if (!(window.CSS && CSS.highlights && window.Highlight)) {
+      paintFindMarks(findIndex);
+      return;
+    }
+    CSS.highlights.set('midad-find', new Highlight(...findRanges));
+    CSS.highlights.set('midad-find-current', findRanges[findIndex] ? new Highlight(findRanges[findIndex]) : new Highlight());
+  } catch (err) { /* تجاهل */ }
+}
+
+function collectFindRanges(needle) {
+  const out = [];
+  if (!needle || document.body.dataset.view !== 'editor') return out;
+  const lower = needle.toLocaleLowerCase('ar');
+  $$('.paper [contenteditable="true"]', docCanvas).forEach(root => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.textContent || '';
+      const hay = text.toLocaleLowerCase('ar');
+      let from = 0, at;
+      while ((at = hay.indexOf(lower, from)) !== -1) {
+        const range = document.createRange();
+        range.setStart(node, at);
+        range.setEnd(node, at + needle.length);
+        out.push(range);
+        from = at + needle.length;
+      }
+    }
+  });
+  return out;
+}
+
+function gotoFind(step) {
+  if (!findRanges.length) return;
+  findIndex = ((step % findRanges.length) + findRanges.length) % findRanges.length;
+  paintFind();
+  const range = findRanges[findIndex];
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  const host = range.startContainer.nodeType === 1 ? range.startContainer : range.startContainer.parentElement;
+  if (host && host.scrollIntoView) host.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (findCount) findCount.textContent = toAr(findIndex + 1) + ' / ' + toAr(findRanges.length);
+}
+
+function runFind(reset) {
+  const q = findInput ? findInput.value.trim() : '';
+  if (!q) { clearFind(); return; }
+  if (reset) findIndex = 0;
+  findRanges = collectFindRanges(q);
+  if (findRanges.length) gotoFind(findIndex);
+  else {
+    paintFind();
+    if (findCount) findCount.textContent = toAr(0) + ' / ' + toAr(0);
+  }
+}
+
+function openFind() {
+  if (document.body.dataset.view !== 'editor' || !findDialog) return;
+  if (!findDialog.open) findDialog.show();
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount && !findInput.value) {
+    const picked = sel.toString().trim().slice(0, 120);
+    if (picked) findInput.value = picked;
+  }
+  findInput.focus();
+  findInput.select();
+  if (findInput.value) runFind(true);
+}
+
+function closeFind() {
+  if (findDialog && findDialog.open) findDialog.close();
+  clearFind();
+}
+
+if (findBtn) findBtn.addEventListener('click', openFind);
+if (findInput) {
+  findInput.addEventListener('input', () => runFind(true));
+  findInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      gotoFind(findIndex + (event.shiftKey ? -1 : 1));
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      closeFind();
+    }
+  });
+}
+if ($('#findNext')) $('#findNext').addEventListener('click', () => gotoFind(findIndex + 1));
+if ($('#findPrev')) $('#findPrev').addEventListener('click', () => gotoFind(findIndex - 1));
+if ($('#findClose')) $('#findClose').addEventListener('click', closeFind);
+document.addEventListener('keydown', event => {
+  if ((event.ctrlKey || event.metaKey) && String(event.key).toLowerCase() === 'f') {
+    if (document.body.dataset.view !== 'editor') return;
+    event.preventDefault();
+    openFind();
+  }
 });
 
 /* ---------- شريط تقدم تنزيل التحديث (سطح المكتب فقط) ---------- */
