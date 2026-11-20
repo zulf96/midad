@@ -2294,6 +2294,13 @@ body[data-ui="adobe"] .qa-tb.is-active{ background:var(--ui-accent-soft); color:
 body[data-night="on"] .qa-tb.is-active{ background:rgba(76,154,255,.22); color:#8dc2ff; }
 .qa-tb b, .qa-tb i, .qa-tb u, .qa-tb s{ font-size:13px; }
 .qa-tb-sep{ width:1px; height:18px; background:var(--line-strong); margin:0 3px; }
+.qa-tb-select{
+  height:28px; min-width:110px; padding:0 8px;
+  border:1px solid var(--line); border-radius:7px; background:transparent;
+  color:var(--navy); font-family:inherit; font-size:12px; cursor:pointer;
+}
+.qa-tb-select:hover{ background:#e6eef3; }
+body[data-night="on"] .qa-tb-select{ background:#1e1e1e; border-color:#3d3d3d; color:#e7e7e7; }
 .qa-rich{
   width:100%; min-height:42px; max-height:190px; overflow:auto;
   border:1px solid var(--line-strong); border-radius:9px;
@@ -2307,9 +2314,34 @@ body[data-night="on"] .qa-tb.is-active{ background:rgba(76,154,255,.22); color:#
 .qa-rich:empty::before{
   content:attr(data-placeholder); color:#9aacb5; pointer-events:none;
 }
-.qa-rich ol{ list-style-type:arabic-indic; }
+
+/* ----- ترقيم_question/answer: ترقيم نصي + ترقيم متداخل ----- */
+@counter-style arabic-word{
+  system: symbolic;
+  symbols: "أولاً" "ثانياً" "ثالثاً" "رابعاً" "خامساً" "سادساً" "سابعاً" "ثامناً" "تاسعاً" "عاشراً";
+  suffix: "、";
+  range: 1 infinite;
+}
+@counter-style arabic-letter{
+  system: alphabetic;
+  symbols: "أ" "ب" "ج" "د" "ه" "و" "ز" "ح" "ط" "ي" "ك" "ل" "م" "ن" "س" "ع" "ف" "ص" "ق" "ر" "ش" "ت" "ث" "خ" "ذ" "ض" "ظ" "غ";
+  suffix: "、";
+  range: 1 infinite;
+}
+
+/* الترتيبات المتداخلة: الخارج → الحروف → الأرقام الرومانية الصغيرة */
+.qa-rich ol{ list-style-type: arabic-indic; counter-reset: qa-list-0; }
+.qa-rich ol ol{ list-style-type: arabic-letter; counter-reset: qa-list-1; }
+.qa-rich ol ol ol{ list-style-type: lower-roman; counter-reset: qa-list-2; }
+.qa-rich ol ol ol ol{ list-style-type: arabic-word; counter-reset: qa-list-3; }
+.qa-rich ol ol ol ol ol{ list-style-type: decimal; counter-reset: qa-list-4; }
+
 .qa-rich ol, .qa-rich ul{ margin:.25em 0; padding-inline-start:1.6em; }
 .qa-rich li{ margin:.15em 0; }
+
+/* الأرقام العربية-هندية في القطع المرقمة */
+.qa-rich ol li::marker{ font-variant-numeric: arabic-digits; }
+body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
 .qa-a .qa-a-text{ flex:1; }
 .qa-item.qa-exam .qa-a ul{ margin:0; padding-inline-start:1.4em; flex:1; }
 .qa-item.qa-exam .qa-a ul li{ line-height:1.8; }
@@ -4096,7 +4128,14 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
       <button class="qa-tb" type="button" data-qacmd="underline" title="تسطير" aria-label="تسطير"><u>U</u></button>
       <button class="qa-tb" type="button" data-qacmd="strikeThrough" title="شطب" aria-label="شطب"><s>S</s></button>
       <span class="qa-tb-sep" aria-hidden="true"></span>
-      <button class="qa-tb" type="button" data-qacmd="insertOrderedList" title="إضافة ترقيم (١. ٢. ٣.)" aria-label="إضافة ترقيم">ترقيم</button>
+      <button class="qa-tb" type="button" data-qacmd="insertOrderedList" title="إضافة ترقيم" aria-label="إضافة ترقيم">ترقيم</button>
+      <select class="qa-tb-select" id="qaListStyle" title="أسلوب الترقيم" aria-label="أسلوب الترقيم">
+        <option value="arabic-indic">١. ٢. ٣.</option>
+        <option value="arabic-letter">أ. ب. ج.</option>
+        <option value="arabic-word">أولاً، ثانياً، ثالثاً</option>
+        <option value="lower-roman">i. ii. iii.</option>
+        <option value="decimal">1. 2. 3.</option>
+      </select>
       <button class="qa-tb" type="button" data-qacmd="insertUnorderedList" title="قائمة نقطية" aria-label="قائمة نقطية">نقاط</button>
       <span class="qa-tb-sep" aria-hidden="true"></span>
       <button class="qa-tb" type="button" data-qacmd="removeFormat" title="إزالة التنسيق" aria-label="إزالة التنسيق">✕</button>
@@ -7674,7 +7713,22 @@ function openQaEditor(item) {
 function qaExec(command) {
   const field = qaTargetField();
   field.focus();
-  try { document.execCommand(command, false, null); } catch (err) { /* ignore */ }
+  try {
+    if (command === 'insertOrderedList') {
+      const styleEl = $('#qaListStyle');
+      const listStyle = styleEl ? styleEl.value : 'arabic-indic';
+      const text = field.textContent || '';
+      const lines = text.split(/\n/).filter(l => l.trim().length > 0);
+      if (!lines.length) return;
+
+      const items = lines.map(l => '<li>' + l.trim() + '</li>').join('');
+      const html = '<ol style="list-style-type:' + listStyle + ' !important;">' + items + '</ol>';
+      field.insertAdjacentHTML('beforeend', html);
+      qaSyncToolbar();
+      return;
+    }
+    document.execCommand(command, false, null);
+  } catch (err) { /* ignore */ }
   qaLastField = field;
   qaSyncToolbar();
 }
