@@ -16,14 +16,24 @@ contextBridge.exposeInMainWorld('midadDesktop', {
     backup: data => ipcRenderer.invoke('midad:storage-backup', data),
     path: () => ipcRenderer.invoke('midad:storage-path')
   },
-  /* التحديثات: فحص خلفي + إشعار بثلاثة خيارات + تقدّم التنزيل */
+  /* التحديثات: مركز تحديثات مستقل داخل البرنامج (فحص/تنزيل/إلغاء/تثبيت) */
   updates: {
     check: () => ipcRenderer.invoke('midad:update-check'),
+    download: () => ipcRenderer.invoke('midad:update-download'),
+    cancel: () => ipcRenderer.invoke('midad:update-cancel'),
+    installNow: () => ipcRenderer.invoke('midad:update-install'),
+    installOnQuit: () => ipcRenderer.invoke('midad:update-install-on-quit'),
     install: () => ipcRenderer.invoke('midad:update-install'),
+    openCenter: () => ipcRenderer.invoke('midad:update-open-center'),
     openReleases: () => ipcRenderer.invoke('midad:open-releases'),
+    getVersion: () => ipcRenderer.invoke('midad:app-version'),
     onAvailable: cb => listen('midad:update-found', cb),
     onCheckResult: cb => listen('midad:update-check-result', cb),
-    onProgress: cb => listen('midad:update-progress', cb)
+    onProgress: cb => listen('midad:update-progress', cb),
+    onReady: cb => listen('midad:update-ready', cb),
+    onError: cb => listen('midad:update-error', cb),
+    onCancelled: cb => listen('midad:update-cancelled', cb),
+    onOpenCenter: cb => listen('midad:update-open', cb)
   },
   /* خطوط النظام المثبّتة (ويندوز/لينكس) */
   systemFonts: () => ipcRenderer.invoke('midad:system-fonts'),

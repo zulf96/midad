@@ -4,8 +4,6 @@ const path = require('path');
 const fs = require('fs');
 
 let win = null;
-let manualUpdateCheck = false;
-let installRequested = false;
 
 /* ---------- التخزين الآمن: مجلد «مِداد ستوديو» في المستندات ---------- */
 function dataDir() {
@@ -256,56 +254,251 @@ function autoUpdateSupported() {
   return process.platform !== 'linux' || !!process.env.APPIMAGE;
 }
 
+let updaterRef = null;
+let cancelToken = null;
+let manualUpdateCheck = false;
+let installRequested = false;
+let downloadedReady = false;
+let downloadedInfo = null;
+
+function sendToWin(channel, data) {
+  if (!win || win.isDestroyed()) return;
+  win.webContents.send(channel, data);
+}
+
 /* إرسال نتيجة فحص التحديث إلى الواجهة (إشعار داخل التطبيق بدل نوافذ منبثقة) */
 function sendUpdateResult(status, extra) {
-  if (!win || win.isDestroyed()) return;
-  win.webContents.send('midad:update-check-result', Object.assign({ status: status }, extra || {}));
+  sendToWin('midad:update-check-result', Object.assign({ status: status }, extra || {}));
+}
+
+function releaseNotesText(info) {
+  if (!info) return '';
+  if (typeof info.releaseNotes === 'string') return info.releaseNotes;
+  if (Array.isArray(info.releaseNotes)) {
+    return info.releaseNotes.map(entry => (entry && entry.note) || '').filter(Boolean).join('\n\n');
+  }
+  return '';
+}
+
+function updateSize(info) {
+  const files = info && Array.isArray(info.files) ? info.files : [];
+  return files.reduce((total, file) => total + (Number(file && file.size) || 0), 0);
+}
+
+function wireUpdaterEvents(autoUpdater, CancellationToken) {
+  /* التنزيل لا يبدأ إلا بطلب صريح من مركز التحديثات */
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  autoUpdater.on('checking-for-update', () => logUpdate('فحص خلفي للتحديثات...'));
+
+  autoUpdater.on('update-available', info => {
+    downloadedReady = false;
+    downloadedInfo = null;
+    logUpdate('يتوفر إصدار ' + info.version + ' (فحص خلفي — بلا نافذة منبثقة)');
+    const payload = {
+      version: info.version,
+      releaseName: info.releaseName || '',
+      releaseDate: info.releaseDate || '',
+      notes: releaseNotesText(info).slice(0, 6000),
+      size: updateSize(info)
+    };
+    sendToWin('midad:update-found', payload);
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      sendUpdateResult('found', { version: payload.version, size: payload.size, notes: payload.notes });
+    }
+  });
+
+  autoUpdater.on('update-not-available', () => {
+    logUpdate('لا يوجد تحديث — الإصدار الحالي هو الأحدث.');
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      sendUpdateResult('none');
+    }
+  });
+
+  autoUpdater.on('download-progress', progress => {
+    logUpdate('تنزيل التحديث: ' + Math.round(progress.percent) + '%');
+    if (win && !win.isDestroyed()) win.setProgressBar(progress.percent / 100);
+    const total = Number(progress.total) || 0;
+    const done = Number(progress.transferred) || 0;
+    const speed = Number(progress.bytesPerSecond) || 0;
+    const eta = speed > 0 && total > done ? (total - done) / speed : 0;
+    sendToWin('midad:update-progress', {
+      percent: progress.percent,
+      speed: speed,
+      transferred: done,
+      total: total,
+      eta: eta
+    });
+  });
+
+  autoUpdater.on('update-downloaded', info => {
+    logUpdate('اكتمل تنزيل ' + info.version);
+    downloadedReady = true;
+    downloadedInfo = { version: info.version, size: updateSize(info) };
+    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    sendToWin('midad:update-ready', downloadedInfo);
+    sendToWin('midad:update-progress', { done: true, version: info.version });
+    if (manualUpdateCheck) manualUpdateCheck = false;
+    if (installRequested) {
+      installRequested = false;
+      setTimeout(() => {
+        try { autoUpdater.quitAndInstall(false, true); } catch (err) { logUpdate(err && err.message); }
+      }, 300);
+    }
+  });
+
+  autoUpdater.on('error', err => {
+    const message = (err && err.message) || '';
+    logUpdate('خطأ في التحديث: ' + message);
+    if (win && !win.isDestroyed()) win.setProgressBar(-1);
+    const cancelled = !!(cancelToken && cancelToken.cancelled) || /cancel/i.test(message);
+    cancelToken = null;
+    installRequested = false;
+    if (cancelled) {
+      sendToWin('midad:update-cancelled', {});
+      return;
+    }
+    sendToWin('midad:update-error', { message: message || 'تعذّر تنزيل التحديث.' });
+    if (manualUpdateCheck) {
+      manualUpdateCheck = false;
+      sendUpdateResult('error', { message: message });
+    }
+  });
+
+  return autoUpdater;
+}
+
+function getUpdater() {
+  if (!app.isPackaged || !autoUpdateSupported()) return null;
+  if (updaterRef) return updaterRef;
+  try {
+    const mod = require('electron-updater');
+    updaterRef = wireUpdaterEvents(mod.autoUpdater, mod.CancellationToken);
+  } catch (err) {
+    logUpdate('electron-updater غير متاح: ' + err.message);
+    updaterRef = null;
+  }
+  return updaterRef;
+}
+
+function beginDownload(autoUpdater, installAfter) {
+  const mod = require('electron-updater');
+  cancelToken = new mod.CancellationToken();
+  installRequested = !!installAfter;
+  autoUpdater.downloadUpdate(cancelToken).catch(err => {
+    if (cancelToken && cancelToken.cancelled) return;
+    logUpdate('فشل بدء التنزيل: ' + (err && err.message));
+    installRequested = false;
+    sendToWin('midad:update-error', { message: (err && err.message) || 'تعذّر بدء تنزيل التحديث.' });
+  });
 }
 
 /* أوامر التحديث التي تستدعيها الواجهة */
 function wireUpdateIpc() {
+  ipcMain.handle('midad:app-version', () => app.getVersion());
+
   ipcMain.handle('midad:update-check', () => {
     if (!app.isPackaged || !autoUpdateSupported()) {
       sendUpdateResult('unsupported');
       return false;
     }
+    const autoUpdater = getUpdater();
+    if (!autoUpdater) {
+      sendUpdateResult('error', { message: 'مكوّن التحديث غير متاح.' });
+      return false;
+    }
     manualUpdateCheck = true;
+    sendUpdateResult('checking');
     try {
-      const { autoUpdater } = require('electron-updater');
       autoUpdater.checkForUpdates().catch(err => {
         manualUpdateCheck = false;
         logUpdate(err && err.message);
-        sendUpdateResult('error');
+        sendUpdateResult('error', { message: err && err.message });
       });
     } catch (err) {
       manualUpdateCheck = false;
       logUpdate(err && err.message);
-      sendUpdateResult('error');
+      sendUpdateResult('error', { message: err && err.message });
       return false;
     }
     return true;
   });
 
+  /* بدء التنزيل فقط (التثبيت قرار منفصل) */
+  ipcMain.handle('midad:update-download', () => {
+    if (!app.isPackaged || !autoUpdateSupported()) {
+      sendUpdateResult('unsupported');
+      return false;
+    }
+    const autoUpdater = getUpdater();
+    if (!autoUpdater) return false;
+    if (downloadedReady) {
+      sendToWin('midad:update-ready', downloadedInfo || {});
+      return true;
+    }
+    try {
+      beginDownload(autoUpdater, false);
+      return true;
+    } catch (err) {
+      logUpdate(err && err.message);
+      sendToWin('midad:update-error', { message: err && err.message });
+      return false;
+    }
+  });
+
+  /* إلغاء التنزيل الجاري */
+  ipcMain.handle('midad:update-cancel', () => {
+    if (!cancelToken || cancelToken.cancelled) return false;
+    try {
+      cancelToken.cancel();
+      if (win && !win.isDestroyed()) win.setProgressBar(-1);
+      sendToWin('midad:update-cancelled', {});
+      return true;
+    } catch (err) {
+      logUpdate(err && err.message);
+      return false;
+    }
+  });
+
+  /* التثبيت الآن: إن كان التنزيل جاهزًا ثبّت، وإلا نزّل ثم ثبّت */
   ipcMain.handle('midad:update-install', () => {
     if (!app.isPackaged || !autoUpdateSupported()) {
       shell.openExternal(RELEASES_URL);
       return false;
     }
+    const autoUpdater = getUpdater();
+    if (!autoUpdater) return false;
     try {
-      const { autoUpdater } = require('electron-updater');
-      installRequested = true;
-      autoUpdater.downloadUpdate().catch(err => {
-        installRequested = false;
-        logUpdate(err && err.message);
-        sendUpdateResult('error');
-      });
+      if (downloadedReady) {
+        autoUpdater.quitAndInstall(false, true);
+        return true;
+      }
+      beginDownload(autoUpdater, true);
       return true;
     } catch (err) {
       installRequested = false;
       logUpdate(err && err.message);
-      sendUpdateResult('error');
+      sendToWin('midad:update-error', { message: err && err.message });
       return false;
     }
+  });
+
+  /* تثبيت عند إغلاق البرنامج بدل إعادة التشغيل الفوري */
+  ipcMain.handle('midad:update-install-on-quit', () => {
+    if (!downloadedReady) return false;
+    const autoUpdater = getUpdater();
+    if (!autoUpdater) return false;
+    autoUpdater.autoInstallOnAppQuit = true;
+    logUpdate('سيُثبَّت التحديث عند إغلاق البرنامج.');
+    return true;
+  });
+
+  ipcMain.handle('midad:update-open-center', () => {
+    sendToWin('midad:update-open', { autoCheck: true });
+    return true;
   });
 
   ipcMain.handle('midad:open-releases', () => {
@@ -320,121 +513,17 @@ function setupAutoUpdater() {
     logUpdate('التحديث التلقائي غير مدعوم في هذه الحزمة (deb) — استخدم AppImage أو نزّل يدويًا.');
     return;
   }
-  let autoUpdater;
-  try {
-    autoUpdater = require('electron-updater').autoUpdater;
-  } catch (err) {
-    logUpdate('electron-updater غير متاح: ' + err.message);
-    return;
-  }
-
-  /* التنزيل يتم فقط بعد موافقة المستخدم عبر الإشعار داخل التطبيق */
-  autoUpdater.autoDownload = false;
-  autoUpdater.autoInstallOnAppQuit = true;
-
-  autoUpdater.on('checking-for-update', () => logUpdate('فحص خلفي للتحديثات...'));
-
-  autoUpdater.on('update-available', info => {
-    logUpdate('يتوفر إصدار ' + info.version + ' (فحص خلفي — بلا نافذة منبثقة)');
-    if (win && !win.isDestroyed()) {
-      win.webContents.send('midad:update-found', {
-        version: info.version,
-        releaseName: info.releaseName || '',
-        releaseDate: info.releaseDate || '',
-        notes: typeof info.releaseNotes === 'string' ? info.releaseNotes.slice(0, 500) : ''
-      });
-    }
-    if (manualUpdateCheck) {
-      manualUpdateCheck = false;
-      sendUpdateResult('found', { version: info.version });
-    }
-  });
-
-  autoUpdater.on('update-not-available', () => {
-    logUpdate('لا يوجد تحديث — الإصدار الحالي هو الأحدث.');
-    if (manualUpdateCheck) {
-      manualUpdateCheck = false;
-      sendUpdateResult('none');
-    }
-  });
-
-  autoUpdater.on('download-progress', progress => {
-    logUpdate('تنزيل التحديث: ' + Math.round(progress.percent) + '%');
-    if (win && !win.isDestroyed()) {
-      win.setProgressBar(progress.percent / 100);
-      win.webContents.send('midad:update-progress', {
-        percent: progress.percent,
-        speed: progress.bytesPerSecond,
-        mbDone: progress.transferred,
-        mbTotal: progress.total
-      });
-    }
-  });
-
-  autoUpdater.on('update-downloaded', info => {
-    logUpdate('اكتمل تنزيل ' + info.version);
-    if (win && !win.isDestroyed()) {
-      win.setProgressBar(-1);
-      win.webContents.send('midad:update-progress', { done: true, version: info.version });
-    }
-    if (manualUpdateCheck) manualUpdateCheck = false;
-    /* التثبيت لا يتم إلا بعد ضغط المستخدم «تحديث الآن» */
-    if (installRequested) {
-      installRequested = false;
-      autoUpdater.quitAndInstall(false, true);
-    }
-  });
-
-  autoUpdater.on('error', err => {
-    logUpdate('خطأ في التحديث: ' + (err && err.message));
-    installRequested = false;
-    if (win && !win.isDestroyed()) {
-      win.setProgressBar(-1);
-      win.webContents.send('midad:update-progress', { failed: true });
-    }
-    if (manualUpdateCheck) {
-      manualUpdateCheck = false;
-      sendUpdateResult('error');
-    }
-  });
+  const autoUpdater = getUpdater();
+  if (!autoUpdater) return;
 
   // فحص عند الإقلاع (بعد استقرار الواجهة) ثم كل ٤ ساعات
   setTimeout(() => autoUpdater.checkForUpdates().catch(err => logUpdate(err && err.message)), 4000);
   setInterval(() => autoUpdater.checkForUpdates().catch(err => logUpdate(err && err.message)), 4 * 60 * 60 * 1000);
 }
 
+/* فتح مركز التحديثات من القائمة — بلا نوافذ نظام */
 function checkForUpdatesManually() {
-  if (!app.isPackaged) {
-    dialog.showMessageBox(win, {
-      type: 'info',
-      title: 'التحديثات',
-      message: 'أنت تشغّل نسخة التطوير.',
-      detail: 'فحص التحديثات متاح في النسخة المثبَّتة فقط.',
-      buttons: ['حسنًا']
-    });
-    return;
-  }
-  if (!autoUpdateSupported()) {
-    dialog.showMessageBox(win, {
-      type: 'info',
-      title: 'التحديثات',
-      message: 'التحديث التلقائي غير متاح في حزمة .deb.',
-      detail: 'نزّل أحدث إصدار (AppImage أو deb) من صفحة الإصدارات. ' +
-        'حزمة AppImage هي الوحيدة التي تُحدِّث نفسها تلقائيًا.',
-      buttons: ['فتح صفحة التنزيلات', 'إغلاق'],
-      defaultId: 0,
-      cancelId: 1
-    }).then(({ response }) => {
-      if (response === 0) shell.openExternal(RELEASES_URL);
-    });
-    return;
-  }
-  manualUpdateCheck = true;
-  const { autoUpdater } = require('electron-updater');
-  autoUpdater.checkForUpdates().catch(err => {
-    manualUpdateCheck = false;
-    logUpdate(err && err.message);
-  });
+  sendToWin('midad:update-open', { autoCheck: true });
 }
 
 /* ---------- قائمة عربية ---------- */
