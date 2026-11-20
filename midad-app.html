@@ -1745,17 +1745,101 @@ dialog::backdrop{
 #updateBanner{
   position:fixed; top:14px; left:50%; transform:translateX(-50%);
   display:flex; align-items:center; gap:10px;
-  padding:10px 16px; border-radius:12px;
+  padding:9px 14px; border-radius:99px; border:1px solid rgba(255,255,255,.18);
   background:var(--navy-deep); color:#fff;
-  font-size:11.5px; font-weight:600; white-space:nowrap;
+  font-family:inherit; font-size:11.5px; font-weight:600; white-space:nowrap;
   box-shadow:0 16px 40px -18px rgba(0,0,0,.5);
-  z-index:9000; direction:rtl;
+  z-index:9000; direction:rtl; cursor:pointer;
+  max-width:calc(100vw - 24px);
+  transition:background .16s ease, transform .16s ease;
 }
+#updateBanner[hidden]{ display:none !important; }
+#updateBanner:hover{ background:#0d2133; transform:translateX(-50%) translateY(1px); }
+#updateBanner:focus-visible{ outline:2px solid #7fd4ff; outline-offset:2px; }
 #updateBanner svg{ width:16px; height:16px; color:#5ee1a9; flex:0 0 auto; }
-#updateBanner .ub-body{ display:flex; flex-direction:column; gap:5px; min-width:180px; }
+#updateBanner .ub-body{ display:flex; flex-direction:column; gap:5px; min-width:180px; text-align:start; }
+#updateBanner .ub-cta{
+  flex:0 0 auto; padding:3px 9px; border-radius:99px;
+  background:rgba(255,255,255,.14); color:#fff; font-size:10.5px; font-weight:800;
+}
 .ub-bar{ height:5px; border-radius:99px; background:rgba(255,255,255,.18); overflow:hidden; }
 .ub-fill{ height:100%; width:0%; border-radius:99px; background:var(--coral); transition:width .35s ease; }
 @media print{ #updateBanner{ display:none !important; } }
+
+/* ----- مركز التحديثات (نافذة مستقلة) ----- */
+.update-dialog .dialog-card{ width:min(600px,calc(100vw - 28px)); }
+.upd-versions{ display:flex; align-items:center; gap:10px; margin:2px 0 14px; flex-wrap:wrap; }
+.upd-ver{
+  flex:1 1 150px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:4px;
+  background:rgba(127,127,127,.05);
+}
+.upd-ver span{ display:block; font-size:10.5px; color:var(--muted); margin-bottom:3px; }
+.upd-ver b{ font-family:var(--font-head); font-size:17px; color:var(--navy); }
+.upd-ver.is-new{ border-color:rgba(255,110,64,.5); background:#fff5f0; }
+.upd-ver.is-new b{ color:#b8431c; }
+.upd-arrow{ color:var(--muted); font-size:16px; flex:0 0 auto; }
+.upd-state{
+  display:flex; align-items:flex-start; gap:11px;
+  padding:12px 13px; border:1px solid var(--line); border-radius:4px;
+  background:#f7fafb; transition:border-color .2s ease, background .2s ease;
+}
+.upd-dot{
+  width:10px; height:10px; border-radius:50%; flex:0 0 auto; margin-top:5px;
+  background:var(--muted); box-shadow:0 0 0 3px rgba(127,127,127,.14);
+}
+.upd-state-copy{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.upd-state-copy strong{ font-family:var(--font-head); font-size:13.5px; color:var(--navy); }
+.upd-state-copy span{ font-size:11.5px; line-height:1.8; color:#55707e; }
+.upd-state[data-state="checking"] .upd-dot{ background:#1a73e8; animation:updPulse 1.1s ease-in-out infinite; }
+.upd-state[data-state="available"]{ border-color:rgba(255,110,64,.4); background:#fff8f4; }
+.upd-state[data-state="available"] .upd-dot{ background:var(--coral); box-shadow:0 0 0 3px rgba(255,110,64,.18); }
+.upd-state[data-state="downloading"] .upd-dot{ background:#1a73e8; box-shadow:0 0 0 3px rgba(26,115,232,.16); }
+.upd-state[data-state="ready"]{ border-color:rgba(46,160,110,.4); background:#f3fbf7; }
+.upd-state[data-state="ready"] .upd-dot,
+.upd-state[data-state="onquit"] .upd-dot,
+.upd-state[data-state="none"] .upd-dot{ background:#2ea06e; box-shadow:0 0 0 3px rgba(46,160,110,.16); }
+.upd-state[data-state="error"]{ border-color:rgba(200,60,40,.4); background:#fff5f2; }
+.upd-state[data-state="error"] .upd-dot{ background:#c83c28; box-shadow:0 0 0 3px rgba(200,60,40,.16); }
+.upd-state[data-state="unsupported"] .upd-dot,
+.upd-state[data-state="dev"] .upd-dot,
+.upd-state[data-state="browser"] .upd-dot{ background:#8a9aa5; }
+@keyframes updPulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+.upd-progress{ margin-top:12px; }
+.upd-bar{ height:8px; border-radius:99px; background:#e3ebf0; overflow:hidden; }
+.upd-fill{
+  height:100%; width:0%; border-radius:99px;
+  background:linear-gradient(90deg,#ff9a72,var(--coral));
+  transition:width .25s ease;
+}
+.upd-meta{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  margin-top:7px; font-size:10.5px; color:var(--muted);
+}
+.upd-meta b{ color:var(--navy); font-size:11px; }
+.upd-notes{
+  margin-top:12px; padding:10px 12px;
+  border:1px solid var(--line); border-radius:4px; background:#fff;
+}
+.upd-notes h3{ font-size:11.5px; color:var(--navy); margin-bottom:6px; }
+.upd-notes-body{
+  max-height:150px; overflow:auto; white-space:pre-wrap;
+  font-size:11.5px; line-height:1.9; color:#48626f;
+}
+.upd-hint{ margin-top:10px; font-size:10.5px; line-height:1.8; color:var(--muted); }
+.upd-hint[hidden], .upd-notes[hidden], .upd-progress[hidden]{ display:none !important; }
+body[data-night="on"] .upd-ver{ background:rgba(255,255,255,.04); border-color:#3d3d3d; }
+body[data-night="on"] .upd-ver b{ color:#e7e7e7; }
+body[data-night="on"] .upd-ver.is-new{ background:#2a211d; border-color:rgba(255,110,64,.45); }
+body[data-night="on"] .upd-ver.is-new b{ color:#ffb08f; }
+body[data-night="on"] .upd-state{ background:#1e1e1e; border-color:#3d3d3d; }
+body[data-night="on"] .upd-state-copy strong{ color:#eee; }
+body[data-night="on"] .upd-state-copy span{ color:#aaa; }
+body[data-night="on"] .upd-bar{ background:#333; }
+body[data-night="on"] .upd-notes{ background:#1b1b1b; border-color:#3d3d3d; }
+body[data-night="on"] .upd-notes h3{ color:#eee; }
+body[data-night="on"] .upd-notes-body{ color:#bbb; }
+@media print{ .update-dialog{ display:none !important; } }
 
 /* نافذة حقوق المبرمج */
 .credits-dialog .dialog-card{ width:min(520px,calc(100vw - 28px)); }
@@ -1787,28 +1871,36 @@ dialog::backdrop{
 }
 .credits-note{ margin-top:12px; font-size:11px; color:var(--muted); }
 
-/* إشعار التحديث الجديد — ثلاثة خيارات واضحة */
+/* إشعار التحديث الجديد — يفتح مركز التحديثات */
 #updatePrompt{
   position:fixed; top:14px; left:50%; transform:translateX(-50%);
-  z-index:9500; width:min(560px,calc(100vw - 24px));
+  z-index:9500; width:min(520px,calc(100vw - 24px));
   display:flex; align-items:center; flex-wrap:wrap; gap:10px;
-  padding:12px 14px; border-radius:4px;
+  padding:11px 13px; border-radius:6px;
   background:#12293c; color:#fff; border:1px solid rgba(255,255,255,.16);
   box-shadow:0 20px 50px -20px rgba(0,0,0,.7);
   font-size:12px; direction:rtl;
+  animation:updPromptIn .22s ease;
 }
+@keyframes updPromptIn{ from{ opacity:0; transform:translateX(-50%) translateY(-6px); } to{ opacity:1; transform:translateX(-50%); } }
 #updatePrompt[hidden]{ display:none !important; }
 .up-icon{
   width:32px; height:32px; flex:none; display:grid; place-items:center;
-  border-radius:3px; background:rgba(255,255,255,.12); color:#7fd4ff;
+  border-radius:4px; background:rgba(255,255,255,.12); color:#7fd4ff;
 }
 .up-icon svg{ width:17px; height:17px; }
 .up-copy{ display:flex; flex-direction:column; min-width:160px; flex:1 1 180px; line-height:1.5; }
 .up-copy strong{ font-family:var(--font-head); font-size:13px; }
 .up-copy span{ color:#cfe0ee; font-size:11px; }
-.up-actions{ display:flex; gap:6px; flex-wrap:wrap; margin-inline-start:auto; }
+.up-actions{ display:flex; gap:6px; flex-wrap:wrap; margin-inline-start:auto; align-items:center; }
 .up-actions .btn{ min-height:30px; padding:4px 10px; font-size:11px; }
 .up-actions .btn-navy{ background:var(--coral); color:#12293c; }
+.up-close{
+  width:28px; height:28px; display:grid; place-items:center;
+  border:0; border-radius:4px; background:transparent; color:#cfe0ee;
+  cursor:pointer; font-family:inherit; font-size:14px;
+}
+.up-close:hover{ background:rgba(255,255,255,.12); color:#fff; }
 @media print{ #updatePrompt{ display:none !important; } }
 
 /* ----- شريحة اللصق (بعد نسخ عنصر) ----- */
@@ -2181,6 +2273,47 @@ dialog::backdrop{
 }
 .qa-item.qa-exam .qa-a .qa-badge{ background:var(--green); }
 .qa-item.qa-exam .qa-a .qa-badge.gw{ background:var(--green-deep); }
+
+/* ----- محرّر السؤال والجواب داخل النافذة ----- */
+.qa-toolbar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:4px;
+  margin-top:14px; padding:5px 7px;
+  border:1px solid var(--line-strong); border-radius:10px;
+  background:#f7fafb;
+}
+.qa-tb{
+  min-width:28px; height:28px; padding:0 7px;
+  display:inline-grid; place-items:center;
+  border:0; border-radius:7px; background:transparent;
+  color:var(--navy); font-family:inherit; font-size:12.5px; line-height:1;
+  cursor:pointer; transition:background .15s ease,color .15s ease;
+}
+.qa-tb:hover{ background:#e6eef3; }
+.qa-tb.is-active{ background:#fff0ea; color:var(--coral-ink); }
+body[data-ui="adobe"] .qa-tb.is-active{ background:var(--ui-accent-soft); color:var(--ui-accent-ink); }
+body[data-night="on"] .qa-tb.is-active{ background:rgba(76,154,255,.22); color:#8dc2ff; }
+.qa-tb b, .qa-tb i, .qa-tb u, .qa-tb s{ font-size:13px; }
+.qa-tb-sep{ width:1px; height:18px; background:var(--line-strong); margin:0 3px; }
+.qa-rich{
+  width:100%; min-height:42px; max-height:190px; overflow:auto;
+  border:1px solid var(--line-strong); border-radius:9px;
+  padding:8px 11px; background:#fff; font-size:13px; line-height:1.8;
+  transition:border-color .18s ease, box-shadow .18s ease;
+}
+.qa-rich:focus{
+  outline:none; border-color:rgba(255,110,64,.55);
+  box-shadow:0 0 0 3px rgba(255,110,64,.1);
+}
+.qa-rich:empty::before{
+  content:attr(data-placeholder); color:#9aacb5; pointer-events:none;
+}
+.qa-rich ol{ list-style-type:arabic-indic; }
+.qa-rich ol, .qa-rich ul{ margin:.25em 0; padding-inline-start:1.6em; }
+.qa-rich li{ margin:.15em 0; }
+.qa-a .qa-a-text{ flex:1; }
+.qa-item.qa-exam .qa-a ul{ margin:0; padding-inline-start:1.4em; flex:1; }
+.qa-item.qa-exam .qa-a ul li{ line-height:1.8; }
+.paper-body .hb-edit:hover{ background:var(--accent); }
 
 /* ----- إطارات الصور ----- */
 .doc-figure{ margin:1em auto; }
@@ -2648,6 +2781,11 @@ body[data-night="on"] .dialog-head p{ color:#aaa; }
 body[data-night="on"] .dialog-close{ color:#bbb; }
 body[data-night="on"] .dialog-close:hover{ background:#333; color:#fff; }
 body[data-night="on"] .field > label{ color:#ddd; }
+body[data-night="on"] .qa-toolbar{ background:#1b1b1b; border-color:#444; }
+body[data-night="on"] .qa-tb{ color:#e7e7e7; }
+body[data-night="on"] .qa-tb:hover{ background:#333; }
+body[data-night="on"] .qa-rich{ background:#1b1b1b; color:#e7e7e7; border-color:#444; }
+body[data-night="on"] .qa-rich:empty::before{ color:#777; }
 body[data-night="on"] .credits-row{ background:rgba(255,255,255,.04); border-color:#3d3d3d; }
 body[data-night="on"] .credits-rights{ background:rgba(255,255,255,.05); }
 body[data-night="on"] .hint{ color:#999; }
@@ -3952,20 +4090,31 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
       </div>
       <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
+    <div class="qa-toolbar" id="qaToolbar" role="toolbar" aria-label="تنسيق السؤال والجواب">
+      <button class="qa-tb" type="button" data-qacmd="bold" title="عريض" aria-label="عريض"><b>B</b></button>
+      <button class="qa-tb" type="button" data-qacmd="italic" title="مائل" aria-label="مائل"><i>I</i></button>
+      <button class="qa-tb" type="button" data-qacmd="underline" title="تسطير" aria-label="تسطير"><u>U</u></button>
+      <button class="qa-tb" type="button" data-qacmd="strikeThrough" title="شطب" aria-label="شطب"><s>S</s></button>
+      <span class="qa-tb-sep" aria-hidden="true"></span>
+      <button class="qa-tb" type="button" data-qacmd="insertOrderedList" title="إضافة ترقيم (١. ٢. ٣.)" aria-label="إضافة ترقيم">ترقيم</button>
+      <button class="qa-tb" type="button" data-qacmd="insertUnorderedList" title="قائمة نقطية" aria-label="قائمة نقطية">نقاط</button>
+      <span class="qa-tb-sep" aria-hidden="true"></span>
+      <button class="qa-tb" type="button" data-qacmd="removeFormat" title="إزالة التنسيق" aria-label="إزالة التنسيق">✕</button>
+    </div>
     <div class="field">
       <label for="qaQuestion">السؤال</label>
-      <textarea id="qaQuestion" rows="2" maxlength="400" placeholder="اكتب السؤال هنا…"></textarea>
+      <div id="qaQuestion" class="qa-rich" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="اكتب السؤال هنا…"></div>
     </div>
     <div class="field">
       <label for="qaAnswer">الإجابة</label>
-      <textarea id="qaAnswer" rows="4" maxlength="400" placeholder="اكتب الإجابة هنا…"></textarea>
-      <p class="hint" style="margin-top:6px">اكتب كل نقطة في سطر منفصل لتظهر الإجابة كنقاط مرقمة (١. ٢. ٣.).</p>
+      <div id="qaAnswer" class="qa-rich" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="اكتب الإجابة هنا… ثم استخدم زر «ترقيم» لإضافة نقاط مرقمة."></div>
+      <p class="hint" style="margin-top:6px">اختر الحقل ثم استخدم شريط الأدوات أعلاه، واضغط «ترقيم» لتحويل السطور إلى نقاط مرقمة.</p>
     </div>
     <div class="dialog-actions">
       <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
       <button class="btn btn-primary" type="button" id="qaInsertBtn">
         <svg aria-hidden="true"><use href="#i-help"/></svg>
-        إدراج السؤال
+        <span id="qaInsertLabel">إدراج السؤال</span>
       </button>
     </div>
   </div>
@@ -4136,27 +4285,85 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
 <input type="file" id="importFile" accept=".json,application/json" hidden />
 
 <!-- شريط تقدم تنزيل التحديث (يعمل في نسخة سطح المكتب فقط) -->
-<div id="updateBanner" role="status" aria-live="polite" hidden>
+<button id="updateBanner" type="button" aria-label="فتح مركز التحديثات" hidden>
   <svg aria-hidden="true"><use href="#i-download"/></svg>
-  <div class="ub-body">
+  <span class="ub-body">
     <span id="updateBannerText"></span>
-    <div class="ub-bar" aria-hidden="true"><div class="ub-fill" id="updateBannerFill"></div></div>
-  </div>
-</div>
+    <span class="ub-bar" aria-hidden="true"><span class="ub-fill" id="updateBannerFill"></span></span>
+  </span>
+  <span class="ub-cta">عرض</span>
+</button>
 
 <!-- إشعار تحديث جديد (نسخة سطح المكتب فقط) -->
 <div id="updatePrompt" role="status" aria-live="polite" aria-labelledby="upTitle" hidden>
   <span class="up-icon" aria-hidden="true"><svg><use href="#i-download"/></svg></span>
   <span class="up-copy">
     <strong id="upTitle">تحديث جديد متاح لمِداد</strong>
-    <span id="upVersion">يتوفر إصدار أحدث — اختر ما تريد.</span>
+    <span id="upVersion">يتوفر إصدار أحدث — افتح مركز التحديثات.</span>
   </span>
   <span class="up-actions">
-    <button class="btn btn-sm btn-navy" type="button" id="upInstallBtn">تحديث الآن</button>
-    <button class="btn btn-sm btn-ghost" type="button" id="upLaterBtn">تذكّرني لاحقًا</button>
-    <button class="btn btn-sm btn-ghost" type="button" id="upIgnoreBtn">تجاهل</button>
+    <button class="btn btn-sm btn-navy" type="button" id="upOpenBtn">عرض التحديث</button>
+    <button class="btn btn-sm btn-ghost" type="button" id="upLaterBtn">لاحقًا</button>
+    <button class="up-close" type="button" id="upIgnoreBtn" aria-label="تجاهل هذا التحديث" title="تجاهل هذا التحديث">✕</button>
   </span>
 </div>
+
+<!-- مركز التحديثات: فحص + تفاصيل + تنزيل + تثبيت -->
+<dialog id="updateDialog" class="update-dialog" aria-labelledby="updHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="updHeading">مركز التحديثات</h2>
+        <p>تحميل أحدث إصدار من مِداد وتثبيته داخل البرنامج.</p>
+      </div>
+      <button class="dialog-close" type="button" id="updCloseX" aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+
+    <div class="upd-versions">
+      <div class="upd-ver">
+        <span>الإصدار الحالي</span>
+        <b id="updCurrent">—</b>
+      </div>
+      <span class="upd-arrow" aria-hidden="true">←</span>
+      <div class="upd-ver is-new" id="updNewWrap" hidden>
+        <span>الإصدار الجديد</span>
+        <b id="updNew">—</b>
+      </div>
+    </div>
+
+    <div class="upd-state" id="updState" data-state="idle" role="status" aria-live="polite">
+      <span class="upd-dot" aria-hidden="true"></span>
+      <span class="upd-state-copy">
+        <strong id="updStateTitle">تحقّق من وجود تحديث</strong>
+        <span id="updStateText">اضغط «فحص التحديثات» لعرض أحدث إصدار.</span>
+      </span>
+    </div>
+
+    <div class="upd-progress" id="updProgress" hidden>
+      <div class="upd-bar" aria-hidden="true"><div class="upd-fill" id="updFill"></div></div>
+      <div class="upd-meta">
+        <span>التقدّم: <b id="updPercent">٠٪</b></span>
+        <span id="updSize">—</span>
+        <span id="updSpeed">—</span>
+        <span id="updEta">—</span>
+      </div>
+    </div>
+
+    <div class="upd-notes" id="updNotesWrap" hidden>
+      <h3>ما الجديد في هذا الإصدار</h3>
+      <div class="upd-notes-body" id="updNotes"></div>
+    </div>
+
+    <p class="upd-hint" id="updHint" hidden></p>
+
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" id="updReleasesBtn">صفحة الإصدارات</button>
+      <button class="btn btn-ghost" type="button" id="updLaterBtn">لاحقًا</button>
+      <button class="btn btn-ghost" type="button" id="updSecondaryBtn" hidden>تثبيت عند الإغلاق</button>
+      <button class="btn btn-primary" type="button" id="updActionBtn">فحص التحديثات</button>
+    </div>
+  </div>
+</dialog>
 
 <!-- عن مِداد وحقوق المبرمج -->
 <dialog id="creditsDialog" class="credits-dialog" aria-labelledby="creditsHeading">
@@ -5088,7 +5295,6 @@ const creditsBtns      = [$('#creditsBtn'), $('#creditsBtnEditor'), $('#creditsF
 const creditsDialog    = $('#creditsDialog');
 const updatePrompt     = $('#updatePrompt');
 const upVersion        = $('#upVersion');
-const upInstallBtn     = $('#upInstallBtn');
 
 /* ---------- التنبيهات ---------- */
 function toast(message, kind = 'ok') {
@@ -5181,10 +5387,94 @@ function openDoc(id) {
   closeSidebar();
   registerCustomFonts();
   renderEditor(true);
+  resetUndoHistory(doc);
   setSaveState('saved');
   document.title = (doc.title || 'مستند') + ' — مِداد';
   setHash('#doc=' + id);
   window.scrollTo(0, 0);
+}
+
+/* ---------- سجل التعديلات البنيوية (تراجع/إعادة) ---------- */
+const undoHistory = { docId: null, entries: [], index: -1, last: '', label: '' };
+
+function snapshotDoc(doc) {
+  return {
+    title: doc.title,
+    sections: JSON.parse(JSON.stringify(doc.sections || [])),
+    showCover: doc.showCover,
+    showToc: doc.showToc,
+    showBackCover: doc.showBackCover
+  };
+}
+
+function resetUndoHistory(doc) {
+  undoHistory.docId = doc ? doc.id : null;
+  undoHistory.entries = doc ? [snapshotDoc(doc)] : [];
+  undoHistory.index = doc ? 0 : -1;
+  undoHistory.last = '';
+  undoHistory.label = '';
+}
+
+/* يُثبّت الحالة الحالية قبل أي إجراء بنيوي (حذف/إدراج/ترتيب) */
+function markUndoState(doc) {
+  if (!doc) return;
+  if (undoHistory.docId !== doc.id) resetUndoHistory(doc);
+  undoHistory.entries[undoHistory.index] = snapshotDoc(doc);
+  undoHistory.entries = undoHistory.entries.slice(0, undoHistory.index + 1);
+}
+
+/* يُسجّل الحالة بعد الإجراء البنيوي */
+function commitUndo(doc, label) {
+  if (!doc) return;
+  if (undoHistory.docId !== doc.id) resetUndoHistory(doc);
+  const snap = snapshotDoc(doc);
+  const current = undoHistory.entries[undoHistory.index];
+  if (current && JSON.stringify(current) === JSON.stringify(snap)) return;
+  undoHistory.entries.push(snap);
+  while (undoHistory.entries.length > 60) undoHistory.entries.shift();
+  undoHistory.index = undoHistory.entries.length - 1;
+  undoHistory.last = 'structural';
+  undoHistory.label = label || '';
+}
+
+function applyUndoSnapshot(doc) {
+  const snap = undoHistory.entries[undoHistory.index];
+  if (!snap) return;
+  doc.title = snap.title;
+  doc.sections = JSON.parse(JSON.stringify(snap.sections));
+  doc.showCover = snap.showCover;
+  doc.showToc = snap.showToc;
+  doc.showBackCover = snap.showBackCover;
+  renderEditor(true);
+  scheduleSave();
+}
+
+function structuralUndo() {
+  const doc = activeDoc();
+  if (!doc || undoHistory.docId !== doc.id || undoHistory.index <= 0) return false;
+  undoHistory.index -= 1;
+  applyUndoSnapshot(doc);
+  undoHistory.last = 'structural';
+  toast('تم التراجع عن آخر إجراء.');
+  return true;
+}
+
+function structuralRedo() {
+  const doc = activeDoc();
+  if (!doc || undoHistory.docId !== doc.id || undoHistory.index >= undoHistory.entries.length - 1) return false;
+  undoHistory.index += 1;
+  applyUndoSnapshot(doc);
+  undoHistory.last = 'structural';
+  toast('تمت إعادة الإجراء.');
+  return true;
+}
+
+/* لا نستخدم السجل البنيوي إلا إذا كان آخر إجراء بنيويًا */
+function tryStructuralUndo() {
+  return undoHistory.last === 'structural' && structuralUndo();
+}
+function tryStructuralRedo() {
+  return undoHistory.last === 'structural' && structuralRedo();
 }
 
 function showLibrary() {
@@ -6443,6 +6733,7 @@ docCanvas.addEventListener('input', event => {
   if (!doc) return;
   const el = event.target.closest('[contenteditable="true"]');
   if (!el) return;
+  undoHistory.last = 'typing';
 
   if (el.dataset.cover) {
     const field = el.dataset.cover;
@@ -6575,6 +6866,7 @@ function coverElMove(id, dir) {
 async function deleteFixedPage(kind) {
   const doc = activeDoc();
   if (!doc) return;
+  markUndoState(doc);
   if (kind === 'cover') {
     if (doc.showCover === false) return;
     doc.showCover = false;
@@ -6594,6 +6886,7 @@ async function deleteFixedPage(kind) {
     scheduleSave();
     toast('تم حذف الغلاف الخلفي. أعد إظهاره من اللوحة الجانبية.');
   }
+  commitUndo(doc, 'حذف صفحة ثابتة');
 }
 
 /* ---------- شريط الأدوات ---------- */
@@ -6606,6 +6899,8 @@ function execFormat(command, value) {
 }
 
 function insertHtml(html) {
+  const doc = activeDoc();
+  if (doc) markUndoState(doc);
   let body = currentBody();
   let range = null;
   const sel = window.getSelection();
@@ -6647,6 +6942,7 @@ function insertHtml(html) {
   if (typeof enhanceMovables === 'function') enhanceMovables();
   renumberQuestions();
   syncBodyFromDom(body);
+  if (doc) commitUndo(doc, 'إدراج محتوى');
 }
 
 function handleInsert(kind) {
@@ -6676,6 +6972,8 @@ editorToolbar.addEventListener('click', event => {
   const btn = event.target.closest('button');
   if (!btn) return;
   if (btn.dataset.cmd) {
+    if (btn.dataset.cmd === 'undo') { if (!tryStructuralUndo()) execFormat('undo'); return; }
+    if (btn.dataset.cmd === 'redo') { if (!tryStructuralRedo()) execFormat('redo'); return; }
     if (btn.dataset.cmd === 'removeFormat') clearFormatting();
     else execFormat(btn.dataset.cmd);
   } else if (btn.dataset.block) {
@@ -7223,29 +7521,231 @@ problemInsertBtn.addEventListener('click', () => {
 });
 
 /* ---------- السؤال والجواب ---------- */
-function openQaDialog() {
-  qaQuestion.value = '';
-  qaAnswer.value = '';
+let qaEditingItem = null;
+let qaLastField = null;
+const QA_MAX = 400;
+
+/* توافق خلفي: الاختبارات والأكواد القديمة تكتب #qaAnswer.value */
+function qaBindValue(el) {
+  try {
+    Object.defineProperty(el, 'value', {
+      configurable: true,
+      get() { return el.innerText || ''; },
+      set(value) { el.textContent = value == null ? '' : String(value); }
+    });
+  } catch (err) { /* ignore */ }
+}
+qaBindValue(qaQuestion);
+qaBindValue(qaAnswer);
+
+[qaQuestion, qaAnswer].forEach(field => {
+  ['focus', 'mouseup', 'keyup', 'input'].forEach(type => {
+    field.addEventListener(type, () => { qaLastField = field; });
+  });
+});
+
+function qaTargetField() {
+  if (qaLastField && qaDialog.contains(qaLastField)) return qaLastField;
+  return qaQuestion;
+}
+
+/* ينظّف محتوى المحرّر: يسمح بالتنسيق الداخلي فقط ويحذف أي وسوم خطرة */
+function qaSanitize(html, inlineOnly) {
+  const box = document.createElement('div');
+  box.innerHTML = String(html || '');
+  box.querySelectorAll('script,style,iframe,object,embed,link,meta,img,svg,video,audio,form,input,button,textarea,select').forEach(node => node.remove());
+  const inlineTags = ['B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'BR', 'SPAN'];
+  const allowed = inlineOnly ? inlineTags : inlineTags.concat(['OL', 'UL', 'LI', 'P', 'DIV']);
+  Array.prototype.slice.call(box.querySelectorAll('*')).forEach(node => {
+    if (!box.contains(node)) return;
+    if (allowed.indexOf(node.tagName) < 0) {
+      const parent = node.parentNode;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      node.remove();
+      return;
+    }
+    Array.prototype.slice.call(node.attributes).forEach(attr => {
+      if (attr.name === 'class') {
+        const keep = String(node.className || '').split(/\s+/).filter(name => /^(tc|hl)-/.test(name));
+        if (keep.length) node.className = keep.join(' ');
+        else node.removeAttribute('class');
+      } else if (attr.name !== 'dir') {
+        node.removeAttribute(attr.name);
+      }
+    });
+    if (node.tagName === 'SPAN' && !node.className) {
+      const parent = node.parentNode;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      node.remove();
+    }
+  });
+  if (inlineOnly) {
+    Array.prototype.slice.call(box.querySelectorAll('ol,ul,li,p,div')).forEach(node => {
+      if (!box.contains(node)) return;
+      const parent = node.parentNode;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      parent.insertBefore(document.createTextNode(' '), node);
+      node.remove();
+    });
+    box.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode(' ')));
+  } else {
+    box.querySelectorAll('ol').forEach(ol => ol.classList.add('qa-points'));
+  }
+  return box;
+}
+
+/* يبني HTML الإجابة: القوائم تبقى كما هي، والنص العادي يبقى فقرة واحدة */
+function qaAnswerHtml(box) {
+  if (box.childNodes.length === 1 && box.firstChild.nodeType === 3 && box.firstChild.textContent.indexOf('\n') >= 0) {
+    const lines = box.firstChild.textContent.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    if (lines.length > 1) {
+      return '<ol class="qa-points">' + lines.map(line => '<li>' + esc(line) + '</li>').join('') + '</ol>';
+    }
+  }
+  const html = box.innerHTML.trim();
+  if (!html) return '';
+  if (box.querySelector('ol,ul')) return html;
+  if (/<(?:div|p|li)[\s>]/i.test(html)) return '<div class="qa-a-text">' + html + '</div>';
+  return '<span class="qa-a-text">' + html + '</span>';
+}
+
+function qaInnerHtml(questionHtml, answerHtml) {
+  return '<div class="qa-q"><span class="qa-badge">س</span><span class="qa-q-text">' + questionHtml + '</span></div>' +
+    '<div class="qa-a"><span class="qa-badge gw">ج</span>' +
+    (answerHtml || '<span class="qa-a-text">اكتب الإجابة هنا...</span>') + '</div>';
+}
+
+function qaSetMode(editing) {
+  const heading = qaDialog.querySelector('.dialog-head h2');
+  const sub = qaDialog.querySelector('.dialog-head p');
+  const label = $('#qaInsertLabel');
+  if (heading) heading.textContent = editing ? 'تعديل سؤال وجواب' : 'إدراج سؤال وجواب';
+  if (sub) sub.textContent = editing
+    ? 'عدّل نص السؤال أو الإجابة ثم اضغط «حفظ التعديل» — يبقى ترقيم السؤال كما هو.'
+    : 'أضف سؤالًا بتصميم أكاديمي مميز. يُرقَّم كل سؤال تلقائيًا (س١، س٢…) ويُعاد الترقيم عند الحذف أو الإضافة.';
+  if (label) label.textContent = editing ? 'حفظ التعديل' : 'إدراج السؤال';
+}
+
+function openQaDialog(item) {
+  qaEditingItem = item || null;
+  qaLastField = qaQuestion;
+  qaQuestion.innerHTML = '';
+  qaAnswer.innerHTML = '';
+  if (item) {
+    const qBox = item.querySelector('.qa-q');
+    let qHtml = '';
+    if (qBox) {
+      qHtml = Array.prototype.slice.call(qBox.children)
+        .filter(el => !el.classList.contains('qa-badge'))
+        .map(el => el.outerHTML).join('');
+    } else {
+      const first = item.querySelector('p');
+      if (first) {
+        const clone = first.cloneNode(true);
+        const strong = clone.querySelector('strong');
+        if (strong) strong.remove();
+        qHtml = clone.innerHTML;
+      }
+    }
+    const aBox = item.querySelector('.qa-a');
+    let aHtml = '';
+    if (aBox) {
+      const clone = aBox.cloneNode(true);
+      clone.querySelectorAll('.qa-badge').forEach(badge => badge.remove());
+      aHtml = clone.innerHTML;
+    } else {
+      const ps = item.querySelectorAll('p');
+      if (ps[1]) aHtml = ps[1].innerHTML;
+    }
+    qaQuestion.innerHTML = qaSanitize(qHtml, true).innerHTML;
+    qaAnswer.innerHTML = qaSanitize(aHtml, false).innerHTML;
+  }
+  qaSetMode(!!item);
   qaDialog.showModal();
   setTimeout(() => qaQuestion.focus(), 60);
 }
 
+function openQaEditor(item) {
+  if (!item || !item.isConnected) return;
+  openQaDialog(item);
+}
+
+/* شريط الأدوات المصغّر: يطبّق الأمر على آخر حقل استُخدم */
+function qaExec(command) {
+  const field = qaTargetField();
+  field.focus();
+  try { document.execCommand(command, false, null); } catch (err) { /* ignore */ }
+  qaLastField = field;
+  qaSyncToolbar();
+}
+
+function qaSyncToolbar() {
+  if (!qaDialog || !qaDialog.open) return;
+  $$('.qa-tb[data-qacmd]', qaDialog).forEach(btn => {
+    if (['bold', 'italic', 'underline', 'strikeThrough', 'insertOrderedList', 'insertUnorderedList'].indexOf(btn.dataset.qacmd) < 0) return;
+    let active = false;
+    try { active = document.queryCommandState(btn.dataset.qacmd); } catch (err) { /* ignore */ }
+    btn.classList.toggle('is-active', !!active);
+  });
+}
+
+const qaToolbar = $('#qaToolbar');
+if (qaToolbar) {
+  qaToolbar.addEventListener('mousedown', event => {
+    if (event.target.closest('button')) event.preventDefault();
+  });
+  qaToolbar.addEventListener('click', event => {
+    const btn = event.target.closest('[data-qacmd]');
+    if (!btn) return;
+    qaExec(btn.dataset.qacmd);
+  });
+}
+[qaQuestion, qaAnswer].forEach(field => {
+  field.addEventListener('keyup', qaSyncToolbar);
+  field.addEventListener('mouseup', qaSyncToolbar);
+});
+
 qaInsertBtn.addEventListener('click', () => {
-  const q = qaQuestion.value.trim() || 'اكتب السؤال هنا...';
-  const a = qaAnswer.value.trim() || 'اكتب الإجابة هنا...';
-  const lines = a.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  let answerHtml;
-  if (lines.length > 1) {
-    answerHtml = '<ol class="qa-points">' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ol>';
-  } else {
-    answerHtml = '<span>' + esc(lines[0] || a) + '</span>';
+  const qBox = qaSanitize(qaQuestion.innerHTML, true);
+  const qHtml = qBox.innerHTML.trim();
+  const qText = qBox.textContent.replace(/\s+/g, ' ').trim();
+  if (!qText) {
+    toast('اكتب نص السؤال أولًا.', 'error');
+    qaQuestion.focus();
+    return;
   }
-  const html = '<div class="qa-item qa-exam">' +
-    '<div class="qa-q"><span class="qa-badge">س</span><span>' + esc(q) + '</span></div>' +
-    '<div class="qa-a"><span class="qa-badge gw">ج</span>' + answerHtml + '</div></div><p><br></p>';
-  insertHtml(html);
+  if (qText.length > QA_MAX) {
+    toast('نص السؤال أطول من ' + QA_MAX + ' حرفًا.', 'error');
+    return;
+  }
+  const aBox = qaSanitize(qaAnswer.innerHTML, false);
+  const aText = aBox.textContent.replace(/\s+/g, ' ').trim();
+  if (aText.length > QA_MAX * 3) {
+    toast('نص الإجابة طويل جدًا. اختصره قليلًا.', 'error');
+    return;
+  }
+  const aHtml = qaAnswerHtml(aBox);
+  if (qaEditingItem && qaEditingItem.isConnected) {
+    const item = qaEditingItem;
+    const doc = activeDoc();
+    const body = item.closest('.paper-body');
+    if (doc) markUndoState(doc);
+    const handle = item.querySelector(':scope > .move-handle');
+    const corner = item.querySelector(':scope > .rz-corner');
+    item.innerHTML = qaInnerHtml(qHtml, aHtml);
+    if (handle) item.prepend(handle);
+    if (corner) item.appendChild(corner);
+    item.classList.add('qa-exam');
+    renumberQuestions();
+    if (body) syncBodyFromDom(body);
+    if (doc) commitUndo(doc, 'تعديل سؤال');
+    qaDialog.close();
+    toast('تم حفظ تعديل السؤال.');
+    return;
+  }
+  insertHtml('<div class="qa-item qa-exam">' + qaInnerHtml(qHtml, aHtml) + '</div><p><br></p>');
   qaDialog.close();
-  toast(lines.length > 1 ? 'أُدرج السؤال مع إجابة من نقاط مرقمة.' : 'أُدرج السؤال والجواب مع الترقيم التلقائي.');
+  toast('أُدرج السؤال والجواب. عدّله لاحقًا من زر ✎ في شريطه.');
 });
 
 /* ---------- تحريك وتحجيم وطبقات العناصر ---------- */
@@ -7253,24 +7753,31 @@ const MOVE_SELECTOR = '.paper-body figure,.paper-body .doc-table,.paper-body .sh
 const LAYER_LABEL = { flow: 'داخل النص', behind: 'خلف النص', front: 'أمام النص' };
 const clampN = v => Math.max(-3000, Math.min(3000, Number(v) || 0));
 
-function barButtonsHtml() {
+function barButtonsHtml(el) {
+  const editBtn = el && el.classList.contains('qa-item')
+    ? '<button class="hb hb-edit" type="button" data-act="edit" contenteditable="false" title="تعديل السؤال" aria-label="تعديل السؤال">✎</button>'
+    : '';
   return '<button class="hb" type="button" data-act="move" contenteditable="false" aria-label="تحريك العنصر" title="اسحب لتحريك العنصر — نقرتان للإرجاع"><svg aria-hidden="true"><use href="#i-move"/></svg></button>' +
     '<button class="hb" type="button" data-act="minus" contenteditable="false" title="تصغير" aria-label="تصغير العنصر">−</button>' +
     '<button class="hb" type="button" data-act="plus" contenteditable="false" title="تكبير" aria-label="تكبير العنصر">+</button>' +
     '<button class="hb" type="button" data-act="layer" contenteditable="false" title="أمام / خلف النص" aria-label="تغيير طبقة العنصر">⇅</button>' +
     '<button class="hb hb-copy" type="button" data-act="copy" contenteditable="false" title="نسخ العنصر" aria-label="نسخ العنصر"><svg aria-hidden="true"><use href="#i-copy"/></svg></button>' +
     '<button class="hb hb-dup" type="button" data-act="dup" contenteditable="false" title="تكرار العنصر هنا" aria-label="تكرار العنصر">⧉+</button>' +
+    editBtn +
     '<button class="hb hb-del" type="button" data-act="del" contenteditable="false" title="حذف العنصر" aria-label="حذف العنصر">✕</button>';
 }
 
 function deleteMovable(el) {
   const body = el.closest('.paper-body');
   if (!body || !el.isConnected) return;
+  const doc = activeDoc();
+  if (doc) markUndoState(doc);
   el.remove();
   lastTap = { t: 0, act: '' };
   drag = null;
   ensureOverlay();
   syncBodyFromDom(body);
+  if (doc) commitUndo(doc, 'حذف عنصر');
   toast('تم حذف العنصر.');
 }
 
@@ -7350,11 +7857,21 @@ function duplicateMovable(el) {
   const tm = /(?:^|;)\s*top\s*:\s*(-?\d{1,4})px/.exec(el.getAttribute('style') || '');
   if (lm) node.style.left = Math.max(-3000, Math.min(3000, Number(lm[1]) + 24)) + 'px';
   if (tm) node.style.top = Math.max(-3000, Math.min(3000, Number(tm[1]) + 24)) + 'px';
+  const doc = activeDoc();
+  if (doc) markUndoState(doc);
   el.after(node);
   ensureOverlay();
   syncBodyFromDom(body);
+  if (doc) commitUndo(doc, 'تكرار عنصر');
   toast('تم تكرار ' + movableKindLabel(el) + '.');
 }
+
+docCanvas.addEventListener('dblclick', event => {
+  const item = event.target.closest('.qa-item');
+  if (!item || event.target.closest('.move-handle,[data-act]')) return;
+  event.preventDefault();
+  openQaEditor(item);
+});
 
 function enhanceMovables() {
   $$(MOVE_SELECTOR).forEach(el => {
@@ -7363,7 +7880,7 @@ function enhanceMovables() {
       const handle = document.createElement('div');
       handle.className = 'move-handle';
       handle.setAttribute('contenteditable', 'false');
-      handle.innerHTML = barButtonsHtml();
+      handle.innerHTML = barButtonsHtml(el);
       const corner = document.createElement('div');
       corner.className = 'rz-corner';
       corner.setAttribute('contenteditable', 'false');
@@ -7480,7 +7997,7 @@ function ensureOverlay() {
       const bar = document.createElement('div');
       bar.className = 'layer-bar';
       bar.__el = el;
-      bar.innerHTML = barButtonsHtml();
+      bar.innerHTML = barButtonsHtml(el);
       const corner = document.createElement('div');
       corner.className = 'layer-corner';
       corner.title = 'اسحب من الزاوية لتغيير الحجم';
@@ -7562,6 +8079,7 @@ docCanvas.addEventListener('pointerdown', event => {
     if (act === 'copy') { copyMovable(el); return; }
     if (act === 'dup') { duplicateMovable(el); return; }
     if (act === 'del') { deleteMovable(el); return; }
+    if (act === 'edit') { openQaEditor(el); return; }
     if (act === 'move') {
       const now = Date.now();
       if (lastTap.act === 'move' && now - lastTap.t < 400) {
@@ -8158,9 +8676,11 @@ function addBlankPage() {
   const doc = activeDoc();
   if (!doc) return;
   const section = { id: uid(), title: '', body: '', blank: true };
+  markUndoState(doc);
   doc.sections.push(section);
   renderEditor(true);
   scheduleSave();
+  commitUndo(doc, 'إضافة صفحة فارغة');
   requestAnimationFrame(() => {
     const paper = docCanvas.querySelector('[data-sec-paper="' + section.id + '"]');
     if (paper) {
@@ -8176,9 +8696,11 @@ function addSection() {
   const doc = activeDoc();
   if (!doc) return;
   const section = { id: uid(), title: '', body: '', blank: false };
+  markUndoState(doc);
   doc.sections.push(section);
   renderEditor(true);
   scheduleSave();
+  commitUndo(doc, 'إضافة قسم');
   requestAnimationFrame(() => {
     const paper = docCanvas.querySelector('[data-sec-paper="' + section.id + '"]');
     if (paper) {
@@ -8196,11 +8718,13 @@ function moveSection(id, delta) {
   const index = doc.sections.findIndex(s => s.id === id);
   const target = index + delta;
   if (index < 0 || target < 0 || target >= doc.sections.length) return;
+  markUndoState(doc);
   const tmp = doc.sections[index];
   doc.sections[index] = doc.sections[target];
   doc.sections[target] = tmp;
   renderEditor(true);
   scheduleSave();
+  commitUndo(doc, 'ترتيب الأقسام');
   const paper = docCanvas.querySelector('[data-sec-paper="' + id + '"]');
   if (paper) paper.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -8217,9 +8741,11 @@ async function deleteSection(id) {
     });
     if (!ok) return;
   }
+  markUndoState(doc);
   doc.sections = doc.sections.filter(s => s.id !== id);
   renderEditor(true);
   scheduleSave();
+  commitUndo(doc, 'حذف قسم');
   toast('تم حذف القسم.');
 }
 
@@ -8802,6 +9328,19 @@ document.addEventListener('keydown', event => {
   const mod = event.ctrlKey || event.metaKey;
   if (mod && !event.altKey) {
     const key = (event.key || '').toLowerCase();
+    if (key === 'z' || key === 'y') {
+      const target = event.target;
+      const inDialog = target && target.closest && target.closest('dialog[open]');
+      const plainField = target && target.closest && target.closest('input,textarea,select');
+      if (document.body.dataset.view === 'editor' && !inDialog && !plainField) {
+        if (key === 'z' && !event.shiftKey) {
+          if (tryStructuralUndo()) event.preventDefault();
+        } else if (key === 'y' || (key === 'z' && event.shiftKey)) {
+          if (tryStructuralRedo()) event.preventDefault();
+        }
+      }
+      return;
+    }
     if (key === 's') {
       event.preventDefault();
       if (activeDoc()) { saveNow(); toast('تم حفظ المستند.'); }
@@ -8965,35 +9504,467 @@ document.addEventListener('keydown', event => {
   }
 });
 
-/* ---------- شريط تقدم تنزيل التحديث (سطح المكتب فقط) ---------- */
+/* ---------- مركز التحديثات: شريط التقدم + النافذة المستقلة ---------- */
+const UPDATE_SNOOZE_KEY = 'midad.update.snoozedUntil';
+const UPDATE_IGNORE_KEY = 'midad.update.ignoredVersion';
+const UPDATE_LAST_CHECK_KEY = 'midad.update.lastCheck';
+
+const updateDialogEl = $('#updateDialog');
+const updActionBtn   = $('#updActionBtn');
+const updSecondaryBtn= $('#updSecondaryBtn');
+const updReleasesBtn = $('#updReleasesBtn');
+const updLaterBtn    = $('#updLaterBtn');
+const updCloseX      = $('#updCloseX');
+
+let updStateName = 'idle';
+let updInfo = null;
+let updProgressData = null;
+let updAppVersion = '';
 let ubHideTimer = null;
-function showUpdateProgress(data) {
-  const banner = document.getElementById('updateBanner');
-  const text = document.getElementById('updateBannerText');
-  const fill = document.getElementById('updateBannerFill');
-  if (!banner || !text || !fill) return;
-  data = data || {};
-  clearTimeout(ubHideTimer);
-  if (data.failed) { banner.hidden = true; return; }
-  if (data.done) {
-    banner.hidden = false;
-    fill.style.width = '100%';
-    text.textContent = 'اكتمل تنزيل التحديث — ستظهر رسالة لتثبيته.';
-    ubHideTimer = setTimeout(() => { banner.hidden = true; }, 7000);
+
+function updateApi() {
+  const d = window.midadDesktop;
+  return (d && d.updates) || null;
+}
+
+function updNum(value) { return toAr(String(value)); }
+
+function updMB(bytes) {
+  const n = Number(bytes) || 0;
+  if (!n) return '—';
+  const mb = n / 1048576;
+  return updNum(mb >= 10 ? mb.toFixed(0) : mb.toFixed(1)).replace('.', '٫') + ' م.ب';
+}
+
+function updSpeed(bytesPerSecond) {
+  const n = Number(bytesPerSecond) || 0;
+  if (!n) return '—';
+  const mb = n / 1048576;
+  return updNum(mb >= 10 ? mb.toFixed(0) : mb.toFixed(1)).replace('.', '٫') + ' م.ب/ث';
+}
+
+function updEta(seconds) {
+  const n = Number(seconds);
+  if (!isFinite(n) || n <= 0) return '—';
+  if (n < 60) return updNum(Math.ceil(n)) + ' ث';
+  const mins = Math.floor(n / 60);
+  const secs = Math.round(n % 60);
+  return updNum(mins) + ' د' + (secs ? ' ' + updNum(secs) + ' ث' : '');
+}
+
+function updDateText(value) {
+  if (!value) return '';
+  try {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '';
+    return new Intl.DateTimeFormat('ar-u-nu-arab', { dateStyle: 'medium' }).format(d);
+  } catch (err) { return ''; }
+}
+
+function updRender() {
+  if (!updateDialogEl) return;
+  const st = updStateName;
+  const version = updInfo && updInfo.version ? String(updInfo.version) : '';
+  const current = updAppVersion || (window.midadDesktop && window.midadDesktop.version) || '';
+
+  const curEl = $('#updCurrent');
+  if (curEl) curEl.textContent = current ? updNum(current) : '—';
+  const newWrap = $('#updNewWrap');
+  if (newWrap) {
+    newWrap.hidden = !version;
+    if (version) $('#updNew').textContent = updNum(version);
+  }
+
+  const box = $('#updState');
+  if (box) box.dataset.state = st;
+  const titleEl = $('#updStateTitle');
+  const textEl = $('#updStateText');
+  const copy = {
+    idle: ['تحقّق من وجود تحديث', 'اضغط «فحص التحديثات» لعرض أحدث إصدار.'],
+    checking: ['جارٍ التحقق من التحديثات…', 'يتم الاتصال بخادم الإصدارات.'],
+    available: ['تحديث جديد جاهز للتنزيل', version ? ('الإصدار ' + updNum(version) + ' متاح — نزّله الآن داخل البرنامج.') : 'يتوفر إصدار أحدث.'],
+    downloading: ['جارٍ تنزيل التحديث…', 'يمكنك متابعة العمل؛ سيستمر التنزيل في الخلفية.'],
+    ready: ['التحديث جاهز للتثبيت', version ? ('أعد تشغيل البرنامج لتطبيق الإصدار ' + updNum(version) + '.') : 'أعد تشغيل البرنامج لتطبيق التحديث.'],
+    onquit: ['سيُثبَّت عند الإغلاق', 'أغلق البرنامج ثم افتحه لتطبيق التحديث.'],
+    none: ['أنت تستخدم أحدث إصدار', 'لا توجد تحديثات جديدة الآن.'],
+    error: ['تعذّر إكمال التحديث', (updInfo && updInfo.message) || 'تحقّق من اتصالك بالإنترنت ثم أعد المحاولة.'],
+    cancelled: ['أُلغي تنزيل التحديث', 'يمكنك إعادة التنزيل في أي وقت.'],
+    unsupported: ['التحديث التلقائي غير متاح في هذه الحزمة', 'حزمة .deb ونسخة التطوير لا تُحدِّث نفسها. نزّل أحدث إصدار من صفحة الإصدارات.'],
+    dev: ['نسخة التطوير لا تدعم التحديث التلقائي', 'افتح النسخة المثبّتة أو نزّل أحدث إصدار من صفحة الإصدارات.'],
+    browser: ['مركز التحديثات في نسخة سطح المكتب', 'افتح تطبيق مِداد المثبّت على جهازك لتنزيل التحديثات وتثبيتها.']
+  };
+  const pair = copy[st] || copy.idle;
+  if (titleEl) titleEl.textContent = pair[0];
+  if (textEl) textEl.textContent = pair[1];
+
+  const action = {
+    idle: ['فحص التحديثات', false],
+    checking: ['جارٍ الفحص…', true],
+    available: ['تحميل التحديث', false],
+    downloading: ['إلغاء التنزيل', false],
+    ready: ['إعادة التشغيل والتثبيت', false],
+    onquit: ['سيُثبَّت عند الإغلاق', true],
+    none: ['فحص مرة أخرى', false],
+    error: ['إعادة المحاولة', false],
+    cancelled: ['إعادة التنزيل', false],
+    unsupported: ['فتح صفحة الإصدارات', false],
+    dev: ['فتح صفحة الإصدارات', false],
+    browser: ['غير متاح في المتصفح', true]
+  }[st] || ['فحص التحديثات', false];
+  if (updActionBtn) {
+    updActionBtn.textContent = action[0];
+    updActionBtn.disabled = action[1];
+    updActionBtn.dataset.mode = st;
+  }
+  if (updSecondaryBtn) updSecondaryBtn.hidden = st !== 'ready';
+
+  const progWrap = $('#updProgress');
+  const pct = st === 'ready' ? 100 : (updProgressData && typeof updProgressData.percent === 'number' ? updProgressData.percent : 0);
+  if (progWrap) progWrap.hidden = ['downloading', 'ready'].indexOf(st) < 0;
+  const fill = $('#updFill');
+  if (fill) fill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  const pctEl = $('#updPercent');
+  if (pctEl) pctEl.textContent = updNum(Math.round(pct)) + '٪';
+  const sizeEl = $('#updSize');
+  if (sizeEl) {
+    const total = (updProgressData && updProgressData.total) || (updInfo && updInfo.size) || 0;
+    sizeEl.textContent = total ? ('الحجم: ' + updMB(total)) : '';
+  }
+  const speedEl = $('#updSpeed');
+  if (speedEl) speedEl.textContent = (updProgressData && updProgressData.speed) ? ('السرعة: ' + updSpeed(updProgressData.speed)) : '';
+  const etaEl = $('#updEta');
+  if (etaEl) etaEl.textContent = (updProgressData && updProgressData.eta) ? ('المتبقي: ' + updEta(updProgressData.eta)) : '';
+
+  const notesWrap = $('#updNotesWrap');
+  const notes = updInfo && updInfo.notes ? String(updInfo.notes) : '';
+  if (notesWrap) {
+    notesWrap.hidden = !(notes && ['available', 'ready'].indexOf(st) >= 0);
+    if (!notesWrap.hidden) $('#updNotes').textContent = notes;
+  }
+
+  const hintEl = $('#updHint');
+  if (hintEl) {
+    let hint = '';
+    const released = updDateText(updInfo && updInfo.releaseDate);
+    if (st === 'available' && released) hint = 'تاريخ الإصدار: ' + released + '.';
+    else if (['unsupported', 'dev', 'browser'].indexOf(st) >= 0) hint = 'يمكنك دائمًا تنزيل أحدث نسخة يدويًا من صفحة الإصدارات.';
+    else {
+      let last = 0;
+      try { last = Number(localStorage.getItem(UPDATE_LAST_CHECK_KEY) || 0); } catch (err) { last = 0; }
+      if (last) hint = 'آخر فحص: ' + updDateText(last) + '.';
+    }
+    hintEl.textContent = hint;
+    hintEl.hidden = !hint;
+  }
+}
+
+function updRememberCheck() {
+  try { localStorage.setItem(UPDATE_LAST_CHECK_KEY, String(Date.now())); } catch (err) { /* تجاهل */ }
+}
+
+function setUpdState(name) {
+  updStateName = name;
+  updRender();
+}
+
+function updCheck() {
+  const api = updateApi();
+  if (!api || !api.check) { setUpdState('browser'); return; }
+  if (updStateName === 'checking') return;
+  updStateName = 'checking';
+  updRender();
+  try {
+    const result = api.check();
+    if (result && typeof result.then === 'function') {
+      result.then(res => {
+        if (res && res.status) handleUpdateResult(res);
+        else if (res === false && updStateName === 'checking') setUpdState('unsupported');
+      }).catch(() => {
+        if (updStateName === 'checking') { updInfo = { message: 'تعذّر الاتصال بخادم التحديثات.' }; setUpdState('error'); }
+      });
+    }
+  } catch (err) {
+    updInfo = { message: 'تعذّر بدء فحص التحديثات.' };
+    setUpdState('error');
+  }
+}
+
+function updDownload() {
+  const api = updateApi();
+  if (!api || !api.download) { toast('التحديث متاح في نسخة سطح المكتب فقط.', 'error'); return; }
+  if (updStateName === 'downloading') return;
+  updProgressData = { percent: 0 };
+  updStateName = 'downloading';
+  updRender();
+  try {
+    const result = api.download();
+    if (result && typeof result.then === 'function') {
+      result.then(ok => {
+        if (ok === false && updStateName === 'downloading') {
+          updInfo = Object.assign({}, updInfo, { message: 'تعذّر بدء تنزيل التحديث.' });
+          setUpdState('error');
+        }
+      }).catch(() => {
+        if (updStateName === 'downloading') {
+          updInfo = Object.assign({}, updInfo, { message: 'تعذّر بدء تنزيل التحديث.' });
+          setUpdState('error');
+        }
+      });
+    }
+  } catch (err) {
+    updInfo = Object.assign({}, updInfo, { message: 'تعذّر بدء تنزيل التحديث.' });
+    setUpdState('error');
+  }
+}
+
+function updCancel() {
+  const api = updateApi();
+  if (!api || !api.cancel) return;
+  try { api.cancel(); } catch (err) { /* تجاهل */ }
+  setUpdState('cancelled');
+  hideUpdateBanner();
+}
+
+function updInstallNow() {
+  const api = updateApi();
+  if (!api || !api.installNow) { toast('التثبيت متاح في نسخة سطح المكتب فقط.', 'error'); return; }
+  try {
+    const result = api.installNow();
+    if (result && typeof result.then === 'function') {
+      result.then(ok => {
+        if (ok === false) toast('تعذّر بدء التثبيت — أعد المحاولة.', 'error');
+        else toast('سيُغلق البرنامج الآن لتثبيت التحديث.');
+      }).catch(() => toast('تعذّر بدء التثبيت — أعد المحاولة.', 'error'));
+    } else {
+      toast('سيُغلق البرنامج الآن لتثبيت التحديث.');
+    }
+  } catch (err) { toast('تعذّر بدء التثبيت — أعد المحاولة.', 'error'); }
+}
+
+function updInstallOnQuit() {
+  const api = updateApi();
+  if (!api || !api.installOnQuit) return;
+  try {
+    const result = api.installOnQuit();
+    Promise.resolve(result).then(ok => {
+      if (ok) { setUpdState('onquit'); toast('سيُثبَّت التحديث عند إغلاق البرنامج.'); }
+      else toast('التثبيت عند الإغلاق غير متاح الآن.', 'error');
+    }).catch(() => toast('التثبيت عند الإغلاق غير متاح الآن.', 'error'));
+  } catch (err) { toast('التثبيت عند الإغلاق غير متاح الآن.', 'error'); }
+}
+
+function updOpenReleases() {
+  const api = updateApi();
+  if (api && api.openReleases) { try { api.openReleases(); return; } catch (err) { /* تجاهل */ } }
+  try { window.open('https://github.com/zulf96/midad/releases/latest', '_blank', 'noopener'); } catch (err) { /* تجاهل */ }
+}
+
+function openUpdateCenter(options) {
+  options = options || {};
+  if (!updateDialogEl) return;
+  if (options.info) updInfo = options.info;
+  if (options.status) updStateName = options.status;
+  if (updateDialogEl.open !== true) {
+    try {
+      if (typeof updateDialogEl.showModal === 'function') updateDialogEl.showModal();
+      else updateDialogEl.setAttribute('open', '');
+    } catch (err) { updateDialogEl.setAttribute('open', ''); }
+  }
+  updRender();
+  const api = updateApi();
+  if (!api) {
+    updStateName = 'browser';
+    updRender();
     return;
   }
+  if (api.getVersion) {
+    Promise.resolve(api.getVersion()).then(v => {
+      if (v) { updAppVersion = String(v); updRender(); }
+    }).catch(() => {});
+  }
+  if (options.autoCheck && api && ['idle', 'none', 'error', 'cancelled', 'unsupported'].indexOf(updStateName) >= 0) {
+    updCheck();
+  }
+}
+
+/* ---------- شريط التقدم العائم ---------- */
+function showUpdateBanner(text, percent, force) {
+  const banner = document.getElementById('updateBanner');
+  const label = document.getElementById('updateBannerText');
+  const fill = document.getElementById('updateBannerFill');
+  if (!banner || !label || !fill) return;
+  if (!force && updateDialogEl && updateDialogEl.open) { banner.hidden = true; return; }
+  clearTimeout(ubHideTimer);
+  label.textContent = text;
+  fill.style.width = Math.max(0, Math.min(100, percent)) + '%';
+  banner.hidden = false;
+}
+
+function hideUpdateBanner() {
+  const banner = document.getElementById('updateBanner');
+  clearTimeout(ubHideTimer);
+  if (banner) banner.hidden = true;
+}
+
+function showUpdateProgress(data) {
+  data = data || {};
+  if (data.failed) { hideUpdateBanner(); return; }
+  if (data.done) { handleUpdateReady({ version: data.version }); return; }
   if (typeof data.percent !== 'number') return;
   const pct = Math.max(0, Math.min(100, data.percent));
-  let label = 'جارٍ تنزيل التحديث… ' + toAr(Math.round(pct)) + '٪';
-  if (data.speed) label += ' (' + toAr((data.speed / 1048576).toFixed(1)).replace('.', '٫') + ' م.ب/ث)';
-  banner.hidden = false;
-  fill.style.width = pct + '%';
-  text.textContent = label;
+  updProgressData = data;
+  if (updStateName !== 'downloading') updStateName = 'downloading';
+  updRender();
+  let text = 'جارٍ تنزيل التحديث… ' + updNum(Math.round(pct)) + '٪';
+  if (data.speed) text += ' — ' + updSpeed(data.speed);
+  showUpdateBanner(text, pct);
 }
-/* جسر من الإلكترون (preload) + حدث تجريبي/داخلي */
-window.addEventListener('midad-update-progress', e => showUpdateProgress(e && e.detail));
-if (window.midadDesktop && window.midadDesktop.updates && window.midadDesktop.updates.onProgress) {
-  window.midadDesktop.updates.onProgress(showUpdateProgress);
+
+/* ---------- أحداث التحديث ---------- */
+function handleUpdateFound(info) {
+  info = info || {};
+  if (!info.version) return;
+  updInfo = Object.assign({}, updInfo, info);
+  if (['downloading', 'ready'].indexOf(updStateName) < 0) updStateName = 'available';
+  updRender();
+  showUpdatePrompt(updInfo);
+}
+
+function handleUpdateReady(info) {
+  info = info || {};
+  updInfo = Object.assign({}, updInfo, info);
+  updProgressData = { percent: 100, total: updInfo.size || (updProgressData && updProgressData.total) || 0 };
+  updStateName = 'ready';
+  updRender();
+  showUpdateBanner('اكتمل تنزيل التحديث — جاهز للتثبيت', 100);
+  if (updateDialogEl && updateDialogEl.open) hideUpdateBanner();
+  else ubHideTimer = setTimeout(hideUpdateBanner, 7000);
+}
+
+function handleUpdateError(info) {
+  info = info || {};
+  updInfo = Object.assign({}, updInfo, info);
+  updStateName = 'error';
+  updRender();
+  hideUpdateBanner();
+}
+
+function handleUpdateCancelled() {
+  updStateName = 'cancelled';
+  updRender();
+  hideUpdateBanner();
+}
+
+function handleUpdateResult(res) {
+  res = res || {};
+  if (res.status === 'found') {
+    updInfo = Object.assign({}, updInfo, res);
+    updStateName = 'available';
+    updRender();
+    showUpdatePrompt(updInfo);
+    return;
+  }
+  if (res.status === 'checking') { setUpdState('checking'); return; }
+  if (res.status === 'none') {
+    updRememberCheck();
+    setUpdState('none');
+    if (!updateDialogEl || !updateDialogEl.open) toast('أنت تستخدم أحدث إصدار (' + updNum(updAppVersion || (window.midadDesktop && window.midadDesktop.version) || '') + ').');
+    return;
+  }
+  if (res.status === 'error') {
+    updInfo = Object.assign({}, updInfo, { message: res.message || '' });
+    setUpdState('error');
+    return;
+  }
+  if (res.status === 'unsupported') { setUpdState('unsupported'); return; }
+}
+
+/* ---------- إشعار التحديث المصغّر ---------- */
+let pendingUpdate = null;
+
+function showUpdatePrompt(info) {
+  info = info || {};
+  const version = String(info.version || '');
+  if (!version || !updatePrompt) return;
+  try {
+    if (sessionStorage.getItem(UPDATE_IGNORE_KEY) === version) return;
+    if (Number(localStorage.getItem(UPDATE_SNOOZE_KEY) || 0) > Date.now()) return;
+  } catch (err) { /* تجاهل */ }
+  pendingUpdate = info;
+  if (upVersion) upVersion.textContent = 'الإصدار ' + updNum(version) + ' متاح الآن — افتح مركز التحديثات للتنزيل.';
+  updatePrompt.hidden = false;
+}
+
+function hideUpdatePrompt(mode) {
+  if (!updatePrompt) return;
+  updatePrompt.hidden = true;
+  try {
+    if (mode === 'ignore' && pendingUpdate) sessionStorage.setItem(UPDATE_IGNORE_KEY, String(pendingUpdate.version));
+    if (mode === 'later') localStorage.setItem(UPDATE_SNOOZE_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
+  } catch (err) { /* تجاهل */ }
+  if (mode === 'ignore') toast('تم تجاهل هذا التحديث لهذه الجلسة.');
+  if (mode === 'later') toast('سيُذكَّر بالتحديث بعد ٢٤ ساعة.');
+}
+
+/* ---------- ربط الأزرار ---------- */
+if (updActionBtn) {
+  updActionBtn.addEventListener('click', () => {
+    const st = updStateName;
+    if (st === 'idle' || st === 'none' || st === 'error') updCheck();
+    else if (st === 'available' || st === 'cancelled') updDownload();
+    else if (st === 'downloading') updCancel();
+    else if (st === 'ready') updInstallNow();
+    else if (st === 'unsupported' || st === 'dev') updOpenReleases();
+  });
+}
+if (updSecondaryBtn) updSecondaryBtn.addEventListener('click', updInstallOnQuit);
+if (updReleasesBtn) updReleasesBtn.addEventListener('click', updOpenReleases);
+/* إظهار الشريط العائم عند إغلاق المركز أثناء التنزيل (حتمي، لا يعتمد على توقيت الحدث) */
+function showDownloadBanner() {
+  if (updStateName !== 'downloading') return;
+  const pct = (updProgressData && typeof updProgressData.percent === 'number') ? updProgressData.percent : 0;
+  let text = 'جارٍ تنزيل التحديث… ' + updNum(Math.round(pct)) + '٪';
+  if (updProgressData && updProgressData.speed) text += ' — ' + updSpeed(updProgressData.speed);
+  showUpdateBanner(text, pct, true);
+}
+if (updLaterBtn) updLaterBtn.addEventListener('click', () => { if (updateDialogEl) updateDialogEl.close(); showDownloadBanner(); });
+if (updCloseX) updCloseX.addEventListener('click', () => { if (updateDialogEl) updateDialogEl.close(); showDownloadBanner(); });
+if (updateDialogEl) updateDialogEl.addEventListener('close', () => showDownloadBanner());
+
+const upOpenBtn = $('#upOpenBtn');
+const upIgnoreBtn = $('#upIgnoreBtn');
+const upLaterBtn = $('#upLaterBtn');
+if (upOpenBtn) upOpenBtn.addEventListener('click', () => {
+  hideUpdatePrompt();
+  openUpdateCenter({ info: pendingUpdate });
+});
+if (upIgnoreBtn) upIgnoreBtn.addEventListener('click', () => hideUpdatePrompt('ignore'));
+if (upLaterBtn) upLaterBtn.addEventListener('click', () => hideUpdatePrompt('later'));
+
+const updateBannerEl = document.getElementById('updateBanner');
+if (updateBannerEl) updateBannerEl.addEventListener('click', () => openUpdateCenter());
+
+/* ---------- جسور الأحداث (اختبار/متصفح + سطح المكتب) ---------- */
+window.addEventListener('midad-update-found', event => handleUpdateFound(event && event.detail));
+window.addEventListener('midad-update-progress', event => showUpdateProgress(event && event.detail));
+window.addEventListener('midad-update-ready', event => handleUpdateReady(event && event.detail));
+window.addEventListener('midad-update-error', event => handleUpdateError(event && event.detail));
+window.addEventListener('midad-update-cancelled', () => handleUpdateCancelled());
+window.addEventListener('midad-update-open', event => openUpdateCenter(Object.assign({ autoCheck: true }, (event && event.detail) || {})));
+window.addEventListener('midad-update-check-result', event => handleUpdateResult(event && event.detail));
+
+const upd = updateApi();
+if (upd) {
+  if (typeof upd.onAvailable === 'function') upd.onAvailable(handleUpdateFound);
+  if (typeof upd.onCheckResult === 'function') upd.onCheckResult(handleUpdateResult);
+  if (typeof upd.onProgress === 'function') upd.onProgress(showUpdateProgress);
+  if (typeof upd.onReady === 'function') upd.onReady(handleUpdateReady);
+  if (typeof upd.onError === 'function') upd.onError(handleUpdateError);
+  if (typeof upd.onCancelled === 'function') upd.onCancelled(handleUpdateCancelled);
+  if (typeof upd.onOpenCenter === 'function') upd.onOpenCenter(data => openUpdateCenter(Object.assign({ autoCheck: true }, data || {})));
+  if (typeof upd.getVersion === 'function') {
+    Promise.resolve(upd.getVersion()).then(v => { if (v) updAppVersion = String(v); }).catch(() => {});
+  }
 }
 
 /* ---------- الدفعة ١٧: الوضع الليلي للواجهة + حقوق المبرمج + إشعار التحديث ---------- */
@@ -9026,115 +9997,13 @@ creditsBtns.forEach(btn => btn.addEventListener('click', openCredits));
   if (btn) btn.addEventListener('click', () => creditsDialog.close());
 });
 
-/* إشعار التحديث: ثلاثة قرارات واضحة للمستخدم */
-const UPDATE_SNOOZE_KEY = 'midad.update.snoozedUntil';
-const UPDATE_IGNORE_KEY = 'midad.update.ignoredVersion';
-let pendingUpdate = null;
-
-function showUpdatePrompt(info) {
-  info = info || {};
-  const version = String(info.version || '');
-  if (!version || !updatePrompt) return;
-  try {
-    if (sessionStorage.getItem(UPDATE_IGNORE_KEY) === version) return;
-    if (Number(localStorage.getItem(UPDATE_SNOOZE_KEY) || 0) > Date.now()) return;
-  } catch (err) { /* تجاهل */ }
-  pendingUpdate = info;
-  if (upVersion) upVersion.textContent = 'الإصدار ' + toAr(version) + ' متاح الآن — اختر ما تريد.';
-  if (upInstallBtn) { upInstallBtn.disabled = false; upInstallBtn.textContent = 'تحديث الآن'; }
-  updatePrompt.hidden = false;
-}
-
-function hideUpdatePrompt(mode) {
-  if (!updatePrompt) return;
-  updatePrompt.hidden = true;
-  try {
-    if (mode === 'ignore' && pendingUpdate) sessionStorage.setItem(UPDATE_IGNORE_KEY, String(pendingUpdate.version));
-    if (mode === 'later') localStorage.setItem(UPDATE_SNOOZE_KEY, String(Date.now() + 24 * 60 * 60 * 1000));
-  } catch (err) { /* تجاهل */ }
-  if (mode === 'ignore') toast('تم تجاهل هذا التحديث لهذه الجلسة.');
-  if (mode === 'later') toast('سيُذكَّر بالتحديث بعد ٢٤ ساعة.');
-}
-
-const upIgnoreBtn = $('#upIgnoreBtn');
-const upLaterBtn  = $('#upLaterBtn');
-if (upIgnoreBtn) upIgnoreBtn.addEventListener('click', () => hideUpdatePrompt('ignore'));
-if (upLaterBtn) upLaterBtn.addEventListener('click', () => hideUpdatePrompt('later'));
-
-function updateApi() {
-  const d = window.midadDesktop;
-  return (d && d.updates) || null;
-}
-
-if (upInstallBtn) {
-  upInstallBtn.addEventListener('click', () => {
-    const api = updateApi();
-    if (!api || !api.install) { toast('التحديث متاح في نسخة سطح المكتب فقط.', 'error'); return; }
-    upInstallBtn.disabled = true;
-    upInstallBtn.textContent = 'جارٍ التنزيل…';
-    updatePrompt.hidden = true;
-    try {
-      const result = api.install();
-      if (result && typeof result.then === 'function') {
-        result.then(ok => {
-          if (ok === false) {
-            upInstallBtn.disabled = false;
-            upInstallBtn.textContent = 'تحديث الآن';
-            toast('تعذّر بدء تنزيل التحديث.', 'error');
-          } else {
-            toast('بدأ تنزيل التحديث في الخلفية — سيُثبَّت بعد اكتماله.');
-          }
-        }).catch(() => {
-          upInstallBtn.disabled = false;
-          upInstallBtn.textContent = 'تحديث الآن';
-          toast('تعذّر بدء تنزيل التحديث.', 'error');
-        });
-      } else {
-        toast('بدأ تنزيل التحديث في الخلفية — سيُثبَّت بعد اكتماله.');
-      }
-    } catch (err) {
-      upInstallBtn.disabled = false;
-      upInstallBtn.textContent = 'تحديث الآن';
-      toast('تعذّر بدء تنزيل التحديث.', 'error');
-    }
-  });
-}
-
-function handleUpdateResult(res) {
-  res = res || {};
-  if (res.status === 'found') { showUpdatePrompt(res); return; }
-  if (res.status === 'none') {
-    toast('أنت تستخدم أحدث إصدار (' + toAr((window.midadDesktop && window.midadDesktop.version) || '1.1.0') + ').');
-  } else if (res.status === 'error') {
-    toast('تعذّر التحقق من التحديثات — تحقّق من اتصالك بالإنترنت.', 'error');
-  } else if (res.status === 'unsupported') {
-    toast('التحديث التلقائي غير متاح في هذه الحزمة — نزّل من صفحة الإصدارات.', 'error');
-  } else if (res.status === 'checking') {
-    toast('جارٍ التحقق من التحديثات…');
-  }
-}
-
 const creditsCheckBtn = $('#creditsCheckBtn');
 if (creditsCheckBtn) {
   creditsCheckBtn.addEventListener('click', () => {
-    const api = updateApi();
-    if (!api || !api.check) { toast('التحقق من التحديثات متاح في نسخة سطح المكتب فقط.', 'error'); return; }
-    try {
-      const result = api.check();
-      toast('جارٍ التحقق من التحديثات…');
-      if (result && typeof result.then === 'function') result.then(handleUpdateResult).catch(() => handleUpdateResult({ status: 'error' }));
-    } catch (err) {
-      toast('تعذّر التحقق من التحديثات.', 'error');
-    }
+    if (creditsDialog) creditsDialog.close();
+    openUpdateCenter({ autoCheck: true });
   });
 }
-
-/* جسر الإلكترون: الإشعارات التأتية من العملية الرئيسية */
-window.addEventListener('midad-update-found', event => showUpdatePrompt(event && event.detail));
-window.addEventListener('midad-update-check-result', event => handleUpdateResult(event && event.detail));
-const upd = updateApi();
-if (upd && typeof upd.onAvailable === 'function') upd.onAvailable(info => showUpdatePrompt(info));
-if (upd && typeof upd.onCheckResult === 'function') upd.onCheckResult(res => handleUpdateResult(res));
 
 /* شريحة اللصق */
 const pasteChip = document.getElementById('pasteChip');
