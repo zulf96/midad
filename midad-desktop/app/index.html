@@ -8829,20 +8829,21 @@ function handleView(kind) {
   if (kind === 'ruler') { toggleRuler(); return; }
   if (kind === 'nav') { toggleNav(); return; }
   if (kind === 'read') { toggleReading(); return; }
-  if (kind === 'grid') {
-    const on = document.body.classList.toggle('grid-on');
-    const btn = $('#gridBtn');
-    if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
-    toast(on ? 'الشبكة ظاهرة.' : 'الشبكة مخفاة.');
-    return;
-  }
-  if (kind === 'lines') {
-    const on = document.body.classList.toggle('lines-on');
-    const btn = $('#linesBtn');
-    if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
-    toast(on ? 'ترقيم الأسطر مُفعّل.' : 'ترقيم الأسطر متوقف.');
-    return;
-  }
+  if (kind === 'grid') { toggleGrid(); return; }
+  if (kind === 'lines') { toggleLines(); return; }
+}
+
+function toggleGrid() {
+  const on = document.body.classList.toggle('grid-on');
+  const btn = $('#gridBtn');
+  if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
+  toast(on ? 'الشبكة ظاهرة.' : 'الشبكة مخفاة.');
+}
+function toggleLines() {
+  const on = document.body.classList.toggle('lines-on');
+  const btn = $('#linesBtn');
+  if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
+  toast(on ? 'ترقيم الأسطر مُفعّل.' : 'ترقيم الأسطر متوقف.');
 }
 
 const stylesGrid = $('#stylesGrid');
