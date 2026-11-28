@@ -675,29 +675,42 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 .sidebar-delete svg{ width:13px; height:13px; }
 
 /* شريط الأدوات */
-.editor-main{ min-width:0; }
-.toolbar-wrap{
-  position:sticky; top:var(--header-h); z-index:45;
-  padding:10px 22px;
-  background:rgba(247,249,250,.9);
-  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
-  border-bottom:1px solid rgba(30,61,89,.06);
+/* شريط الأدوات الرأسي الجانبي (نمط Adobe) */
+.editor-main{
+  min-width:0; display:grid;
+  grid-template-columns:58px minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);
+  align-items:start;
 }
+.toolbar-wrap{ display:contents; }
 .editor-toolbar{
-  max-width:980px; margin:0 auto;
-  display:grid; gap:3px;
-  padding:5px;
-  background:#fff; border:1px solid var(--line); border-radius:13px;
-  box-shadow:0 6px 18px -16px rgba(18,41,60,.35);
+  position:sticky; top:var(--header-h); z-index:50;
+  grid-column:1; grid-row:1/3;
+  width:58px; height:calc(100vh - var(--header-h));
+  margin:0; padding:8px 0; box-sizing:border-box;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  overflow-y:auto; overflow-x:visible; scrollbar-width:none;
+  background:rgba(248,251,252,.94);
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+  border-inline-start:1px solid var(--line);
 }
+.editor-toolbar::-webkit-scrollbar{ display:none; }
 .tb-row{
-  display:flex; align-items:center; gap:2px;
-  overflow-x:auto; scrollbar-width:none;
+  width:100%; display:flex; flex-direction:column; align-items:center; gap:3px;
+  overflow:visible;
 }
-.tb-row::-webkit-scrollbar{ display:none; }
-.tb-row-advanced{ border-top:1px solid #f0f5f7; padding-top:3px; }
-.tb-group{ display:flex; align-items:center; gap:1px; flex:0 0 auto; }
-.tb-sep{ width:1px; height:20px; background:var(--line); margin:0 4px; flex:0 0 auto; }
+.tb-row-advanced{
+  position:absolute; inset-inline-start:calc(100% + 8px); top:6px; z-index:70;
+  width:340px; max-height:76vh; overflow:auto; display:none;
+  flex-direction:row; flex-wrap:wrap; align-content:flex-start;
+  padding:10px; gap:5px;
+  background:#fff; border:1px solid var(--line-strong); border-radius:12px;
+  box-shadow:0 24px 50px -22px rgba(18,41,60,.5);
+}
+.editor-toolbar.rail-more-open .tb-row-advanced{ display:flex; }
+.tb-group{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+.tb-sep{ width:22px; height:1px; margin:3px 0; flex:0 0 auto; }
+.rail-more{ background:var(--brand-gold-soft); color:var(--brand-gold-ink); }
 .tb-btn{
   width:31px; height:31px; border-radius:7px;
   display:grid; place-items:center; flex:0 0 auto;
@@ -803,7 +816,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
 .qb-clear{ color:#ffc3ae; }
 .qb-clear:hover{ background:rgba(255,110,64,.35); }
 
-.canvas-wrap{ padding:24px 24px 70px; }
+.canvas-wrap{ grid-column:2; grid-row:2; padding:24px 24px 70px; }
 .canvas{
   --page-w:794px; --page-h:1123px; --print-w:210mm; --print-h:297mm;
   --accent:var(--coral);
@@ -1996,6 +2009,8 @@ body[data-night="on"] .upd-notes-body{ color:#bbb; }
   body.sidebar-open .sidebar-overlay{ display:block; }
   .sidebar-toggle{ display:inline-grid; }
   .canvas-wrap{ padding:18px 16px 60px; }
+  .editor-main{ grid-template-columns:50px minmax(0,1fr); }
+  .editor-toolbar{ width:50px; }
   .toolbar-wrap{ padding:8px 14px; }
   .canvas{ --page-pad:clamp(24px,6.2vw,44px); }
   .doc-title-input{ flex-basis:120px; }
@@ -2570,11 +2585,27 @@ body.reading-mode .canvas{ zoom:1.08; }
 
 /* ----- شريط أدوات الجدول السياقي ----- */
 .table-bar{
-  display:flex; align-items:center; gap:2px;
-  overflow-x:auto; scrollbar-width:none;
-  border-top:1px solid #f0f5f7; padding-top:4px;
+  grid-column:2; grid-row:1;
+  position:sticky; top:var(--header-h); z-index:46;
+  display:flex; align-items:center; flex-wrap:wrap; gap:4px;
+  padding:7px 14px;
+  background:rgba(255,255,255,.95);
+  -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
 }
 .table-bar[hidden]{ display:none !important; }
+.tbl-menu-wrap{ position:relative; flex:0 0 auto; }
+.tbl-menu-panel{
+  position:absolute; inset-inline-start:0; top:calc(100% + 6px); z-index:80;
+  min-width:210px; padding:8px; display:none;
+  flex-direction:column; gap:4px;
+  background:#fff; border:1px solid var(--line-strong); border-radius:10px;
+  box-shadow:0 20px 42px -20px rgba(18,41,60,.45);
+}
+.tbl-menu-wrap.menu-open .tbl-menu-panel{ display:flex; }
+.tbl-menu-wrap.menu-open > .tbb{ background:var(--brand-gold-soft); color:var(--brand-gold-ink); border-color:var(--brand-gold); }
+.tbl-menu-panel .tm-head{ font-size:10px; color:var(--muted); font-weight:700; padding:2px 4px; }
+.tbl-menu-panel .tbb{ width:100%; text-align:start; }
 .table-bar::-webkit-scrollbar{ display:none; }
 .table-bar .tbl-lead{
   font:800 11px/1 var(--font-head); color:var(--navy);
@@ -3874,6 +3905,8 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
     <div class="toolbar-wrap">
       <div class="editor-toolbar" id="editorToolbar" role="toolbar" aria-label="أدوات التنسيق">
         <div class="tb-row">
+          <button class="tb-btn rail-more" type="button" id="railMoreBtn" data-rail="more" title="خيارات التنسيق المتقدمة" aria-label="خيارات التنسيق المتقدمة" aria-expanded="false"><svg aria-hidden="true"><use href="#i-grid"/></svg></button>
+          <span class="tb-sep" aria-hidden="true"></span>
           <div class="tb-group">
             <button class="tb-btn" type="button" data-cmd="undo" title="تراجع (Ctrl+Z)" aria-label="تراجع"><svg aria-hidden="true"><use href="#i-undo"/></svg></button>
             <button class="tb-btn" type="button" data-cmd="redo" title="إعادة (Ctrl+Y)" aria-label="إعادة"><svg aria-hidden="true"><use href="#i-redo"/></svg></button>
@@ -4033,40 +4066,81 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
           </div>
         </div>
         <div class="table-bar" id="tableBar" role="toolbar" aria-label="أدوات الجدول" hidden>
-          <span class="tbl-lead" aria-hidden="true">الجدول</span>
-          <button class="tbb" type="button" data-table-act="row-add" title="إدراج صف أسفل الصف الحالي" aria-label="إدراج صف">صف +</button>
-          <button class="tbb" type="button" data-table-act="row-del" title="حذف الصف الحالي" aria-label="حذف صف">صف −</button>
-          <span class="tb-sep" aria-hidden="true"></span>
-          <button class="tbb" type="button" data-table-act="col-add" title="إدراج عمود بعد العمود الحالي" aria-label="إدراج عمود">عمود +</button>
-          <button class="tbb" type="button" data-table-act="col-del" title="حذف العمود الحالي" aria-label="حذف عمود">عمود −</button>
-          <span class="tb-sep" aria-hidden="true"></span>
-          <button class="tbb" type="button" data-table-act="merge" title="دمج الخلايا المحددة (حدد خلايا مستطيلة متجاورة)" aria-label="دمج الخلايا">دمج</button>
-          <button class="tbb" type="button" data-table-act="split" title="تقسيم الخلية المدموجة" aria-label="تقسيم الخلية">تقسيم</button>
-          <span class="tb-sep" aria-hidden="true"></span>
-          <button class="tbb" type="button" data-table-act="head" title="تكرار صف العنوان في كل صفحة عند الطباعة" aria-label="تكرار صف العنوان" aria-pressed="false">رأس متكرر</button>
-          <select class="tb-select cell-align" id="cellAlignSelect" aria-label="محاذاة الخلية" title="محاذاة الخلية أفقيًا وعموديًا">
-            <option value="default">محاذاة الخلية</option>
-            <option value="tr">أعلى يمين</option>
-            <option value="tc">أعلى وسط</option>
-            <option value="tl">أعلى يسار</option>
-            <option value="mr">وسط يمين</option>
-            <option value="mc">وسط</option>
-            <option value="ml">وسط يسار</option>
-            <option value="br">أسفل يمين</option>
-            <option value="bc">أسفل وسط</option>
-            <option value="bl">أسفل يسار</option>
-          </select>
-          <span class="tb-sep" aria-hidden="true"></span>
-          <button class="tbb" type="button" data-table-act="sum" title="جمع الأرقام في الخلايا أعلى الخلية الحالية" aria-label="جمع ما فوق الخلية">Σ</button>
-          <button class="tbb" type="button" data-table-act="avg" title="متوسط الأرقام في الخلايا أعلى الخلية الحالية" aria-label="متوسط ما فوق الخلية">x̄</button>
-          <button class="tbb" type="button" data-table-act="fit" title="تبديل ملاءمة الجدول: عرض الصفحة / عرض المحتوى / افتراضي" aria-label="ملاءمة الجدول">ملاءمة</button>
-          <button class="tbb" type="button" data-table-act="equal" title="توزيع الأعمدة بالتساوي" aria-label="أعمدة متساوية">توزيع</button>
-          <span class="tb-sep" aria-hidden="true"></span>
-          <button class="tbb" type="button" data-table-act="totext" title="تحويل الجدول الحالي إلى فقرات نصية" aria-label="تحويل الجدول إلى نص">جدول ← نص</button>
-          <button class="tbb" type="button" data-table-act="more" title="أدوات إضافية: إدراج رباعي، صيغ، فرز، هوامش، فاصل التحويل" aria-label="أدوات جدول إضافية" aria-haspopup="true" aria-expanded="false">⋯</button>
-          <button class="tbb tbb-danger" type="button" data-table-act="delete" title="حذف الجدول" aria-label="حذف الجدول">حذف</button>
-        </div>
-        <div class="table-more" id="tableMore" role="menu" aria-label="أدوات جدول إضافية" hidden>
+  <span class="tbl-lead" aria-hidden="true">الجدول</span>
+
+  <div class="tbl-menu-wrap" data-menu="rows">
+    <button class="tbb" type="button" data-table-menu="rows" aria-haspopup="true" aria-expanded="false">صفوف ▾</button>
+    <div class="tbl-menu-panel" data-panel="rows">
+      <div class="tm-head">الصفوف</div>
+      <button class="tbb" type="button" data-table2="row-add-above">إدراج صف أعلى</button>
+      <button class="tbb" type="button" data-table-act="row-add">إدراج صف أسفل</button>
+      <button class="tbb" type="button" data-table-act="row-del">حذف الصف</button>
+    </div>
+  </div>
+
+  <div class="tbl-menu-wrap" data-menu="cols">
+    <button class="tbb" type="button" data-table-menu="cols" aria-haspopup="true" aria-expanded="false">أعمدة ▾</button>
+    <div class="tbl-menu-panel" data-panel="cols">
+      <div class="tm-head">الأعمدة</div>
+      <button class="tbb" type="button" data-table2="col-add-left">إدراج عمود يسار</button>
+      <button class="tbb" type="button" data-table-act="col-add">إدراج عمود يمين</button>
+      <button class="tbb" type="button" data-table-act="col-del">حذف العمود</button>
+      <button class="tbb" type="button" data-table-act="equal">توزيع متساوٍ</button>
+    </div>
+  </div>
+
+  <div class="tbl-menu-wrap" data-menu="cells">
+    <button class="tbb" type="button" data-table-menu="cells" aria-haspopup="true" aria-expanded="false">خلايا ▾</button>
+    <div class="tbl-menu-panel" data-panel="cells">
+      <div class="tm-head">الخلايا</div>
+      <button class="tbb" type="button" data-table-act="merge">دمج الخلايا</button>
+      <button class="tbb" type="button" data-table-act="split">تقسيم الخلية</button>
+      <button class="tbb" type="button" data-table2="props">خصائص الخلية…</button>
+      <select class="tb-select cell-align" id="cellAlignSelect" aria-label="محاذاة الخلية" title="محاذاة الخلية">
+        <option value="default">محاذاة الخلية</option>
+        <option value="tr">أعلى يمين</option><option value="tc">أعلى وسط</option><option value="tl">أعلى يسار</option>
+        <option value="mr">وسط يمين</option><option value="mc">وسط</option><option value="ml">وسط يسار</option>
+        <option value="br">أسفل يمين</option><option value="bc">أسفل وسط</option><option value="bl">أسفل يسار</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="tbl-menu-wrap" data-menu="layout">
+    <button class="tbb" type="button" data-table-menu="layout" aria-haspopup="true" aria-expanded="false">تخطيط ▾</button>
+    <div class="tbl-menu-panel" data-panel="layout">
+      <div class="tm-head">الرأس والملاءمة</div>
+      <button class="tbb" type="button" data-table-act="head" aria-pressed="false">تكرار صف العنوان</button>
+      <button class="tbb" type="button" data-table-act="fit">ملاءمة الجدول</button>
+      <button class="tbb" type="button" data-table-act="equal">توزيع الأعمدة</button>
+    </div>
+  </div>
+
+  <div class="tbl-menu-wrap" data-menu="calc">
+    <button class="tbb" type="button" data-table-menu="calc" aria-haspopup="true" aria-expanded="false">صيغ وفرز ▾</button>
+    <div class="tbl-menu-panel" data-panel="calc">
+      <div class="tm-head">الصيغ</div>
+      <button class="tbb" type="button" data-table2="formula">صيغة…</button>
+      <button class="tbb" type="button" data-table-act="sum">Σ جمع</button>
+      <button class="tbb" type="button" data-table-act="avg">x̄ متوسط</button>
+      <div class="tm-head">الفرز</div>
+      <button class="tbb" type="button" data-table2="sort-asc">فرز تصاعدي ↑</button>
+      <button class="tbb" type="button" data-table2="sort-desc">فرز تنازلي ↓</button>
+    </div>
+  </div>
+
+  <div class="tbl-menu-wrap" data-menu="convert">
+    <button class="tbb" type="button" data-table-menu="convert" aria-haspopup="true" aria-expanded="false">تحويل ▾</button>
+    <div class="tbl-menu-panel" data-panel="convert">
+      <div class="tm-head">تحويل ومساعدة</div>
+      <button class="tbb" type="button" data-table-act="totext">جدول ← نص</button>
+      <button class="tbb" type="button" data-table2="totext-options">جدول ← نص…</button>
+      <button class="tbb" type="button" data-table2="formula-help">؟ مساعدة بالصيغ</button>
+    </div>
+  </div>
+
+  <button class="tbb tbb-danger" type="button" data-table-act="delete">حذف الجدول</button>
+</div>
+<div class="table-more" id="tableMore" role="menu" aria-label="أدوات جدول إضافية" hidden>
           <div class="tm-head">إدراج صف أو عمود</div>
           <div class="tm-grid">
             <button class="tbb" type="button" data-table2="row-add-above" role="menuitem">صف أعلى</button>
@@ -8955,6 +9029,10 @@ editorToolbar.addEventListener('click', event => {
     handleProof(btn.dataset.proof);
   } else if (btn.dataset.view) {
     handleView(btn.dataset.view);
+  } else if (btn.dataset.rail === 'more') {
+    const bar = $('#editorToolbar');
+    const open = bar && bar.classList.toggle('rail-more-open');
+    if (btn) btn.setAttribute('aria-expanded', String(!!open));
   }
 });
 
@@ -10005,6 +10083,11 @@ tableInsertBtn.addEventListener('click', () => {
 
 /* ---------- أدوات الجدول السياقية (الدفعة ٣١) ---------- */
 const tableBarEl = $('#tableBar');
+/* الشريط السياقي للجدول يصبح عنصراً مستقلاً في شبكة المحرر (عمود المحتوى) */
+const toolbarWrapEl = $('.toolbar-wrap');
+if (toolbarWrapEl && tableBarEl && tableBarEl.parentElement !== toolbarWrapEl) {
+  toolbarWrapEl.appendChild(tableBarEl);
+}
 const tableMoreEl = $('#tableMore');
 const cellAlignSelectEl = $('#cellAlignSelect');
 const TABLE_ALIGN_CLASSES = ['tl','tc','tr','ml','mc','mr','bl','bc','br'];
@@ -10802,20 +10885,7 @@ if (tableMoreEl) {
     const btn = event.target.closest('[data-table2]');
     if (!btn) return;
     const act = btn.dataset.table2;
-    if (act === 'row-add-above') tableAddRowAbove();
-    else if (act === 'row-add') tableAddRow();
-    else if (act === 'col-add-left') tableAddColLeft();
-    else if (act === 'col-add') tableAddCol();
-    else if (act === 'sum' || act === 'avg') tableInsertFormula(act);
-    else if (act === 'formula') openTableFormulaDialog();
-    else if (act === 'sort-asc') tableSort('asc');
-    else if (act === 'sort-desc') tableSort('desc');
-    else if (act === 'props') openCellPropsDialog();
-    else if (act === 'totext-options') openToTextDialog();
-    else if (act === 'formula-help') {
-      toast('أمثلة: =SUM(ABOVE) · =AVERAGE(LEFT) · =COUNT(B2:B9) · =MAX(B2:B9)');
-      return;
-    }
+    runTable2Action(act);
     closeTableMore();
   });
 }
@@ -10995,13 +11065,38 @@ function updateTableBar() {
   }
 }
 
+function runTable2Action(act) {
+  if (act === 'row-add-above') tableAddRowAbove();
+  else if (act === 'row-add') tableAddRow();
+  else if (act === 'col-add-left') tableAddColLeft();
+  else if (act === 'col-add') tableAddCol();
+  else if (act === 'sum' || act === 'avg') tableInsertFormula(act);
+  else if (act === 'formula') openTableFormulaDialog();
+  else if (act === 'sort-asc') tableSort('asc');
+  else if (act === 'sort-desc') tableSort('desc');
+  else if (act === 'props') openCellPropsDialog();
+  else if (act === 'totext-options') openToTextDialog();
+  else if (act === 'formula-help') toast('الصيغ المدعومة: SUM / AVERAGE / COUNT / MAX / MIN مع ABOVE أو LEFT أو نطاق B2:B5.');
+}
+
 if (tableBarEl) {
   tableBarEl.addEventListener('mousedown', event => {
     if (event.target.closest('button')) event.preventDefault();
   });
   tableBarEl.addEventListener('click', event => {
+    const trigger = event.target.closest('[data-table-menu]');
+    if (trigger) {
+      const wrap = trigger.closest('.tbl-menu-wrap');
+      const open = wrap && wrap.classList.toggle('menu-open');
+      $$('.tbl-menu-wrap.menu-open', tableBarEl).forEach(w => { if (w !== wrap) w.classList.remove('menu-open'); });
+      trigger.setAttribute('aria-expanded', String(!!open));
+      return;
+    }
+    const btn2 = event.target.closest('button[data-table2]');
+    if (btn2) { runTable2Action(btn2.dataset.table2); return; }
     const btn = event.target.closest('button[data-table-act]');
     if (!btn) return;
+    $$('.tbl-menu-wrap.menu-open', tableBarEl).forEach(w => w.classList.remove('menu-open'));
     const act = btn.dataset.tableAct;
     if (act === 'row-add') tableAddRow();
     else if (act === 'row-del') tableDeleteRow();
@@ -11018,6 +11113,12 @@ if (tableBarEl) {
     else if (act === 'delete') tableDeleteSelf();
   });
 }
+
+document.addEventListener('click', event => {
+  if (!tableBarEl || tableBarEl.hidden) return;
+  if (event.target.closest('#tableBar')) return;
+  $$('.tbl-menu-wrap.menu-open', tableBarEl).forEach(w => w.classList.remove('menu-open'));
+});
 
 if (cellAlignSelectEl) {
   cellAlignSelectEl.addEventListener('change', () => {
