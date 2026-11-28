@@ -1,0 +1,20 @@
+{
+  "main.js": {
+    "mtime": 1795885883.917499,
+    "seen": 1795885891.8221233,
+    "ast_hash": "fd705ab6b2adf7ea1731f724d5927bac",
+    "semantic_hash": "fd705ab6b2adf7ea1731f724d5927bac"
+  },
+  "midad-app.js": {
+    "mtime": 1795885883.9126701,
+    "seen": 1795885891.8221292,
+    "ast_hash": "20bf08dbd7abf1cd09fe13a38a2f9db0",
+    "semantic_hash": "20bf08dbd7abf1cd09fe13a38a2f9db0"
+  },
+  "preload.js": {
+    "mtime": 1795885883.917529,
+    "seen": 1795885891.822132,
+    "ast_hash": "fb9308280f09a91e9ef9c547abb294fc",
+    "semantic_hash": "fb9308280f09a91e9ef9c547abb294fc"
+  }
+}
