@@ -1033,13 +1033,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T17:37:47.950Z"
+      },
+      {
+        "id": "77",
+        "title": "تقسيم لوحة إعدادات المستند إلى لوحات منفصلة",
+        "description": "تبويبات جانبية نمط Adobe: محتويات، صفحة، مظهر، غلاف، أصول",
+        "details": "توزيع عناصر الإعدادات الموجودة حسب معرّفاتها إلى لوحات مستقلة مع الحفاظ على كل المعرّفات والمستمعات، وإظهار لوحة واحدة نشطة في كل مرة.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:43:36.450Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T17:37:47.951Z",
-      "taskCount": 76,
-      "completedCount": 76,
+      "lastModified": "2026-11-28T17:43:36.450Z",
+      "taskCount": 77,
+      "completedCount": 77,
       "tags": [
         "master"
       ]

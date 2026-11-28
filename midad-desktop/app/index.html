@@ -522,6 +522,29 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   scrollbar-width:thin;
 }
 .sidebar-block + .sidebar-block{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+.side-tabs{
+  position:sticky; top:0; z-index:8;
+  display:flex; gap:4px; padding:2px 0 12px;
+  background:linear-gradient(to bottom,var(--chrome) 78%,transparent);
+  overflow-x:auto; scrollbar-width:none;
+}
+.side-tabs::-webkit-scrollbar{ display:none; }
+.side-tab{
+  flex:1 0 auto; min-width:54px; padding:7px 6px;
+  border:1px solid var(--line); border-radius:9px;
+  background:#fff; color:var(--muted);
+  font:700 10.5px/1.3 var(--font-head); cursor:pointer;
+  transition:background .15s ease,color .15s ease,border-color .15s ease;
+}
+.side-tab:hover{ border-color:var(--brand-gold); color:var(--brand-gold-ink); }
+.side-tab[aria-selected="true"]{
+  background:var(--brand-gold-soft); color:var(--brand-gold-ink);
+  border-color:var(--brand-gold); box-shadow:inset 0 -2px 0 var(--brand-gold);
+}
+.side-panel{ display:none; }
+.side-panel.active{ display:block; }
+.side-panel .sidebar-label:first-child{ margin-top:0; }
+
 .sidebar-label{
   display:flex; align-items:center; justify-content:space-between; gap:8px;
   font-family:var(--font-head); font-size:10.5px; font-weight:800;
@@ -8975,6 +8998,66 @@ document.addEventListener('keydown', event => {
     event.preventDefault();
   }
 });
+
+/* ---------- لوحات الشريط الجانبي المنفصلة (نمط Adobe) ---------- */
+(function initSidePanels() {
+  const sb = $('#editorSidebar');
+  if (!sb || sb.dataset.panels === 'on') return;
+  const defs = [
+    ['contents', 'محتويات'], ['page', 'صفحة'], ['appearance', 'مظهر'],
+    ['cover', 'غلاف'], ['assets', 'أصول']
+  ];
+  const tabs = document.createElement('div');
+  tabs.className = 'side-tabs';
+  tabs.setAttribute('role', 'tablist');
+  tabs.setAttribute('aria-label', 'لوحات المستند');
+  tabs.innerHTML = defs.map(([key, label]) =>
+    '<button class="side-tab" type="button" role="tab" data-side-tab="' + key + '" aria-selected="false">' + label + '</button>'
+  ).join('');
+  sb.prepend(tabs);
+
+  const panels = {};
+  defs.forEach(([key]) => {
+    const panel = document.createElement('div');
+    panel.className = 'side-panel';
+    panel.dataset.sidePanel = key;
+    sb.appendChild(panel);
+    panels[key] = panel;
+  });
+
+  const pageIds = new Set(['marginSelect','marginsGrid','margT','margR','margB','margL','pageSizeSelect','orientationSelect','columnsSelect','firstHeadInput','pageBorderSelect','pageColorInput','margDeleteBtn']);
+  const coverIds = new Set(['openCoverDesignBtn','brandSwitch','coverSwitch','backSwitch','pageNumSwitch','tocSwitch','docTypeBadge']);
+  const assetIds = new Set(['customColorsList','customFontsList','customFontName','customFontUrl','addCustomFontBtn','uploadFontBtn','customFontFile']);
+
+  const blocks = $$('.sidebar-block', sb);
+  if (blocks[0]) panels.contents.appendChild(blocks[0]);
+  blocks.slice(1).forEach(block => {
+    Array.from(block.children).forEach(child => {
+      const ids = Array.from(child.querySelectorAll('[id]')).map(e => e.id);
+      if (child.id) ids.push(child.id);
+      let key = 'appearance';
+      if (ids.some(id => pageIds.has(id))) key = 'page';
+      else if (ids.some(id => coverIds.has(id))) key = 'cover';
+      else if (ids.some(id => assetIds.has(id))) key = 'assets';
+      panels[key].appendChild(child);
+    });
+    block.remove();
+  });
+
+  const activate = key => {
+    defs.forEach(([k]) => {
+      panels[k].classList.toggle('active', k === key);
+      const tab = $('[data-side-tab="' + k + '"]', tabs);
+      if (tab) tab.setAttribute('aria-selected', String(k === key));
+    });
+  };
+  tabs.addEventListener('click', event => {
+    const tab = event.target.closest('[data-side-tab]');
+    if (tab) activate(tab.dataset.sideTab);
+  });
+  activate('contents');
+  sb.dataset.panels = 'on';
+})();
 
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
