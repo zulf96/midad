@@ -13,7 +13,6 @@
 - `midad-desktop/` — غلاف Electron يحمّل ملف HTML مباشرةً عبر `loadFile`.
 - `android-icons/` — أيقونات الحزم.
 - `.github/workflows/` — بناء ونشر حزم سطح المكتب.
-- `graphify-out/REA_FINDINGS.md` — أدلة تحليل REA لسلوك النسخة الأصلية.
 
 مفتاح التخزين المحلي: `midad.studio.v1`. الطباعة PDF تبقى A4 افتراضياً مع احترام مقاس كل مستند واتجاهه.
 
