@@ -973,13 +973,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T17:01:15.953Z"
+      },
+      {
+        "id": "72",
+        "title": "الدفعة ٤٠ — العرض والأنماط",
+        "description": "معرض أنماط، مسطرة، لوحة تنقل، ووضع قراءة",
+        "details": "أربعة أزرار عرض في شريط الأدوات؛ معرض أنماط يطبق heading/paragraph/quote/callout/note؛ مسطرة تقيس mm مع علامات هوامش؛ تبديل لوحة التنقل؛ وضع قراءة يخفي أدوات التحرير مع زر خروج وEsc.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:04:44.868Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T17:01:15.953Z",
-      "taskCount": 71,
-      "completedCount": 71,
+      "lastModified": "2026-11-28T17:04:44.868Z",
+      "taskCount": 72,
+      "completedCount": 72,
       "tags": [
         "master"
       ]

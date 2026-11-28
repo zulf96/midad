@@ -2410,6 +2410,39 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٤٠: العرض والأنماط ----- */
+.ruler{
+  height:26px; margin:0 auto 12px; max-width:min(var(--page-w,794px),100%);
+  border:1px solid #dbe7ec; border-radius:6px; background:#fbfdfe;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 8px; font-size:9px; color:#738894; user-select:none;
+  background-image:repeating-linear-gradient(to left,#dbe7ec 0 1px,transparent 1px 10%);
+  background-size:100% 8px; background-repeat:no-repeat; background-position:bottom;
+}
+.ruler[hidden]{ display:none; }
+.ruler b{ font-weight:700; color:var(--accent-ink,#1e3d59); }
+.ruler-mark{ width:2px; height:12px; background:var(--accent,#ff6e40); align-self:flex-end; }
+.styles-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; }
+.style-card{ border:1px solid #dbe7ec; border-radius:10px; padding:12px; background:#fff; cursor:pointer; text-align:start; color:#1e3d59; min-height:62px; }
+.style-card:hover{ border-color:var(--accent,#ff6e40); background:#fffaf7; }
+.style-card b{ display:block; font-size:1.05em; margin-bottom:4px; }
+.style-card small{ color:#738894; }
+body.nav-hidden .editor-sidebar{ display:none; }
+body.nav-hidden .view-editor{ grid-template-columns:1fr; }
+body.reading-mode .app-header,
+body.reading-mode .editor-sidebar,
+body.reading-mode .toolbar-wrap,
+body.reading-mode #docStatsBar,
+body.reading-mode .quick-bar,
+body.reading-mode .sidebar-overlay{ display:none !important; }
+body.reading-mode .view-editor{ grid-template-columns:1fr; }
+body.reading-mode .canvas{ zoom:1.08; }
+.reading-exit{
+  position:fixed; top:14px; inset-inline-start:16px; z-index:60;
+  background:#1e3d59; color:#fff; border:0; border-radius:999px;
+  padding:8px 16px; cursor:pointer; font-weight:700; box-shadow:0 6px 18px rgba(18,41,60,.25);
+}
+.reading-exit[hidden]{ display:none; }
 /* ----- الدفعة ٣٩: التدقيق اللغوي ----- */
 .spell-error{ text-decoration:underline wavy #e2542a; text-underline-offset:3px; }
 .spell-word{ font-weight:700; color:#a83a17; }
@@ -3931,6 +3964,10 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <button class="tb-btn insert" type="button" data-review="panel" title="لوحة المراجعة: التعليقات والتغييرات والمقارنة" aria-label="لوحة المراجعة"><svg aria-hidden="true"><use href="#i-eye"/></svg></button>
             <button class="tb-btn insert" type="button" data-proof="spell" title="التدقيق الإملائي العربي" aria-label="التدقيق الإملائي"><svg aria-hidden="true"><use href="#i-sparkle"/></svg></button>
             <button class="tb-btn insert" type="button" id="autoCorrectBtn" data-proof="auto" title="التصحيح التلقائي أثناء الكتابة" aria-label="التصحيح التلقائي" aria-pressed="false">تصحيح</button>
+            <button class="tb-btn insert" type="button" data-view="styles" title="معرض الأنماط" aria-label="معرض الأنماط"><svg aria-hidden="true"><use href="#i-grid"/></svg></button>
+            <button class="tb-btn insert" type="button" id="rulerBtn" data-view="ruler" title="إظهار/إخفاء المسطرة" aria-label="المسطرة" aria-pressed="false">مسطرة</button>
+            <button class="tb-btn insert" type="button" id="navBtn" data-view="nav" title="إظهار/إخفاء لوحة التنقل" aria-label="لوحة التنقل" aria-pressed="true">تنقل</button>
+            <button class="tb-btn insert" type="button" id="readBtn" data-view="read" title="وضع القراءة" aria-label="وضع القراءة" aria-pressed="false"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
@@ -4059,7 +4096,9 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
       <button class="qb-btn qb-clear" type="button" data-cmd="removeFormat" title="إزالة التنسيق" aria-label="إزالة التنسيق">✕</button>
     </div>
 
+    <button class="reading-exit" type="button" id="readingExit" hidden>خروج من وضع القراءة</button>
     <div class="canvas-wrap">
+      <div class="ruler" id="pageRuler" hidden aria-label="مسطرة الصفحة"></div>
       <div class="canvas" id="docCanvas" data-accent="coral" data-font="md" aria-label="محتوى المستند"></div>
       <div class="doc-stats-bar" id="docStatsBar" aria-label="إحصاءات المستند">
         <span class="dsb-item"><b id="statWords">0</b> كلمة</span>
@@ -4979,6 +5018,26 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
     <div class="review-list" id="spellList" style="margin-top:12px"><div class="review-empty">اضغط «فحص المستند» للبدء.</div></div>
     <div class="dialog-actions">
       <button class="btn btn-ghost" type="button" data-close>إغلاق</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="stylesDialog" aria-labelledby="stylesHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="stylesHeading">معرض الأنماط</h2>
+        <p>طبّق نمطًا جاهزًا على الفقرة أو العنصر الذي يحتوي المؤشر.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="styles-grid" id="stylesGrid">
+      <button class="style-card" type="button" data-style="h2"><b>عنوان رئيسي</b><small>Heading 1</small></button>
+      <button class="style-card" type="button" data-style="h3"><b>عنوان فرعي</b><small>Heading 2</small></button>
+      <button class="style-card" type="button" data-style="p"><b>فقرة عادية</b><small>Normal</small></button>
+      <button class="style-card" type="button" data-style="blockquote"><b>اقتباس</b><small>Quote</small></button>
+      <button class="style-card" type="button" data-style="callout"><b>ملاحظة بارزة</b><small>Callout</small></button>
+      <button class="style-card" type="button" data-style="note"><b>تنبيه</b><small>Note</small></button>
     </div>
   </div>
 </dialog>
@@ -7088,6 +7147,7 @@ function renderEditor(rebuild) {
   if (typeof renumberReferences === 'function') renumberReferences();
   applyWatermarks();
   syncEditorChrome(doc);
+  renderRuler(doc);
   updateOutline();
   updateStats();
 }
@@ -8616,6 +8676,100 @@ if (spellDialog) spellDialog.addEventListener('click', event => {
   }
 });
 
+/* ---------- الدفعة ٤٠: العرض والأنماط ---------- */
+const stylesDialog = $('#stylesDialog');
+let rulerVisible = false;
+
+function renderRuler(doc) {
+  const ruler = $('#pageRuler');
+  if (!ruler || !doc) return;
+  const mm = marginsMmOf(doc);
+  const width = pageDims(doc).mmw || 210;
+  const step = Math.round(width / 10);
+  let html = '<span>' + toAr(0) + '</span>';
+  for (let i = 1; i < step; i++) html += '<span>' + toAr(i * 10) + '</span>';
+  html += '<span>' + toAr(width) + '</span>';
+  ruler.innerHTML = html;
+  ruler.style.position = 'relative';
+  [[mm.l, 'left'], [width - mm.r, 'right']].forEach(pair => {
+    const mark = document.createElement('span');
+    mark.className = 'ruler-mark';
+    mark.style.position = 'absolute';
+    mark.style.bottom = '0';
+    mark.style[pair[1]] = Math.max(0, Math.min(100, pair[0] / width * 100)) + '%';
+    mark.setAttribute('aria-hidden', 'true');
+    ruler.appendChild(mark);
+  });
+}
+function applyStyle(style) {
+  const blocks = { h2: '<h2>', h3: '<h3>', p: '<p>', blockquote: '<blockquote>' };
+  if (blocks[style]) execFormat('formatBlock', blocks[style]);
+  else if (style === 'callout') applyBlockClass('callout callout-info', 'callout-');
+  else if (style === 'note') applyBlockClass('note note-tip', 'note-');
+  const body = currentBody();
+  if (body) syncBodyFromDom(body);
+  if (stylesDialog) stylesDialog.close();
+  toast('تم تطبيق النمط.');
+}
+function toggleRuler() {
+  rulerVisible = !rulerVisible;
+  const ruler = $('#pageRuler');
+  const btn = $('#rulerBtn');
+  if (ruler) {
+    ruler.hidden = !rulerVisible;
+    if (rulerVisible) renderRuler(activeDoc());
+  }
+  if (btn) {
+    btn.classList.toggle('proof-on', rulerVisible);
+    btn.setAttribute('aria-pressed', String(rulerVisible));
+  }
+}
+function toggleNav() {
+  const hidden = document.body.classList.toggle('nav-hidden');
+  const btn = $('#navBtn');
+  if (btn) {
+    btn.classList.toggle('proof-on', !hidden);
+    btn.setAttribute('aria-pressed', String(!hidden));
+  }
+  toast(hidden ? 'لوحة التنقل مُخفاة.' : 'لوحة التنقل ظاهرة.');
+}
+function toggleReading() {
+  const on = document.body.classList.toggle('reading-mode');
+  const exit = $('#readingExit');
+  const btn = $('#readBtn');
+  if (exit) exit.hidden = !on;
+  if (btn) {
+    btn.classList.toggle('proof-on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  }
+  toast(on ? 'وضع القراءة — اضغط Esc للخروج.' : 'تم الخروج من وضع القراءة.');
+}
+function handleView(kind) {
+  if (kind === 'styles') {
+    if (!activeDoc()) { toast('افتح مستندًا أولًا.', 'error'); return; }
+    if (stylesDialog && typeof stylesDialog.showModal === 'function') stylesDialog.showModal();
+    else if (stylesDialog) stylesDialog.setAttribute('open', '');
+    return;
+  }
+  if (kind === 'ruler') { toggleRuler(); return; }
+  if (kind === 'nav') { toggleNav(); return; }
+  if (kind === 'read') { toggleReading(); return; }
+}
+
+const stylesGrid = $('#stylesGrid');
+if (stylesGrid) stylesGrid.addEventListener('click', event => {
+  const card = event.target.closest('[data-style]');
+  if (card) applyStyle(card.dataset.style);
+});
+const readingExit = $('#readingExit');
+if (readingExit) readingExit.addEventListener('click', toggleReading);
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && document.body.classList.contains('reading-mode')) {
+    toggleReading();
+    event.preventDefault();
+  }
+});
+
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
   if (kind === 'table') { tableDialog.showModal(); return; }
@@ -8667,6 +8821,8 @@ editorToolbar.addEventListener('click', event => {
     handleReview(btn.dataset.review);
   } else if (btn.dataset.proof) {
     handleProof(btn.dataset.proof);
+  } else if (btn.dataset.view) {
+    handleView(btn.dataset.view);
   }
 });
 
