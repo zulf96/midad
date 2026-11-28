@@ -3372,6 +3372,9 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <svg aria-hidden="true"><use href="#i-download"/></svg> نسخة كاملة — كل المشاريع والأغلفة
           </button>
           <div class="menu-sep" role="separator"></div>
+          <button type="button" role="menuitem" id="importDocxBtn">
+            <svg aria-hidden="true"><use href="#i-docx"/></svg> استيراد ملف Word
+          </button>
           <button type="button" role="menuitem" id="importJsonBtn">
             <svg aria-hidden="true"><use href="#i-upload"/></svg> استيراد نسخة
           </button>
@@ -4935,6 +4938,7 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
 
 <div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
 <input type="file" id="importFile" accept=".json,application/json" hidden />
+<input type="file" id="docxFile" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
 
 <!-- شريط تقدم تنزيل التحديث (يعمل في نسخة سطح المكتب فقط) -->
 <button id="updateBanner" type="button" aria-label="فتح مركز التحديثات" hidden>
@@ -12612,6 +12616,292 @@ function exportDocx() {
   toast('تم تصدير ملف Word (DOCX).');
 }
 
+/* ---------- استيراد DOCX — الدفعة ٣٥ (بلا مكتبات خارجية) ---------- */
+const docxFile = $('#docxFile');
+const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+const R_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const PKG_REL_NS = 'http://schemas.openxmlformats.org/package/2006/relationships';
+
+function zipU16(b, o) { return b[o] | (b[o + 1] << 8); }
+function zipU32(b, o) {
+  return ((b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0);
+}
+
+async function inflateRawBytes(bytes) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('المتصفح لا يدعم فك ضغط DEFLATE');
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+/* قراءة حزمة DOCX: يقرأ الدليل المركزي ويفكّ STORED و DEFLATE */
+async function readDocxZip(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let eocd = -1;
+  const floor = Math.max(0, bytes.length - 66000);
+  for (let i = bytes.length - 22; i >= floor; i--) {
+    if (zipU32(bytes, i) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('ليس ملف ZIP صالحاً');
+  const count = zipU16(bytes, eocd + 10);
+  let ptr = zipU32(bytes, eocd + 16);
+  const entries = new Map();
+  const dec = new TextDecoder('utf-8');
+  for (let i = 0; i < count; i++) {
+    if (zipU32(bytes, ptr) !== 0x02014b50) break;
+    const method = zipU16(bytes, ptr + 10);
+    const csize = zipU32(bytes, ptr + 20);
+    const nlen = zipU16(bytes, ptr + 28);
+    const elen = zipU16(bytes, ptr + 30);
+    const clen = zipU16(bytes, ptr + 32);
+    const local = zipU32(bytes, ptr + 42);
+    const name = dec.decode(bytes.subarray(ptr + 46, ptr + 46 + nlen)).replace(/^\/+/, '');
+    if (zipU32(bytes, local) === 0x04034b50) {
+      const ln = zipU16(bytes, local + 26);
+      const le = zipU16(bytes, local + 28);
+      const start = local + 30 + ln + le;
+      const raw = bytes.subarray(start, start + csize);
+      let data = raw;
+      if (method === 8) data = await inflateRawBytes(raw);
+      else if (method !== 0) throw new Error('ضغط غير مدعوم في DOCX');
+      entries.set(name, data);
+    }
+    ptr += 46 + nlen + elen + clen;
+  }
+  return entries;
+}
+
+function xmlFrom(bytes) {
+  const text = new TextDecoder('utf-8').decode(bytes);
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.querySelector('parsererror')) throw new Error('XML تالف');
+  return doc;
+}
+function docxKids(el, name) {
+  return Array.from(el ? el.children : []).filter(c => c.localName === name);
+}
+function docxKid(el, name) { return docxKids(el, name)[0] || null; }
+function docxVal(el) {
+  if (!el) return '';
+  return el.getAttributeNS(W_NS, 'val') || el.getAttribute('w:val') || '';
+}
+/* وسم Word النوعي (<w:b/>) يعني "فعّال" حتى بلا قيمة */
+function docxFlag(el) {
+  if (!el) return false;
+  const v = docxVal(el).toLowerCase();
+  return v !== '0' && v !== 'false' && v !== 'off';
+}
+function docxPlain(node) {
+  let out = '';
+  function walk(n) {
+    for (const c of Array.from(n.children || [])) {
+      if (c.localName === 't') out += c.textContent || '';
+      else walk(c);
+    }
+  }
+  walk(node);
+  return out.trim();
+}
+function bytesToDataUrl(bytes, name) {
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  let mime = 'image/png';
+  if (/\.jpe?g$/i.test(name)) mime = 'image/jpeg';
+  else if (/\.gif$/i.test(name)) mime = 'image/gif';
+  else if (/\.webp$/i.test(name)) mime = 'image/webp';
+  else if (/\.svg$/i.test(name)) mime = 'image/svg+xml';
+  else if (/\.bmp$/i.test(name)) mime = 'image/bmp';
+  return 'data:' + mime + ';base64,' + btoa(bin);
+}
+
+function docxRelTarget(ctx, id) {
+  const rel = ctx.rels.get(id);
+  if (!rel) return '';
+  if (rel.mode === 'External') return rel.target;
+  if (!rel.target) return '';
+  const path = rel.target.replace(/^\/+/, '').replace(/^word\//, '');
+  const key = 'word/' + path;
+  const data = ctx.zip.get(key) || ctx.zip.get(path);
+  if (!data) return '';
+  return bytesToDataUrl(data, path);
+}
+function docxImage(node, ctx) {
+  let embed = '';
+  for (const el of Array.from(node.getElementsByTagName('*'))) {
+    if (el.localName === 'blip' || el.localName === 'imagedata') {
+      embed = el.getAttributeNS(R_NS, 'embed') || el.getAttributeNS(R_NS, 'id') ||
+              el.getAttribute('r:embed') || el.getAttribute('r:id') || '';
+      if (embed) break;
+    }
+  }
+  if (!embed) return '';
+  const src = docxRelTarget(ctx, embed);
+  if (!src) return '';
+  return '<img class="doc-img" src="' + src + '" alt="" />';
+}
+
+function docxRun(run, ctx) {
+  let text = '';
+  for (const n of Array.from(run.children)) {
+    if (n.localName === 't') text += esc(n.textContent || '');
+    else if (n.localName === 'tab') text += '&nbsp;&nbsp;&nbsp;&nbsp;';
+    else if (n.localName === 'br') text += '<br/>';
+    else if (n.localName === 'drawing' || n.localName === 'pict') text += docxImage(n, ctx);
+  }
+  if (!text) return '';
+  const rPr = docxKid(run, 'rPr');
+  if (rPr) {
+    if (docxFlag(docxKid(rPr, 'b')) || docxFlag(docxKid(rPr, 'bCs'))) text = '<strong>' + text + '</strong>';
+    if (docxFlag(docxKid(rPr, 'i')) || docxFlag(docxKid(rPr, 'iCs'))) text = '<em>' + text + '</em>';
+    if (docxFlag(docxKid(rPr, 'u'))) text = '<u>' + text + '</u>';
+    if (docxFlag(docxKid(rPr, 'strike')) || docxFlag(docxKid(rPr, 'dstrike'))) text = '<s>' + text + '</s>';
+    const va = docxVal(docxKid(rPr, 'vertAlign'));
+    if (va === 'superscript') text = '<sup>' + text + '</sup>';
+    else if (va === 'subscript') text = '<sub>' + text + '</sub>';
+    const color = docxVal(docxKid(rPr, 'color'));
+    if (/^[0-9a-fA-F]{6}$/.test(color)) text = '<span style="color:#' + color + '">' + text + '</span>';
+    const sz = Number(docxVal(docxKid(rPr, 'sz'))) / 2;
+    if (sz >= 6 && sz <= 72) {
+      text = '<span style="font-size:' + Math.round(sz * 4 / 3) + 'px">' + text + '</span>';
+    }
+    const hl = docxVal(docxKid(rPr, 'highlight'));
+    if (hl && /^(yellow|green|cyan|magenta)$/.test(hl)) text = '<mark class="hl-yellow">' + text + '</mark>';
+  }
+  return text;
+}
+
+function docxInline(node, ctx) {
+  let out = '';
+  for (const c of Array.from(node.children)) {
+    if (c.localName === 'r') out += docxRun(c, ctx);
+    else if (c.localName === 'hyperlink') {
+      const href = docxRelTarget(ctx, c.getAttributeNS(R_NS, 'id') || c.getAttribute('r:id') || '');
+      const inner = docxInline(c, ctx);
+      out += href && /^(https?:|mailto:|data:image)/i.test(href)
+        ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + inner + '</a>' : inner;
+    } else if (['ins', 'smartTag', 'sdt', 'sdtContent', 'fldSimple'].indexOf(c.localName) >= 0) {
+      out += docxInline(c, ctx);
+    }
+  }
+  return out;
+}
+
+function docxParagraph(p, ctx, asListItem) {
+  const pPr = docxKid(p, 'pPr');
+  const sid = docxVal(docxKid(pPr, 'pStyle'));
+  const h = /^Heading(\d)$/i.exec(sid);
+  const tag = asListItem ? 'li' : (h ? (Number(h[1]) <= 2 ? 'h2' : 'h3') : 'p');
+  const jc = docxVal(docxKid(pPr, 'jc'));
+  const cls = jc === 'center' ? 'align-center' : jc === 'left' ? 'align-left'
+    : (jc === 'both' || jc === 'justify') ? 'align-justify' : '';
+  const dir = docxFlag(docxKid(pPr, 'bidi')) ? ' dir="rtl"' : '';
+  return '<' + tag + (cls ? ' class="' + cls + '"' : '') + dir + '>' + docxInline(p, ctx) + '</' + tag + '>';
+}
+
+function docxTable(tbl, ctx) {
+  let html = '<table class="doc-table">';
+  const rows = docxKids(tbl, 'tr');
+  rows.forEach((tr, index) => {
+    const trPr = docxKid(tr, 'trPr');
+    const head = index === 0 || !!docxKid(trPr, 'tblHeader');
+    const tag = head ? 'th' : 'td';
+    html += '<tr>';
+    for (const tc of docxKids(tr, 'tc')) {
+      let body = '';
+      for (const p of docxKids(tc, 'p')) body += docxParagraph(p, ctx);
+      html += '<' + tag + '>' + body + '</' + tag + '>';
+    }
+    html += '</tr>';
+  });
+  return html + '</table>';
+}
+
+function docxToSections(document, ctx) {
+  const body = docxKid(document.documentElement, 'body');
+  const sections = [];
+  let cur = { title: '', body: '' };
+  let listOpen = false;
+  const closeList = () => { if (listOpen) { cur.body += '</ul>'; listOpen = false; } };
+  const flush = () => {
+    closeList();
+    if (cur.title || cur.body.trim()) sections.push(cur);
+    cur = { title: '', body: '' };
+  };
+  for (const node of Array.from(body ? body.children : [])) {
+    if (node.localName === 'p') {
+      const pPr = docxKid(node, 'pPr');
+      const sid = docxVal(docxKid(pPr, 'pStyle'));
+      if (/^Heading1$/i.test(sid)) { flush(); cur.title = docxPlain(node); continue; }
+      const numbered = docxFlag(docxKid(pPr, 'numPr'));
+      if (numbered && !listOpen) { cur.body += '<ul>'; listOpen = true; }
+      if (!numbered) closeList();
+      cur.body += docxParagraph(node, ctx, numbered);
+    } else if (node.localName === 'tbl') {
+      closeList();
+      cur.body += docxTable(node, ctx);
+    }
+  }
+  flush();
+  if (!sections.length) sections.push({ title: '', body: '' });
+  return sections;
+}
+
+function docxTitleFromZip(zip, fallback) {
+  const core = zip.get('docProps/core.xml');
+  if (core) {
+    try {
+      const doc = xmlFrom(core);
+      const title = Array.from(doc.getElementsByTagName('*'))
+        .find(n => n.localName === 'title');
+      if (title && title.textContent.trim()) return title.textContent.trim();
+    } catch (e) { /* تجاهل */ }
+  }
+  return fallback;
+}
+
+async function handleDocxImport() {
+  const file = docxFile && docxFile.files && docxFile.files[0];
+  if (!file) return;
+  try {
+    const zip = await readDocxZip(await file.arrayBuffer());
+    const document = xmlFrom(zip.get('word/document.xml'));
+    const rels = new Map();
+    const relBytes = zip.get('word/_rels/document.xml.rels');
+    if (relBytes) {
+      const relDoc = xmlFrom(relBytes);
+      for (const r of Array.from(relDoc.getElementsByTagName('*'))) {
+        if (r.localName !== 'Relationship') continue;
+        const id = r.getAttribute('Id');
+        if (id) rels.set(id, {
+          target: r.getAttribute('Target') || '',
+          mode: r.getAttribute('TargetMode') || '',
+          type: r.getAttribute('Type') || ''
+        });
+      }
+    }
+    const ctx = { zip, rels };
+    const sections = docxToSections(document, ctx);
+    const title = docxTitleFromZip(zip, file.name.replace(/\.docx$/i, ''));
+    const doc = normalizeDoc({
+      title: title.slice(0, 120),
+      type: 'handout',
+      sections
+    });
+    doc.createdAt = doc.updatedAt = Date.now();
+    state.docs.unshift(doc);
+    persist();
+    renderLibrary();
+    openDoc(doc.id);
+    toast('تم استيراد Word: ' + toAr(sections.length) + ' قسمًا.');
+  } catch (err) {
+    toast('تعذّر استيراد DOCX: ' + (err && err.message ? err.message : 'ملف غير صالح'), 'error');
+  } finally {
+    if (docxFile) docxFile.value = '';
+  }
+}
+
 function closeExportMenu() {
   exportMenu.hidden = true;
   exportBtn.setAttribute('aria-expanded', 'false');
@@ -12631,6 +12921,9 @@ document.addEventListener('click', event => {
 exportHtmlBtn.addEventListener('click', () => { closeExportMenu(); exportHtml(); });
 const exportDocxBtn = $('#exportDocxBtn');
 if (exportDocxBtn) exportDocxBtn.addEventListener('click', () => { closeExportMenu(); exportDocx(); });
+const importDocxBtn = $('#importDocxBtn');
+if (importDocxBtn) importDocxBtn.addEventListener('click', () => { closeExportMenu(); if (docxFile) docxFile.click(); });
+if (docxFile) docxFile.addEventListener('change', handleDocxImport);
 if (exportPdfBtn) exportPdfBtn.addEventListener('click', () => { closeExportMenu(); savePdf(); });
 exportJsonBtn.addEventListener('click', () => { closeExportMenu(); exportJson(); });
 const exportBackupBtn = $('#exportBackupBtn');

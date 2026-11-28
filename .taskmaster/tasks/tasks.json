@@ -1,0 +1,940 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "إعادة تقسيم المحتوى عند تغيير مقاس الصفحة أو اتجاهها",
+        "description": "بعد تغيير المقاس أو الاتجاه من لوحة الإعدادات، أعد تقسيم صفحات المستند الحالية تلقائيًا لتناسب المقاس الجديد مع الحفاظ على النص والترقيم.",
+        "details": "استدعاء دالة إعادة تقسيم شاملة بعد حدث change على pageSizeSelect/orientationSelect، مع تجنّب إزعاج المستخدم بتكرار الإشعارات ونقل المؤشر.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-19T00:00:00.000Z",
+        "updatedAt": "2026-11-19T17:13:53.960Z"
+      },
+      {
+        "id": "2",
+        "title": "جعل الأغلفة المستوردة HTML تتبع مقاس الصفحة",
+        "description": "الأغلفة المستوردة تُثبّت حاليًا على 794×1123 بكسل (A4)؛ يجب أن تتمدد أو تتقلص مع المقاس والاتجاه المختارين دون كسر تنسيقها.",
+        "details": "ربط أبعاد .ccv و .ccv-wrap بمتغيرات --page-w/--page-h أو تحويلها بمقياس مناسب في المحرر والمعاينة والطباعة.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-19T00:00:00.000Z",
+        "updatedAt": "2026-11-19T17:13:58.054Z"
+      },
+      {
+        "id": "3",
+        "title": "توافق إبراز نتائج البحث مع المتصفحات القديمة",
+        "description": "إبراز كل النتائج يعتمد على CSS Custom Highlight المتاح في Chromium الحديث؛ أضف بديلًا بال functionality لم ودعمها.",
+        "details": "عند غياب CSS.highlights، استخدم وسوم مؤقتة غير قابلة للحفظ داخل الـ DOM لإبراز النتائج، مع إزالتها قبل أي حفظ أو إعادة رسم.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-19T00:00:00.000Z",
+        "updatedAt": "2026-11-19T17:14:01.055Z"
+      },
+      {
+        "id": "4",
+        "title": "بناء حزم Electron محليًا للتحقق النهائي",
+        "description": "محاولة بناء حزم ويندوز/لينكس محليًا بدل الاعتماد على GitHub Actions فقط، إن سمحت سرعة التنزيل والبيئة بذلك.",
+        "details": "تثبيت Electron وelectron-updater ثم تشغيل npm run dist وnpm run dist:linux والتحقق من الناتج؛ وإلا توثيق الاكتفاء باختبارات Node stubs.",
+        "status": "done",
+        "priority": "low",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-19T00:00:00.000Z",
+        "updatedAt": "2026-11-19T17:14:04.096Z"
+      },
+      {
+        "id": "5",
+        "title": "إضافة ميزة تعديل السؤال والجواب في المستند",
+        "description": "زر تعديل ✎ في شريط السؤال ونقر مزدوج يفتحان نافذة السؤال مملوءة مسبقًا، ويُحدَّث السؤال والجواب في مكانهما مع الحفاظ على الترقيم.",
+        "details": "توسيع openQaDialog لتعمل في وضعَي الإدراج والتعديل، واستبدال محتوى .qa-q/.qa-a مع الإبقاء على المقابض والترقيم التلقائي.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-20T07:03:45.000Z",
+        "updatedAt": "2026-11-20T07:15:34.000Z"
+      },
+      {
+        "id": "6",
+        "title": "إضافة شريط أدوات مصغّر لمحرّر السؤال مع زر ترقيم",
+        "description": "شريط أدوات داخل نافذة السؤال والجواب (عريض/مائل/تسطير/شطب + زر ترقيم + نقاط + إزالة تنسيق) مع محرّرين نصيين منسّقين بدل الطريقة القديمة.",
+        "details": "تحويل حقلي السؤال والجواب إلى contenteditable، وتطبيق insertOrderedList لإنتاج ol.qa-points، مع تنقية HTML قبل الحفظ.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-20T07:03:45.000Z",
+        "updatedAt": "2026-11-20T07:15:34.000Z"
+      },
+      {
+        "id": "7",
+        "title": "إصلاح التراجع والإعادة بعد حذف العناصر والأقسام",
+        "description": "سجل تعديلات بنيوية يسمح لأداة التراجع والإعادة باسترجاع المحذوف (سؤال، عنصر، قسم، صفحة) وإعادة الحذف.",
+        "details": "markUndoState قبل الإجراء وcommitUndo بعده، وتوجيه أزرار undo/redo وCtrl+Z/Y إلى السجل عند كون آخر إجراء بنيويًا.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-20T07:03:45.000Z",
+        "updatedAt": "2026-11-20T07:15:34.000Z"
+      },
+      {
+        "id": "8",
+        "title": "تغيير طريقة تنزيل التحديث وبناء مركز تحديثات داخل البرنامج",
+        "description": "استبدال مسار تنزيل التحديث القديم بواجهة مستقلة داخل التطبيق: فحص، تفاصيل الإصدار وملاحظاته، تنزيل بتقدّم وسرعة ووقت متبقٍّ، إلغاء، إعادة محاولة، وتثبيت بموافقة المستخدم (فوري أو عند الإغلاق)، مع نقل كل حوارات النظام إلى الواجهة.",
+        "details": "IPC جديد (update-download/update-cancel/update-install-on-quit/update-open-center)، autoInstallOnAppQuit=false، أحداث update-ready/update-error/update-cancelled، شريط عائم، ودعم deb/التطوير عبر صفحة الإصدارات.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [],
+        "subtasks": [],
+        "createdAt": "2026-11-20T00:00:00.000Z",
+        "updatedAt": "2026-11-20T08:32:30.000Z"
+      },
+      {
+        "id": "9",
+        "title": "ترقيم الكلمات والترقيم المتداخل في محرّر السؤال والجواب",
+        "description": "إضافة أسلوب ترقيم بالكلمات العربية (أولاً، ثانياً…) وأنماط ترقيم أخرى، مع ترقيم متداخل يدعم مستويات متعددة، وإصلاح فقدان النمط عند الحفظ والطباعة.",
+        "details": "counter-style عربي (fixed + fallback)، قائمة أنماط في شريط الأدوات، تبديل إضافة/إزالة، Tab/Shift+Tab للتداخل، السماح بـ list-style-type فقط في منظّفَي المحرّر والمستند، وتغطية اختبارات b24num (43) وb24print (8).",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [
+          "6"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-21T21:55:00.000Z",
+        "updatedAt": "2026-11-21T21:55:00.000Z"
+      },
+      {
+        "id": "10",
+        "title": "تثبيت تقسيم الصفحات التلقائي على جهوزية الخطوط",
+        "description": "كان autoSplitOverflow يقيس النص قبل اكتمال تحميل الخطوط أحيانًا، فينتج قطعًا غير دقيق يظهر كفشل متقطّع في اختبار b19long (ارتفاع 1103 مقابل حدّ 1030).",
+        "details": "أُضيف حارس: إذا كانت document.fonts.status !== 'loaded' يُؤجَّل التقسيم إلى document.fonts.ready ثم يُعاد الاستدعاء. النتيجة: b19long صار 6/0 في 8 تشغيلات متتالية بدل 5/1 المتقطّع.",
+        "status": "done",
+        "priority": "medium",
+        "dependencies": [
+          "1"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-21T19:25:09.000Z",
+        "updatedAt": "2026-11-21T19:25:09.000Z"
+      },
+      {
+        "id": "11",
+        "title": "بناء حزم لينكس ARM64 (AppImage وdeb) لأوبنتو",
+        "description": "إنتاج نسخة arm64 من تطبيق سطح المكتب للينكس/أوبنتو قابلة للتثبيت، مع فصل قناة التحديث تلقائيًا لكل معمارية.",
+        "details": "أُضيفت أوامر dist:linux:x64 وdist:linux:arm64 (الإخراج في release-arm64/)، وأُزيل تقييد المعمارية من أهداف لينكس ليأتي من سطر الأوامر. صُحّح إصدار package.json من v1.2.4 إلى 1.2.4 (dpkg يرفض بدء الإصدار بحرف). النتائج: AppImage 105MB وdeb 71MB، ELF AArch64 مؤكد في الحزمة وفي الـAppImage، app.asar مطابق لمصدر midad-app.html (md5 df608a8c…). ملحق CI يبني المعماريتين، ويولّد electron-builder ملف latest-linux-arm64.yml الذي يطلبه electron-updater على arm64 تلقائيًا.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "4"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-23T15:05:02.000Z",
+        "updatedAt": "2026-11-23T15:05:02.000Z"
+      },
+      {
+        "id": "12",
+        "title": "تكبير وتصغير النص المحدد فقط في المستند",
+        "description": "إضافة زرّي A+ وA− وقائمة حجم تطبّق على الكلمات المحددة فقط دون السطر أو بقية المستند، مع حفظ الحجم داخل المستند.",
+        "details": "applyFontSizeToSelection يجزّئ عقد النص المحددة ويلفّها بـ span.fs-inline؛ A+ خطوة ١٫١٢× وA− ٠٫٨٩× من الحجم المحسوب، والحدود ٦–٩٦px. يعمل عبر عدة أسطر وأقسام. أُضيف fs-inline إلى ALLOWED_CLASSES وfont-size إلى safeStyle ليبقى بعد الحفظ وإعادة الفتح. عند غياب التحديد يظهر تنبيه ولا يتغيّر السطر. تغطية b25sel: 36 فحصًا (وظيفي + حفظ + إعادة تحميل + شريط سريع).",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "6"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-24T03:33:29.000Z",
+        "updatedAt": "2026-11-24T03:33:29.000Z"
+      },
+      {
+        "id": "13",
+        "title": "إصلاح سحب الزاوية على ويندوز وطبقة العلامة المائية",
+        "description": "جعل مقبض التحجيم يعمل على ويندوز عبر مستمعات على النافذة وبديل بالفأرة، وجعل العلامة المائية تظهر أمام المحتوى بدل الاختفاء خلفه.",
+        "details": "السحب: onCanvasPointerDown + مفتاح مزدوج للتحقق من الزر، مستمعات pointermove/pointerup وmousemove/mouseup وblur على window بدل docCanvas، منع dragstart وselectstart أثناء السحب، منطقة التقاط ::before بعرض ٣٣ بكسل. العلامة المائية: خيار «طبقة العلامة» (أمام افتراضي z-index:5 / خلف -1) في نافذة العلامة، مع حفظها في normalizeWatermark وتطبيقها في applyWatermarks وطباعة CSS. تغطية b26wm: 40 فحصًا، والانحدار الكامل 1042/0 في 64 حزمة.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "12"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-24T04:10:42.000Z",
+        "updatedAt": "2026-11-24T04:10:42.000Z"
+      },
+      {
+        "id": "14",
+        "title": "ترقية الإصدار إلى 1.2.6 ونشره على GitHub",
+        "description": "تحديث الإصدار في package.json وpackage-lock وREADME وpreload، ثم الدفع ووسم v1.2.6 ونشر الإصدار عبر CI.",
+        "details": "package.json 1.2.5→1.2.6، وجذور package-lock، وأسماء الحزم في README (١١ مكانًا)، وإصلاح عرض الإصدار في نافذة حقوق المبرمج (prefers updAppVersion مع بديل 1.2.6). تم الدفع إلى main (36255fb) ثم وسم v1.2.6؛ نجح بناء CI (45381861471) ونشر الإصدار بـ٩ ملفات باسم 1.2.6، وملفات التحديث latest.yml وlatest-linux.yml وlatest-linux-arm64.yml تعرض version: 1.2.6. الانحدار 1044/0 وسطح المكتب 66/0.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "13"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-24T11:15:29.000Z",
+        "updatedAt": "2026-11-24T11:15:29.000Z"
+      },
+      {
+        "id": "15",
+        "title": "التحجيم الحر بالعرض والارتفاع والمؤشر الحر (١.٢.٧)",
+        "description": "تحجيم حر من الزاوية بالعرض والارتفاع معًا، نافذة ضبط أبعاد رقمية مستقلة، ومؤشر كتابة في أي موضع على الورقة.",
+        "details": "applySize/applyHeight + نافذة #sizeDialog (أزرار ± وإعادة ضبط) + زر ⤢ في شريط العنصر، وربط الزاوية بالعرض والارتفاع مع مراعاة تكبير اللوحة، وسماح safeStyle بـ min-height/height، ومستمع pointerdown على اللوحة لوضع المؤشر في أي فراغ (وإنشاء فقرة عند الحاجة). ترقية الإصدار إلى 1.2.7 في package.json وpackage-lock وpreload وREADME، والانحدار 1102/0 في 65 حزمة وسطح المكتب 66/0.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "14"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-25T13:24:40.000Z",
+        "updatedAt": "2026-11-25T13:24:40.000Z"
+      },
+      {
+        "id": "16",
+        "title": "نشر الإصدار 1.2.7 وإصلاح مطابقة أسماء أصول ويندوز",
+        "description": "دفع الإيداع ووسم v1.2.7 ونشر الإصدار عبر CI، ثم إصلاح 404 في التحديث التلقائي على ويندوز.",
+        "details": "دُفع 16d7090 ثم 16d7090..d3ee4ea على main ووسم v1.2.7؛ سير العمل 45647218495 نجح (ويندوز 59ث، لينكس x64 2:20، arm64 2:22، النشر 19ث) ونشر 9 ملفات. اكتُشف أن latest.yml يشير إلى Midad-Studio-Setup-1.2.7.exe بينما الأصل Midad.Studio.Setup.1.2.7.exe (404، عيب موجود منذ 1.2.6)، فأُعيد رفع latest.yml بالأسماء الفعلية وأُضيف nsis.artifactName = Midad-Studio-Setup-${version}.${ext} لمنع التكرار. روابط exe/blockmap/AppImage/yml كلها 206.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "15"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-25T15:57:42.000Z",
+        "updatedAt": "2026-11-25T15:57:42.000Z"
+      },
+      {
+        "id": "17",
+        "title": "أداة فحص أسماء أصول التحديث قبل النشر وبعده",
+        "description": "فحص ثابت يمنع نشر إصدار يشير فيه latest*.yml إلى أسماء لا تطابق أصول GitHub (سبب 404 في التحديث التلقائي).",
+        "details": "أُضيف midad-desktop/scripts/check-release-assets.js بوضعين: --dir للفحص المحلي/CI (وجود الملف، سلامة الاسم من المسافات والرموز، تطابق الإصدار مع package.json، التكرار) و--tag للفحص الشبكي بعد النشر (200/206 لكل رابط). رُبط بسير النشر كخطوة إلزامية قبل softprops/action-gh-release، وأُضيفت npm run check:release وcheck:release:live. اختبارات: محلي 9/0، شبكي على v1.2.7 12/0، desktop-stub 77/0 (11 فحصًا جديدًا)، الانحدار 1102/0. الإيداع e91c742 وCI ناجح.",
+        "status": "done",
+        "priority": "high",
+        "dependencies": [
+          "16"
+        ],
+        "subtasks": [],
+        "createdAt": "2026-11-25T16:15:05.000Z",
+        "updatedAt": "2026-11-25T16:15:05.000Z"
+      },
+      {
+        "id": "18",
+        "title": "الدفعة ٣١ — الجداول الاحترافية",
+        "description": "توسيع محرّر جداول مِداد: إضافة/حذف صف وعمود، دمج وتقسيم الخلايا، تكرار صف العنوان، محاذاة الخلية في ٩ مواضع، صيغ جمع/متوسط، AutoFit، وتحويل نص↔جدول — مع استمرارية الحفظ والتوافق مع الطباعة.",
+        "details": "مرجع: word-reference.md §الجداول، واستراتيجية-مِداد-مقابل-Word.md الدفعة ٣١. أضف حزمة Chromium b31table، وحدّث ALLOWED_CLASSES/safeStyle لخصائص الجداول، ثم نفّذ الانحدار الكامل والمزامنة والتقرير العربي.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "17"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-25T21:49:26.322Z"
+      },
+      {
+        "id": "19",
+        "title": "الدفعة ٣٢ — إدراج رباعي وصيغ موسّعة وبحث متقدم وناسخ كامل",
+        "description": "سدّ فجوات word-reference.md: إدراج صف أعلى/عمود يسار، فاصل جدول←نص، COUNT/MAX/MIN ومراجع الخلايا، Wildcards و^p/^t والاستبدال عبر العقد، ناسخ تنسيق يشمل الخط والفقرة، تباعد مخصص وKeep with next، فرز الجدول وهوامش الخلية واتجاه النص.",
+        "details": "تعديل midad-app.html فقط + حزمة b32 + تقرير عربي + مزامنة النسخ الأربع.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "18"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-26T04:05:17.569Z"
+      },
+      {
+        "id": "20",
+        "title": "الدفعة ٣٣ — العربية المتقدمة (تشكيل، إزالة تشكيل، BiDi، نمط الأرقام، كشida)",
+        "description": "توسيع محرّر مِداد بخصائص العربية المتقدمة: لوحة ^\"الخصائص العربية\" (#arabicMore) تفتح من زر في شريط الأدوات، مع حوارين #tashkeelDialog و #bidiDialog للتفصيل. يشمل: تشكيل تلقائي (آخر حرف في كل كلمة)، إزالة التشكيل من التحديد، إدراج علامات BiDi (LRM/RLM/LRI/RLI/FSI/PDI)، تحويل نمط الأرقام عربي-هندي↔غربي، وإدراج كشida (U+0640).",
+        "details": "إضافة أيقونات SVG (i-tashkeel, i-bidi, i-numstyle)، CSS للوحة والرقائق والشبكات، دوال JavaScript (applyTashkeelToSelection, removeTashkeelSelection, insertBidiMark, toggleNumberStyle, insertKashida)، wyrażenie TASHKEEL_RE، إدارة نطاق التحديد للحوارات، حزمة اختبار b33arabic (mk_b33arabic.py)، تقرير تقرير-الدفعة-33.md، تحديث استراتيجية مِداد، مزامنة النسخ الأربع على md5 08b74ed32a62eda17697ed7c3eafa419.",
+        "testStrategy": "حزمة b33arabic (١٧ فحصًا / ٠ فشل)، انحدار كامل ١٣٣٠/٠، سطح المكتب ٧٧/٠، node --check SYNTAX_OK.",
+        "status": "done",
+        "dependencies": [
+          "19"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-26T15:47:00.000Z"
+      },
+      {
+        "id": "21",
+        "title": "الدفعة ٣٤ — تصدير DOCX (OOXML حقيقي)",
+        "description": "إضافة تصدير المستندات بصيغة DOCX verdadera (Office Open XML) مع دعم RTL، الأنماط، الجداول، الصور، الهوامش، والترقيم التلقائي. ملف ZIP يحتوي على word/document.xml و word/styles.xml و docProps/core.xml وملفات العلاقات.",
+        "details": "إضافة زر exportDocxBtn في قائمة التصدير (#exportMenu) + دالة exportDocx() تنشئ ملف DOCX من المستند النشط. دعم الفقرات، العناوين، النص المنسّق، الجداول، الصور base64، الاتجاه RTL، الهوامش، والأنماط الأساسية. إنشاء ZIP باستخدام طريقة التخزين (STORED method) بدون مكتبات خارجية. حزمة اختبار b34docx + تقرير عربي + مزامنة النسخ الأربع.",
+        "testStrategy": "حزمة b34docx (فحص فتح DOCX، فحص RTL، فحص الجداول، فحص الصور، فحص الحفظ)، انحدار كامل ٠ فشل، سطح المكتب ٧٧/٠، node --check SYNTAX_OK.",
+        "status": "done",
+        "dependencies": [
+          "20"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T05:52:52.934Z"
+      },
+      {
+        "id": "22",
+        "title": "الدفعة ٣٥ — محرك الجداول والصيغ",
+        "description": "نقل دوال table* من midad-app.html إلى وحدة الجداول مع اختبارات وحدة وربطها بشريط الأدوات.",
+        "details": "تشمل: buildTableHtml, tableFromNode, getTableContext, tableAddRow/Col/DeleteRow/DeleteCol, merge/split, toggle head, align, normalizeTableDigits, numericCellValue, numbersAbove, setCellResult, insertFormula, cycleFit, distributeCols, deleteSelf, tableToText, sort, applyCellProps, evaluateTableFormula, cellAtPosition. تعتمد على graphify لرصد المجتمع الخاص بالجداول قبل التنفيذ وبعده.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T05:56:24.126Z"
+      },
+      {
+        "id": "23",
+        "title": "الدفعة ٣٦ — الأدوات العربية المتقدمة",
+        "description": "نقل دوال التشكيل وإزالة التشكيل وعلامات الاتجاه ونمط الأرقام والكشيدة وتحويل الحالة إلى arabic.rs.",
+        "details": "functions: changeCaseSelection, stripTashkeel, isArabicLetter, removeTashkeelSelection, applyTashkeelToSelection, insertBidiMark, toggleNumberStyle, insertKashida, rememberTashkeelRange, restoreTashkeelRange, openTashkeelDialog, openArabicMore. مع اختبارات على النصوص العربية وربطها بشريط الأدوات.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T06:01:21.144Z"
+      },
+      {
+        "id": "24",
+        "title": "الدفعة ٣٧ — إطار نوافذ الحوار",
+        "description": "بناء modal موحّد في dialog_manager.rs وتوصيل نوافذ الأصل تدريجيًا.",
+        "details": "يبدأ بإطار نوافذ عام ثم: findDialog, equationDialog, charSpacing, paraSpacing, formatPopover, tableFormula, toText, cellProps, coverDesigner, watermark, credits. يعتمد على 22 و23.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "22",
+          "23"
+        ],
+        "priority": "high",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "إطار الحوار + نافذة البحث",
+            "description": "modal موحّد ونافذة بحث/استبدال تعمل عبر window.find",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 24,
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "نوافذ التنسيق والتباعد",
+            "description": "formatPopover، charSpacing، paraSpacing",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 24,
+            "parentId": "undefined",
+            "updatedAt": "2026-11-27T06:10:26.676Z"
+          },
+          {
+            "id": 3,
+            "title": "نافذة المعادلة",
+            "description": "equationDialog مع المعادلات الجاهزة",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 24,
+            "parentId": "undefined",
+            "updatedAt": "2026-11-27T06:13:05.360Z"
+          },
+          {
+            "id": 4,
+            "title": "حوارات الجدول",
+            "description": "tableFormula، toText، cellProps",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 24,
+            "parentId": "undefined",
+            "updatedAt": "2026-11-27T06:18:45.735Z"
+          },
+          {
+            "id": 5,
+            "title": "حوالت التصميم",
+            "description": "coverDesigner، watermark، credits",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 24,
+            "parentId": "undefined",
+            "updatedAt": "2026-11-27T06:30:59.289Z"
+          }
+        ],
+        "updatedAt": "2026-11-27T06:30:59.289Z"
+      },
+      {
+        "id": "25",
+        "title": "الدفعة ٣٨ — الترقيم والتقسيم التلقائي",
+        "description": "نقل منطق تقسيم النص الطويل وترقيم الصفحات إلى paginate.rs.",
+        "details": "bodyFromNode, currentBody, syncBodyFromDom, clearLegacyPlaceholder, splitLongTextBlock, buildOverflowChunks, applySplitChunks, autoSplitOverflow, autoPaginateAll. اختبارات على فقرات طويلة.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T06:35:35.346Z"
+      },
+      {
+        "id": "26",
+        "title": "الدفعة ٣٩ — التراجع والإعادة البنيوي",
+        "description": "مكدس لقطات Document مع commitUndo/applyUndoSnapshot/structuralUndo/structuralRedo.",
+        "details": "يحفظ لقطة قبل كل تعديل بنيوي (إضافة/حذف/تحريك قسم، تغيير مقاس، استيراد) ويستعيدها، مع حد أقصى لللقطات واختبارات.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T06:42:27.534Z"
+      },
+      {
+        "id": "27",
+        "title": "الدفعة ٤٠ — الاستيراد والأغلفة المخصصة",
+        "description": "استيراد النسخ الاحتياطية JSON وتettings الأغلفة المخصصة بالكامل.",
+        "details": "importJson, parseCoverFile, normalizeCustomCover, scopeCoverCss الكامل, syncCustomCoverStyles, renderCustomColorsList, renderCustomFontsList, populateFontOptions, registerCustomFonts. يستخدم normalize_doc الموجود.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "استيراد النسخة الاحتياطية",
+            "description": "واجهة لصق JSON + دمج المستندات في storage",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 27,
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "(scopeCoverCss + الأغلفة المخصصة",
+            "description": "parseCoverFile، normalizeCustomCover، syncCustomCoverStyles، rendering",
+            "details": "",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 27,
+            "updatedAt": "2026-11-27T07:02:42.172Z",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-11-27T07:02:42.172Z"
+      },
+      {
+        "id": "28",
+        "title": "الدفعة ٤١ — الغلاف التقني الكامل",
+        "description": "نقل قالب الغلاف التقني الداكن والغلاف الخلفي التقني مع SVG والشعار المتحرك.",
+        "details": "techMoboSvg, techCoverChrome, techCoverHtml, techCoverHtml back, backFeaturesHtml, backFootMeta, mobileLogo. اختبارات مقارنة بنية HTML.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:27:12.814Z"
+      },
+      {
+        "id": "29",
+        "title": "الدفعة ٤٢ — التكامل النهائي وفحص المطابقة",
+        "description": "ربط كل الوحدات بالواجهة، تحديث graphify، وتقرير مطابقة نهائي.",
+        "details": "توصيل الوحدات الجديدة بشريط الأدوات والقوائم، تشغيل اختبارات الواجهة وبناءها، إعادة توليد الخريطة، تحديث README بعدد الدوال المنقولة، وتحديث النسخة المثبّتة عبر midad-update.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "30",
+          "31",
+          "32",
+          "33"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:50:28.511Z"
+      },
+      {
+        "id": "30",
+        "title": "الدفعة ٤٣ — البحث المتقدم وتظليل النتائج",
+        "description": "نقل collectFindRanges/buildFindRegexp/gotofind وتظليل نتائج البحث.",
+        "details": "من شجرة HTML: findtextblocks, collectfindranges, buildfindregexp, escaseregexp, gotofind, clearfind, findoptions. يعتمد على نافذة البحث الموجودة في dialog_manager.rs.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:23:44.377Z"
+      },
+      {
+        "id": "31",
+        "title": "الدفعة ٤٤ — التنسيق المضمّن المتقدم",
+        "description": "نقل دوال التنسيق المضمّن والفئات والتباعد المخصصة.",
+        "details": "applyinlineclass, applyblockclass, applyinlinestyle, clearclassesforselection, changindent, applyfontsizetoselection, toggleblockclass, painter UI, blockFromNode. يعتمد على 22 و23.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "22",
+          "23"
+        ],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:13:58.089Z"
+      },
+      {
+        "id": "32",
+        "title": "الدفعة ٤٥ — الصور والعناصر القابلة للسحب",
+        "description": "نقل collectimages/compressimage/movable/drag/resize/overlay.",
+        "details": "17 دالة في الأصل: image frame, drag, resize, duplicate/delete movable, enhanceMovables. يحتاج جسر web-sys للأحداث.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:46:37.594Z"
+      },
+      {
+        "id": "33",
+        "title": "الدفعة ٤٦ — جسر DOM للقياس والتحديد",
+        "description": "توفير Range/selection/measurement bridge للدوال المعتمدة على DOM.",
+        "details": "bodyFromNode, currentBody, syncBodyFromDom, ensureBodySelection, selectWordAtCaret, getTargetBlocks, getBoundingClientRect equivalents, font readiness.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:07:47.967Z"
+      },
+      {
+        "id": "34",
+        "title": "الدفعة ٤٧ — محرر السؤال والجواب",
+        "description": "نقل دوال qa* المتبقية (~40 دالة) إلى وحدة qa.rs.",
+        "details": "qaAnswerHtml, qaApplyListStyle, qaBindValue, qaCurrentList, qaExec, qaInnerHtml, qaListIndent, qaSetMode, qaSyncToolbar, qaTargetField وغيرها. من شجرة HTML غير المُغطاة في PARITY.md.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T07:54:34.279Z"
+      },
+      {
+        "id": "35",
+        "title": "الدفعة ٤٨ — التحديث التلقائي",
+        "description": "نقل دوال upd* (~25 دالة) إلى وحدة updater.rs.",
+        "details": "updCheck, updRender, updInstallNow, updCancel, handleUpdateFound وغيرها. البديل الحالي: لا تحديث تلقائي في نسخة الويب.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T08:45:28.621Z"
+      },
+      {
+        "id": "36",
+        "title": "الدفعة ٤٩ — التكبير والإشعارات",
+        "description": "zoomFactor/loadZoom/applyZoom + toast + setUiNight.",
+        "details": "من دوال HTML المتبقية: zoomGroup، toasts، setHash، setUiNight، windowNight.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T08:51:25.583Z"
+      },
+      {
+        "id": "37",
+        "title": "الدفعة ٥٠ — ربط سطح المكتب/hydrate",
+        "description": "hydrateFromDesktop وqueueDesktopSave وloadSystemFonts.",
+        "details": "خاص بغلاف Electron؛ في نسخة الويب تُستبدل بـ جسر IPC أو تُوثّق كغير قابل للتطبيق.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "low",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T08:56:07.994Z"
+      },
+      {
+        "id": "38",
+        "title": "الدفعة ٥١ — سد الدوال الـ22 المتبقية",
+        "description": "تنفيذ dos funciones مساعدة finale لتحقيق مطابقة 100% بمعيار PARITY.md.",
+        "details": "activeDoc, applyCustomMargins, barButtonsHtml, blockTextMap, commitSize, deleteFixedPage, deselectAll, emptyLibraryHtml, expandReplacement, init, layerModeOf, layoutLayerBars, onCanvasPointerDown, prepareClone, readMarginInputs, renderEqPresets, replaceRangeContent, resetElement, resetSize, specialCodeToRegex, syncMarginInputs, syncSizeHints.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T09:01:04.657Z"
+      },
+      {
+        "id": "39",
+        "title": "الدفعة ٥٢ — المطابقة البصرية وDOM للواجهة",
+        "description": "جعل الترويسة والمكتبة وشريط الأدوات مطابقة للترتيب والبنية في midad-app.html.",
+        "details": "مقارنة لقطة شاشة وDOM بين النسختين: ترتيب أزرار الترويسة، إزالة الأزرار المضافة (updates/desktop)، بناء بطاقات المكتبة، صفوف شريط الأدوات ومجموعاتها. الهدف: نفس الترتيب والشكل.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T09:12:42.703Z"
+      },
+      {
+        "id": "40",
+        "title": "الدفعة ٥٣ — توسيط النوافذ المنبثقة",
+        "description": "إصلاح موضع نوافذ السؤال/الإضافة/الإعدادات لتظهر في وسط الشاشة بدل أسفل المستند.",
+        "details": "مراجعة .dialog-mask/.find-dialog/.spacing-dialog في CSS ومقارنتها بـ dialog الأصلي؛ إضافة position:fixed/inset:0/display:grid/place-items:center وz-index مناسب.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T10:27:14.478Z"
+      },
+      {
+        "id": "41",
+        "title": "الدفعة ٥٤ — تدقيق بصري وسلوكي شامل",
+        "description": "مقارنة جنب إلى جنب بين midad-app.html والإصدارات السابقة واستخراج كل الفروق مرتبة حسب الأولوية.",
+        "details": "Header, library, toolbar, sidebar, dialogs, statusbar, canvas, animations, missing tools. الإخراج: graphify-out/UI_AUDIT.md.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T10:36:20.904Z"
+      },
+      {
+        "id": "42",
+        "title": "الدفعة ٥٥ — استكمال إعدادات الشريط الجانبي",
+        "description": "رفع عدد أدوات sidebar من 18 إلى 52 مع ربط كل حقول Document.",
+        "details": "لون مخصص، خط، رفع خط، إطار، هوامش، مقاس/اتجاه، ألوان/خطوط مخصصة، مفاتيح الغلاف/الفهرس/الترقيم، حذف المستند.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T10:46:42.098Z"
+      },
+      {
+        "id": "43",
+        "title": "الدفعة ٥٦ — توحيد بيانات البذرة",
+        "description": "جعل المستند الأولي مطابقاً للأصل: 6 أقسام، 290 كلمة، 8 صفحات.",
+        "details": "تحديث Storage::seed() بنصوص الأقسام الستة وأقسام TOC/الغلاف.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T10:49:37.811Z"
+      },
+      {
+        "id": "44",
+        "title": "الدفعة ٥٧ — انتقالات وحركات الواجهة",
+        "description": "إضافة الـ51 انتقال المفقود على الأزرار والقوائم والعناصر.",
+        "details": "مقارنة computed styles مع الأصلBootstrap; CSS transitions for buttons, cards, dialogs, sidebar, toolbar.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T10:51:33.467Z"
+      },
+      {
+        "id": "45",
+        "title": "الدفعة ٥٨ — استكمال الأدوات المتبقية",
+        "description": "رفع ملفات الخطوط والـtooltips المتبقية في الشريط الجانبي.",
+        "details": "customFontFile, عناوين المفاتيح والهوامش وأزرار الإضافة.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:00:29.422Z"
+      },
+      {
+        "id": "46",
+        "title": "الدفعة ٥٩ — إعادة النوافذ إلى شكل الأصل",
+        "description": "dialog-card الأصلي + findDialog في أعلى الصفحة.",
+        "details": "backdrop, padding, header شفاف، شريط بحث عائم.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:10:49.417Z"
+      },
+      {
+        "id": "47",
+        "title": "الدفعة ٦٠ — تدقيق بصري عميق لكل التفاصيل",
+        "description": "مقارنة كل شاشة ونافذة وحقل/zplaceholder/tooltip بين الأصل والإصدارات السابقة.",
+        "details": "يشمل: نوافذ الإدراج (صورة/معادلة/سؤال/غلاف/علامة مائية/إعدادات)، حقول الرفع من الجهاز، الترتيب، النصوص، الأيقونات، الحالات. الإخراج: graphify-out/DEEP_UI_AUDIT.md.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:08:25.458Z"
+      },
+      {
+        "id": "48",
+        "title": "الدفعة ٦١ — نافذة إدراج الصورة الكاملة",
+        "description": "رفع صورة من الجهاز + alt + caption + حجم/محاذاة/إطار + إلغاء/إدراج.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:14:09.083Z"
+      },
+      {
+        "id": "49",
+        "title": "الدفعة ٦٢ — نافذة مستند جديد بالنموذج الكامل",
+        "description": "8 حقول + إنشاء المستند بالقيم المدخلة.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:15:45.146Z"
+      },
+      {
+        "id": "50",
+        "title": "الدفعة ٦٣ — نافذة العلامة المائية الكاملة",
+        "description": "نوع/طبقة/نص/رفع صورة/حجم/شفافية/دوران/لون/شبكة مواضع.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:17:52.306Z"
+      },
+      {
+        "id": "51",
+        "title": "الدفعة ٦٤ — باني المعادلة الكامل",
+        "description": "تنفيذ عناصر P1 المتبقية من DEEP_UI_AUDIT.md.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:24:44.652Z"
+      },
+      {
+        "id": "52",
+        "title": "الدفعة ٦٥ — شريط تنسيق السؤال والجواب",
+        "description": "تنفيذ عناصر P1 المتبقية من DEEP_UI_AUDIT.md.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:24:48.358Z"
+      },
+      {
+        "id": "53",
+        "title": "الدفعة ٦٦ — نافذة التأكيد الموحدة",
+        "description": "تنفيذ عناصر P1 المتبقية من DEEP_UI_AUDIT.md.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:24:51.052Z"
+      },
+      {
+        "id": "54",
+        "title": "الدفعة ٦٧ — نافذة المعاينة",
+        "description": "تنفيذ عناصر P1 المتبقية من DEEP_UI_AUDIT.md.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:24:53.747Z"
+      },
+      {
+        "id": "55",
+        "title": "الدفعة ٦٨ — نوافذ P2 الإضافية",
+        "description": "تنفيذ 12 نافذة: جدول/صيغة/تحويل/خصائص خلية/تباعدات/أشكال/رموز/ملاحظة/مسألة/تصميم غلاف/حجم.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:29:49.835Z"
+      },
+      {
+        "id": "56",
+        "title": "الدفعة ٦٩ — أدوات التحرير السريعة عند التحويم",
+        "description": "إظهار sheet-tools وce-tools وأدوات العناصر عند hover/focus داخل المستند.",
+        "details": "مقارنة CSS الأصلي بالقسم ١٠؛ التحقق من وجود العناصر وحالتها في DOM، وإضافة أدوات ناقصة إن لزم.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:40:06.463Z"
+      },
+      {
+        "id": "57",
+        "title": "الدفعة ٧٠ — إزالة الأزرار المضافة أسفل المستند",
+        "description": "حذف صف الأزرار غير الموجود في الأصل أسفل اللوحة.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:44:18.490Z"
+      },
+      {
+        "id": "58",
+        "title": "الدفعة ٧١ — شريط الوصول السريع العائم",
+        "description": "إظهار quick-bar عند تحديد نص داخل المستند مع أزرار الألوان والتظليل والحجم.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T11:51:04.523Z"
+      },
+      {
+        "id": "59",
+        "title": "الدفعة ٧٢ — إعادة بناء المثبتات بالحالة النهائية",
+        "description": "نسخ أصول الواجهة النهائية إلى غلاف Electron وإعادة بناء ورفع deb/AppImage/exe/apk.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:15:02.407Z"
+      },
+      {
+        "id": "60",
+        "title": "الدفعة ٧٣ — تفعيل أدوات عناصر الغلاف",
+        "description": "ربط أزرار ↑ ↓ ✕ في ce-tools بتحريك/إخفاء عناصر الغلاف فعليًا.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:18:36.049Z"
+      },
+      {
+        "id": "61",
+        "title": "الدفعة ٧٤ — توحيد النصوص والـplaceholders",
+        "description": "مطابقة النصوص الحرفية والـplaceholders المتبقية مع الأصل.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:20:22.907Z"
+      },
+      {
+        "id": "62",
+        "title": "الدفعة ٧٥ — فحص صحة المشروع والأخطاء الحرجة",
+        "description": "مراجعة الكود والبناء والاختبارات ووحدة المتصفح بحثًا عن خطأ ضار.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:44:32.309Z"
+      },
+      {
+        "id": "63",
+        "title": "الدفعة ٧٦ — إصلاح ظهور وسوم الترقيم كنص",
+        "description": "عند إضافة ترقيم في نافذة السؤال/الجواب تظهر <ol><li></li></ol> بدل قائمة.",
+        "details": "السبب: حفظ وسوم HTML داخل حقل نص ثم تهريبها. الحل: تخزين HTML مُطهَّر وعرضه كوسوم فعلية، وتنظيف أزرار التنسيق.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:49:14.091Z"
+      },
+      {
+        "id": "64",
+        "title": "الدفعة ٧٧ — أيقونة أندرويد وشريط العلوي",
+        "description": "إضافة أيقونة launcher للأ APK وإصلاح منطقة الشريط العلوي الآمنة في WebView.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T12:53:42.654Z"
+      },
+      {
+        "id": "65",
+        "title": "الدفعة ٧٨ — مطابقة محرر السؤال والجواب",
+        "description": "ترقيم تلقائي س١/س٢، نمط القائمة، وحفظ/تحرير عناصر QA كما في الأصل.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T13:03:47.916Z"
+      },
+      {
+        "id": "66",
+        "title": "الدفعة ٧٩ — ترقيم QA من جذره عند كل إدخال",
+        "description": "根据 REA: الأصل ينادي renumberQuestions داخل مستمع input قبل syncBodyFromDom.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-27T14:56:07.448Z"
+      },
+      {
+        "id": "67",
+        "title": "الدفعة ٣٥ — استيراد DOCX",
+        "description": "قراءة حزم OOXML واستيرادها إلى أقسام مِداد دون مكتبات خارجية",
+        "details": "قارئ ZIP أصلي يدعم STORED وDEFLATE عبر DecompressionStream؛ تحويل w:p/w:tbl/w:r إلى HTML مع RTL والجداول والقوائم والصور base64؛ زر استيراد Word في قائمة التصدير؛ الاختبار داخل المتصفح على ملف DOCX مُصنّع.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T16:31:48.271Z"
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-11-28T16:31:48.271Z",
+      "taskCount": 67,
+      "completedCount": 67,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}
