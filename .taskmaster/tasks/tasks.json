@@ -997,13 +997,25 @@
         "priority": "medium",
         "subtasks": [],
         "updatedAt": "2026-11-28T17:07:36.537Z"
+      },
+      {
+        "id": "74",
+        "title": "تجديد الهوية البصرية لواجهة مِداد",
+        "description": "إعادة صياغة ألوان الواجهة والشعار والخطوط مع الحفاظ على صفحات المستند والطباعة",
+        "details": "لوحة حبر/ذهب حصراً لواجهة التطبيق، شعار قطرة حبر جديد في الترويسات والمفضلة، تحسين الأزرار والعلامة التجارية، وضمان عدم تأثير الوضع الليلي/adobe على أوراق المستند.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:24:40.775Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T17:07:36.537Z",
-      "taskCount": 73,
-      "completedCount": 73,
+      "lastModified": "2026-11-28T17:24:40.775Z",
+      "taskCount": 74,
+      "completedCount": 74,
       "tags": [
         "master"
       ]
