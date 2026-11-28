@@ -522,6 +522,41 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   scrollbar-width:thin;
 }
 .sidebar-block + .sidebar-block{ margin-top:18px; padding-top:16px; border-top:1px solid var(--line); }
+/* مجاميع الأدوات المنفصلة */
+.tool-group{ position:relative; width:100%; }
+.tool-group-trigger{
+  width:100%; min-height:46px; padding:5px 2px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  border:0; border-radius:9px; background:none; color:var(--muted); cursor:pointer;
+}
+.tool-group-trigger svg{ width:18px; height:18px; }
+.tg-label{ font:700 8px/1.2 var(--font-head); }
+.tool-group.open .tool-group-trigger{ background:var(--brand-gold-soft); color:var(--brand-gold-ink); }
+.tool-flyout{
+  display:none; position:absolute; inset-inline-start:calc(100% + 8px); top:0; z-index:75;
+  width:310px; max-height:76vh; overflow:auto;
+  padding:10px; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px;
+  background:#fff; border:1px solid var(--line-strong); border-radius:12px;
+  box-shadow:0 24px 48px -22px rgba(18,41,60,.5);
+}
+.tool-group.open .tool-flyout{ display:grid; }
+.fly-head{
+  grid-column:1/-1; padding:4px 6px 8px; margin-bottom:2px;
+  border-bottom:1px solid var(--line); cursor:move; user-select:none;
+  font:800 11px/1.4 var(--font-head); color:var(--brand-gold-ink);
+}
+.tool-flyout,.tbl-menu-panel,.side-tabs,#editorSidebar,#tableBar{ overscroll-behavior:contain; }
+.fly-item{
+  width:100% !important; min-height:34px; height:auto !important;
+  display:flex !important; align-items:center; justify-content:flex-start; gap:7px;
+  padding:6px 8px !important; border:1px solid var(--line); border-radius:8px;
+  background:#fff; color:#3e5563; font-size:11px; cursor:pointer;
+}
+.fly-item:hover{ background:var(--brand-gold-soft); border-color:var(--brand-gold); }
+.fly-item svg{ width:16px; height:16px; flex:0 0 auto; }
+.fly-label{ font-size:10.5px; font-weight:600; line-height:1.25; text-align:start; }
+.fly-item select{ width:100%; font-size:10.5px; }
+
 .side-tabs{
   position:sticky; top:0; z-index:8;
   display:flex; gap:4px; padding:2px 0 12px;
@@ -712,7 +747,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   width:58px; height:calc(100vh - var(--header-h));
   margin:0; padding:8px 0; box-sizing:border-box;
   display:flex; flex-direction:column; align-items:center; gap:6px;
-  overflow-y:auto; overflow-x:visible; scrollbar-width:none;
+  overflow:visible; scrollbar-width:none;
   background:rgba(248,251,252,.94);
   -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
   border-inline-start:1px solid var(--line);
@@ -9109,6 +9144,111 @@ function renumberQuestionsHtml(html) {
   });
   return tpl.innerHTML;
 }
+
+/* ---------- مجاميع الأدوات المنفصلة ---------- */
+(function groupToolbarTools() {
+  const bar = $('#editorToolbar');
+  if (!bar || bar.dataset.grouped === 'on') return;
+  const defs = [
+    ['file', 'أدوات', 'i-check'],
+    ['edit', 'تحرير', 'i-pen'],
+    ['format', 'تنسيق', 'i-font-size'],
+    ['insert', 'إدراج', 'i-plus'],
+    ['review', 'مراجعة', 'i-sparkle'],
+    ['view', 'عرض', 'i-eye']
+  ];
+  const classify = el => {
+    if (el.dataset.tool) return 'file';
+    if (el.id === 'formatPainterBtn' || el.id === 'caseSelect' ||
+        (el.dataset.cmd && ['undo', 'redo'].indexOf(el.dataset.cmd) >= 0)) return 'edit';
+    if (el.dataset.insert) return 'insert';
+    if (el.dataset.review || el.dataset.proof) return 'review';
+    if (el.dataset.view) return 'view';
+    return 'format';
+  };
+  const items = Array.from(bar.querySelectorAll('.tb-row button, .tb-row select'));
+  const oldMore = $('#railMoreBtn', bar);
+  if (oldMore) items.splice(items.indexOf(oldMore) >= 0 ? items.indexOf(oldMore) : items.length, 1);
+
+  bar.innerHTML = '';
+  defs.forEach(([key, label, icon]) => {
+    const g = document.createElement('div');
+    g.className = 'tool-group';
+    g.dataset.toolGroup = key;
+    g.innerHTML = '<button class="tool-group-trigger" type="button" data-group-trigger="' + key + '" aria-expanded="false" title="' + label + '">' +
+      '<svg aria-hidden="true"><use href="#' + icon + '"/></svg><span class="tg-label">' + label + '</span></button>' +
+      '<div class="tool-flyout" data-group-flyout="' + key + '" role="group" aria-label="' + label + '"></div>';
+    bar.appendChild(g);
+  });
+  items.forEach(el => {
+    const fly = $('[data-group-flyout="' + classify(el) + '"]', bar);
+    if (!fly) return;
+    el.classList.add('fly-item');
+    if (el.tagName === 'BUTTON' && !(el.textContent || '').trim()) {
+      const span = document.createElement('span');
+      span.className = 'fly-label';
+      span.textContent = el.getAttribute('aria-label') || el.title || 'أداة';
+      el.appendChild(span);
+    }
+    fly.appendChild(el);
+  });
+  bar.addEventListener('click', event => {
+    const trigger = event.target.closest('[data-group-trigger]');
+    if (!trigger) return;
+    const group = trigger.closest('.tool-group');
+    const open = !group.classList.contains('open');
+    $$('.tool-group.open', bar).forEach(g => g.classList.remove('open'));
+    group.classList.toggle('open', open);
+    trigger.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', event => {
+    if (event.target.closest('#editorToolbar')) return;
+    $$('.tool-group.open', bar).forEach(g => {
+      g.classList.remove('open');
+      const t = $('[data-group-trigger]', g);
+      if (t) t.setAttribute('aria-expanded', 'false');
+    });
+  });
+  bar.querySelectorAll('.tool-flyout').forEach(fly => {
+    const group = fly.closest('.tool-group');
+    const label = group ? (group.querySelector('.tg-label') || {}).textContent || 'أدوات' : 'أدوات';
+    const head = document.createElement('div');
+    head.className = 'fly-head';
+    head.textContent = ' ⋮⋮ ' + label;
+    fly.prepend(head);
+    let sx = 0, sy = 0, dx = 0, dy = 0;
+    head.addEventListener('pointerdown', event => {
+      sx = event.clientX - dx; sy = event.clientY - dy;
+      head.setPointerCapture(event.pointerId);
+    });
+    head.addEventListener('pointermove', event => {
+      if (!head.hasPointerCapture(event.pointerId)) return;
+      dx = event.clientX - sx; dy = event.clientY - sy;
+      fly.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    });
+    head.addEventListener('pointerup', event => { try { head.releasePointerCapture(event.pointerId); } catch (e) {} });
+  });
+
+  /* عزل عجلة الماوس: تمرير القائمة لا يمرّر صفحة المستند */
+  const isolateWheel = el => {
+    if (!el) return;
+    el.addEventListener('wheel', event => {
+      const scrollable = el.scrollHeight > el.clientHeight + 1;
+      if (scrollable) {
+        const atTop = el.scrollTop <= 0 && event.deltaY < 0;
+        const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1 && event.deltaY > 0;
+        if (!atTop && !atBottom) return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+  };
+  [bar, $('#editorSidebar'), $('#tableBar'), $('.side-tabs'), $('#quickBar')].forEach(isolateWheel);
+  $$('.tool-flyout', bar).forEach(isolateWheel);
+  $$('.tbl-menu-panel').forEach(isolateWheel);
+
+  bar.dataset.grouped = 'on';
+})();
 
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
