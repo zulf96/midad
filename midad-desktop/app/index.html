@@ -3930,6 +3930,15 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
         <div class="tb-row">
           <button class="tb-btn rail-more" type="button" id="railMoreBtn" data-rail="more" title="خيارات التنسيق المتقدمة" aria-label="خيارات التنسيق المتقدمة" aria-expanded="false"><svg aria-hidden="true"><use href="#i-grid"/></svg></button>
           <span class="tb-sep" aria-hidden="true"></span>
+          <div class="tb-group" role="group" aria-label="أدوات المستند">
+            <button class="tb-btn" type="button" data-tool="save" title="حفظ الآن" aria-label="حفظ الآن"><svg aria-hidden="true"><use href="#i-check"/></svg></button>
+            <button class="tb-btn" type="button" data-tool="find" title="بحث واستبدال (Ctrl+H)" aria-label="بحث واستبدال"><svg aria-hidden="true"><use href="#i-search"/></svg></button>
+            <button class="tb-btn" type="button" data-tool="preview" title="معاينة (Ctrl+E)" aria-label="معاينة"><svg aria-hidden="true"><use href="#i-eye"/></svg></button>
+            <button class="tb-btn" type="button" data-tool="print" title="طباعة / PDF (Ctrl+P)" aria-label="طباعة"><svg aria-hidden="true"><use href="#i-printer"/></svg></button>
+            <button class="tb-btn" type="button" data-tool="break" title="بدء القسم الحالي في صفحة جديدة" aria-label="فصل صفحة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
+            <button class="tb-btn" type="button" data-tool="renumber" title="إعادة ترقيم الأسئلة" aria-label="إعادة ترقيم الأسئلة"><svg aria-hidden="true"><use href="#i-numstyle"/></svg></button>
+          </div>
+          <span class="tb-sep" aria-hidden="true"></span>
           <div class="tb-group">
             <button class="tb-btn" type="button" data-cmd="undo" title="تراجع (Ctrl+Z)" aria-label="تراجع"><svg aria-hidden="true"><use href="#i-undo"/></svg></button>
             <button class="tb-btn" type="button" data-cmd="redo" title="إعادة (Ctrl+Y)" aria-label="إعادة"><svg aria-hidden="true"><use href="#i-redo"/></svg></button>
@@ -9059,6 +9068,48 @@ document.addEventListener('keydown', event => {
   sb.dataset.panels = 'on';
 })();
 
+/* أدوات المستند التي كانت بلا زر مباشر */
+function handleTool(kind) {
+  const doc = activeDoc();
+  if (!doc) { toast('افتح مستندًا أولًا.', 'error'); return; }
+  if (kind === 'save') { saveNow(); toast('تم حفظ المستند.'); return; }
+  if (kind === 'find') { openFind(); return; }
+  if (kind === 'preview') { openPreview(); return; }
+  if (kind === 'print') { printDoc(); return; }
+  if (kind === 'break' || kind === 'renumber') {
+    const body = currentBody();
+    const section = body && doc.sections.find(x => x.id === body.dataset.sec);
+    if (kind === 'break') {
+      if (!section) { toast('ضع المؤشر داخل قسم أولًا.', 'error'); return; }
+      section.breakBefore = !section.breakBefore;
+      renderEditor(true);
+      scheduleSave();
+      toast(section.breakBefore ? 'سيبدأ القسم في صفحة جديدة.' : 'أُلغي فصل الصفحة.');
+      return;
+    }
+    const targets = section ? [section] : doc.sections;
+    targets.forEach(s => { s.body = renumberQuestionsHtml(s.body); });
+    if (body) syncBodyFromDom(body);
+    scheduleSave();
+    toast('تمت إعادة ترقيم الأسئلة.');
+  }
+}
+function renumberQuestionsHtml(html) {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = String(html || '');
+  let n = 0;
+  $$('.qa-item', tpl.content).forEach(item => {
+    const badge = item.querySelector('.qa-q > .qa-badge');
+    if (badge) { badge.textContent = 'س' + toAr(++n); return; }
+    const p = item.querySelector('p');
+    const strong = p && p.querySelector('strong');
+    if (strong && (strong.textContent || '').trim().charAt(0) === 'س') {
+      strong.textContent = 'س' + toAr(++n);
+    }
+  });
+  return tpl.innerHTML;
+}
+
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
   if (kind === 'table') { tableDialog.showModal(); return; }
@@ -9116,6 +9167,8 @@ editorToolbar.addEventListener('click', event => {
     const bar = $('#editorToolbar');
     const open = bar && bar.classList.toggle('rail-more-open');
     if (btn) btn.setAttribute('aria-expanded', String(!!open));
+  } else if (btn.dataset.tool) {
+    handleTool(btn.dataset.tool);
   }
 });
 
