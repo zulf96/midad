@@ -2410,6 +2410,23 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٣٧: المراجعة والتعليقات ----- */
+.comment-anchor{ background:#fff3bf; border-bottom:2px solid #f0a500; cursor:pointer; padding:0 2px; }
+.comment-anchor:hover{ background:#ffe08a; }
+.review-track-on{ background:#ffe0d6 !important; color:#9c3d17 !important; }
+.review-dialog{ width:min(860px,94vw); }
+.review-tabs{ display:flex; gap:8px; margin-bottom:12px; }
+.review-tab{ flex:1; padding:8px 10px; border:1px solid #dbe7ec; border-radius:8px; background:#fff; cursor:pointer; font-weight:700; color:#1e3d59; }
+.review-tab[aria-selected="true"]{ background:#1e3d59; color:#fff; border-color:#1e3d59; }
+.review-list{ max-height:48vh; overflow:auto; display:grid; gap:10px; }
+.review-card{ border:1px solid #dbe7ec; border-radius:10px; padding:10px 12px; background:#fbfdfe; }
+.review-card-head{ display:flex; justify-content:space-between; gap:10px; align-items:center; font-size:.85em; color:#5d707c; }
+.review-card-actions{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.review-quote{ font-size:.9em; color:#738894; border-inline-start:3px solid #e2542a; padding-inline-start:8px; margin:6px 0; }
+.diff-view{ white-space:pre-wrap; line-height:1.8; font-size:.92em; margin-top:8px; border:1px dashed #dbe7ec; border-radius:8px; padding:10px; }
+.diff-del{ background:#ffe0e0; color:#a12222; text-decoration:line-through; }
+.diff-ins{ background:#dcf5e5; color:#0d7d52; }
+.review-empty{ color:#738894; text-align:center; padding:28px 0; }
 /* ----- الدفعة ٣٦: الحواشي والمراجع ----- */
 .fn-ref{ color:var(--coral-deep); font-size:.72em; font-weight:700; cursor:pointer; vertical-align:super; padding:0 1px; }
 .fn-ref:hover{ text-decoration:underline; }
@@ -3859,6 +3876,9 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <button class="tb-btn insert" type="button" data-insert="endnote" title="حاشية نهائية" aria-label="حاشية نهائية"><span aria-hidden="true">١**</span></button>
             <button class="tb-btn insert" type="button" data-insert="caption" title="تسمية شكل أو جدول" aria-label="تسمية شكل أو جدول"><span aria-hidden="true">تسمية</span></button>
             <button class="tb-btn insert" type="button" data-insert="xref" title="مرجع متقاطع" aria-label="مرجع متقاطع"><svg aria-hidden="true"><use href="#i-layers"/></svg></button>
+            <button class="tb-btn insert" type="button" data-review="comment" title="إضافة تعليق على التحديد" aria-label="إضافة تعليق"><svg aria-hidden="true"><use href="#i-pen"/></svg></button>
+            <button class="tb-btn insert" type="button" id="trackChangesBtn" data-review="track" title="تتبّع التغييرات" aria-label="تتبّع التغييرات" aria-pressed="false">تتبّع</button>
+            <button class="tb-btn insert" type="button" data-review="panel" title="لوحة المراجعة: التعليقات والتغييرات والمقارنة" aria-label="لوحة المراجعة"><svg aria-hidden="true"><use href="#i-eye"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
@@ -4852,6 +4872,44 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
   </div>
 </dialog>
 
+<dialog id="commentDialog" aria-labelledby="commentHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="commentHeading">إضافة تعليق</h2>
+        <p>سيُربط التعليق بالنص المحدد ويمكن الوصول إليه من لوحة المراجعة.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="field"><label for="commentText">نص التعليق</label><textarea id="commentText" rows="4" placeholder="اكتب ملاحظتك…"></textarea></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
+      <button class="btn btn-primary" type="button" id="commentAddBtn">إضافة التعليق</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="reviewDialog" class="review-dialog" aria-labelledby="reviewHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="reviewHeading">لوحة المراجعة</h2>
+        <p>التعليقات، سجل التغييرات، وقبول أو رفض التعديلات ومقارنة النسخ.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="review-tabs" role="tablist">
+      <button class="review-tab" type="button" data-review-tab="comments" aria-selected="true">التعليقات</button>
+      <button class="review-tab" type="button" data-review-tab="revisions" aria-selected="false">التغييرات</button>
+    </div>
+    <div class="review-list" id="reviewComments"></div>
+    <div class="review-list" id="reviewRevisions" hidden></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close>إغلاق</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="confirmDialog" aria-labelledby="confirmHeading">
   <div class="dialog-card">
     <div class="dialog-head">
@@ -5286,9 +5344,9 @@ const ALLOWED_CLASSES = new Set([
   'font-cairo','font-tajawal','font-amiri','font-dubai','font-readex','font-ibm',
   'fs-10','fs-11','fs-12','fs-13','fs-14','fs-16','fs-18','fs-20','fs-24','fs-28','fs-32','fs-36',
   'movable','dragging',
-  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash'
+  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash','comment-anchor','review-track-on','diff-del','diff-ins'
 ]);
-const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move','data-fn','data-kind','data-notes','data-cap-id','data-cap-n','data-ref','data-ref-id']);
+const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move','data-fn','data-kind','data-notes','data-cap-id','data-cap-n','data-ref','data-ref-id','data-comment-id']);
 
 /* ----- وضع الأغلفة المستوردة (HTML): وسم SVG وخصائصه ----- */
 /* ملاحظة: الفحص يجري بأسماء صغيرة (toLowerCase) — المتصفح يصحّح حالة وسوم وخصائص SVG تلقائيًا عند الإخراج */
@@ -5712,6 +5770,30 @@ function normalizeBackContent(raw) {
   };
 }
 
+function normalizeComments(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, 200).map(c => ({
+    id: String((c && c.id) || '').slice(0, 80),
+    quote: String((c && c.quote) || '').slice(0, 200),
+    text: String((c && c.text) || '').slice(0, 1200),
+    author: String((c && c.author) || 'مِداد').slice(0, 60),
+    time: Number(c && c.time) || Date.now(),
+    resolved: !!(c && c.resolved)
+  })).filter(c => c.id && c.text);
+}
+function normalizeRevisions(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.slice(0, 80).map(r => ({
+    id: String((r && r.id) || '').slice(0, 80),
+    sectionId: String((r && r.sectionId) || '').slice(0, 80),
+    sectionTitle: String((r && r.sectionTitle) || '').slice(0, 120),
+    before: String((r && r.before) || '').slice(0, 200000),
+    after: String((r && r.after) || '').slice(0, 200000),
+    time: Number(r && r.time) || Date.now(),
+    author: String((r && r.author) || 'مِداد').slice(0, 60)
+  })).filter(r => r.id && r.sectionId);
+}
+
 function normalizeDoc(raw, preserveId) {
   if (!raw || typeof raw !== 'object') return null;
   const sections = Array.isArray(raw.sections)
@@ -5775,6 +5857,8 @@ function normalizeDoc(raw, preserveId) {
     watermark: normalizeWatermark(raw.watermark),
     createdAt: Number(raw.createdAt) || now,
     updatedAt: Number(raw.updatedAt) || now,
+    comments: normalizeComments(raw.comments),
+    revisions: normalizeRevisions(raw.revisions),
     sections: sections
   };
 }
@@ -5799,6 +5883,8 @@ function loadState() {
 }
 
 const state = loadState();
+let trackChanges = false;
+let currentReviewTab = 'comments';
 state.activeId = null;
 state.customCovers = state.customCovers || [];
 
@@ -7141,7 +7227,10 @@ docCanvas.addEventListener('click', event => {
   if (xref) {
     const target = $$('.doc-caption[data-cap-id]', docCanvas).find(c => c.dataset.capId === xref.dataset.ref);
     refHighlight(target);
+    return;
   }
+  const cm = event.target.closest('.comment-anchor');
+  if (cm) openReviewDialog('comments');
 });
 
 
@@ -7222,7 +7311,28 @@ function syncBodyFromDom(body) {
   const clone = body.cloneNode(true);
   clone.querySelectorAll('.move-handle,.rz-corner,.layer-overlay,.ce-tools,.find-mark').forEach(el => el.remove());
   $$('.el-selected', clone).forEach(el => el.classList.remove('el-selected'));
+  const previous = section.body;
   section.body = clone.innerHTML;
+  if (trackChanges && previous !== section.body) {
+    doc.comments = doc.comments || [];
+    doc.revisions = doc.revisions || [];
+    const last = doc.revisions[0];
+    if (last && last.sectionId === section.id && Date.now() - last.time < 5000) {
+      last.after = section.body;
+      last.time = Date.now();
+    } else {
+      doc.revisions.unshift({
+        id: 'rev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6),
+        sectionId: section.id,
+        sectionTitle: section.title || 'قسم بلا عنوان',
+        before: previous,
+        after: section.body,
+        time: Date.now(),
+        author: 'مِداد'
+      });
+      doc.revisions = doc.revisions.slice(0, 80);
+    }
+  }
   if (autoSplitOverflow(body, section)) return;
   updateStats();
   scheduleSave();
@@ -8008,6 +8118,179 @@ function insertHtml(html) {
   if (doc) commitUndo(doc, 'إدراج محتوى');
 }
 
+/* ---------- الدفعة ٣٧: المراجعة والتعليقات ---------- */
+const reviewDialog = $('#reviewDialog');
+const commentDialog = $('#commentDialog');
+
+function htmlToWords(html) {
+  const div = document.createElement('div');
+  div.innerHTML = String(html || '');
+  div.querySelectorAll('script,style').forEach(n => n.remove());
+  const blocks = /^(P|DIV|LI|H[1-6]|TD|TH|TR|SECTION|TABLE|UL|OL|BLOCKQUOTE|BR|HR)$/;
+  function collect(node) {
+    let out = '';
+    for (const n of Array.from(node.childNodes || [])) {
+      if (n.nodeType === 3) out += n.textContent || '';
+      else if (n.nodeType === 1) out += collect(n) + (blocks.test(n.tagName) ? ' ' : '');
+    }
+    return out;
+  }
+  return collect(div).replace(/\s+/g, ' ').trim().split(' ').filter(Boolean).slice(0, 500);
+}
+function wordDiffHtml(before, after) {
+  const a = htmlToWords(before);
+  const b = htmlToWords(after);
+  const n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  let i = 0, j = 0, out = '';
+  while (i < n || j < m) {
+    if (i < n && j < m && a[i] === b[j]) { out += esc(a[i]) + ' '; i++; j++; }
+    else if (j < m && (i >= n || dp[i][j + 1] >= dp[i + 1][j])) {
+      out += '<ins class="diff-ins">' + esc(b[j]) + '</ins> '; j++;
+    } else { out += '<del class="diff-del">' + esc(a[i]) + '</del> '; i++; }
+  }
+  return out.trim() || 'لا يوجد فرق';
+}
+function fmtTime(t) {
+  const d = new Date(t || Date.now());
+  return d.toLocaleString('ar', { dateStyle: 'short', timeStyle: 'short' });
+}
+function openCommentDialog() {
+  if (!activeDoc()) { toast('افتح مستندًا أولًا.', 'error'); return; }
+  if (!commentDialog) return;
+  if (typeof commentDialog.showModal === 'function') commentDialog.showModal();
+  else commentDialog.setAttribute('open', '');
+  setTimeout(() => { const f = $('#commentText'); if (f) f.focus(); }, 60);
+}
+function addComment() {
+  const doc = activeDoc();
+  const input = $('#commentText');
+  const text = (input && input.value || '').trim();
+  if (!doc || !text) { toast('اكتب نص التعليق أولًا.', 'error'); return; }
+  const id = 'cm-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+  const sel = window.getSelection();
+  const quote = (sel && !sel.isCollapsed && sel.rangeCount) ? sel.toString().trim().slice(0, 200) : '';
+  const anchor = '<span class="comment-anchor" data-comment-id="' + id + '">' + esc(quote || 'تعليق') + '</span>';
+  if (quote && typeof document.execCommand === 'function') document.execCommand('insertHTML', false, anchor);
+  else insertHtml(anchor);
+  doc.comments = doc.comments || [];
+  doc.comments.unshift({ id, quote, text, author: 'مِداد', time: Date.now(), resolved: false });
+  const body = currentBody();
+  if (body) syncBodyFromDom(body);
+  if (input) input.value = '';
+  if (commentDialog) commentDialog.close();
+  scheduleSave();
+  toast('تمت إضافة التعليق.');
+}
+function toggleTracking() {
+  trackChanges = !trackChanges;
+  const btn = $('#trackChangesBtn');
+  if (btn) {
+    btn.classList.toggle('review-track-on', trackChanges);
+    btn.setAttribute('aria-pressed', String(trackChanges));
+  }
+  toast(trackChanges ? 'تتبّع التغييرات مُفعّل.' : 'تتبّع التغييرات متوقف.');
+}
+function reviewCard(inner, actions) {
+  return '<div class="review-card">' + inner + (actions ? '<div class="review-card-actions">' + actions + '</div>' : '') + '</div>';
+}
+function renderReview(tab) {
+  const doc = activeDoc();
+  if (!doc || !reviewDialog) return;
+  currentReviewTab = tab || currentReviewTab;
+  $$('[data-review-tab]', reviewDialog).forEach(b => b.setAttribute('aria-selected', String(b.dataset.reviewTab === currentReviewTab)));
+  const cBox = $('#reviewComments'), rBox = $('#reviewRevisions');
+  if (cBox) cBox.hidden = currentReviewTab !== 'comments';
+  if (rBox) rBox.hidden = currentReviewTab !== 'revisions';
+  if (currentReviewTab === 'comments') {
+    const comments = doc.comments || [];
+    if (!cBox) return;
+    cBox.innerHTML = comments.length ? comments.map(c => reviewCard(
+      '<div class="review-card-head"><span>' + esc(c.author) + ' · ' + esc(fmtTime(c.time)) + (c.resolved ? ' · تم حلّه' : '') + '</span></div>' +
+      (c.quote ? '<div class="review-quote">' + esc(c.quote) + '</div>' : '') +
+      '<div>' + esc(c.text) + '</div>',
+      '<button class="mini-btn" type="button" data-review-act="comment-jump" data-id="' + esc(c.id) + '">القفز إلى النص</button>' +
+      '<button class="mini-btn" type="button" data-review-act="comment-resolve" data-id="' + esc(c.id) + '">' + (c.resolved ? 'إعادة فتح' : 'تعليم كمعالج') + '</button>' +
+      '<button class="mini-btn" type="button" data-review-act="comment-delete" data-id="' + esc(c.id) + '">حذف</button>'
+    )).join('') : '<div class="review-empty">لا توجد تعليقات بعد — حدّد نصًا ثم استخدم زر «تعليق».</div>';
+    return;
+  }
+  const revisions = doc.revisions || [];
+  if (!rBox) return;
+  rBox.innerHTML = revisions.length ? revisions.map(r => reviewCard(
+    '<div class="review-card-head"><span>' + esc(r.sectionTitle) + ' · ' + esc(r.author) + ' · ' + esc(fmtTime(r.time)) + '</span></div>' +
+    '<div class="diff-view" data-diff-for="' + esc(r.id) + '">اضغط «مقارنة» لعرض الفرق بين النسختين.</div>',
+    '<button class="mini-btn" type="button" data-review-act="rev-diff" data-id="' + esc(r.id) + '">مقارنة</button>' +
+    '<button class="mini-btn" type="button" data-review-act="rev-accept" data-id="' + esc(r.id) + '">قبول</button>' +
+    '<button class="mini-btn" type="button" data-review-act="rev-reject" data-id="' + esc(r.id) + '">رفض</button>'
+  )).join('') : '<div class="review-empty">لا توجد تغييرات مسجّلة — فعّل «تتبّع» ثم عدّل نصًا.</div>';
+}
+function openReviewDialog(tab) {
+  if (!activeDoc() || !reviewDialog) { toast('افتح مستندًا أولًا.', 'error'); return; }
+  renderReview(tab || 'comments');
+  if (typeof reviewDialog.showModal === 'function') reviewDialog.showModal();
+  else reviewDialog.setAttribute('open', '');
+}
+function resolveRevision(id, accept) {
+  const doc = activeDoc();
+  if (!doc || !Array.isArray(doc.revisions)) return;
+  const idx = doc.revisions.findIndex(r => r.id === id);
+  if (idx < 0) return;
+  const rev = doc.revisions[idx];
+  const section = doc.sections.find(s => s.id === rev.sectionId);
+  if (section) section.body = accept ? rev.after : rev.before;
+  doc.revisions.splice(idx, 1);
+  persist();
+  renderEditor(true);
+  renderReview('revisions');
+  toast(accept ? 'قُبل التعديل.' : 'رُفض التعديل وعاد القسم إلى نسخته السابقة.');
+}
+function handleReview(kind) {
+  if (kind === 'comment') { openCommentDialog(); return; }
+  if (kind === 'track') { toggleTracking(); return; }
+  if (kind === 'panel') { openReviewDialog('comments'); return; }
+}
+
+const commentAddBtn = $('#commentAddBtn');
+if (commentAddBtn) commentAddBtn.addEventListener('click', addComment);
+if (reviewDialog) {
+  reviewDialog.addEventListener('click', event => {
+    const tab = event.target.closest('[data-review-tab]');
+    if (tab) { renderReview(tab.dataset.reviewTab); return; }
+    const act = event.target.closest('[data-review-act]');
+    if (!act) return;
+    const doc = activeDoc();
+    if (!doc) return;
+    const id = act.dataset.id;
+    if (act.dataset.reviewAct === 'comment-resolve') {
+      const c = (doc.comments || []).find(x => x.id === id);
+      if (c) c.resolved = !c.resolved;
+      scheduleSave(); renderReview('comments');
+    } else if (act.dataset.reviewAct === 'comment-delete') {
+      doc.comments = (doc.comments || []).filter(x => x.id !== id);
+      $$( '.comment-anchor[data-comment-id="' + id + '"]', docCanvas).forEach(el => el.replaceWith(...el.childNodes));
+      const body = currentBody(); if (body) syncBodyFromDom(body);
+      scheduleSave(); renderReview('comments');
+    } else if (act.dataset.reviewAct === 'comment-jump') {
+      const el = $('.comment-anchor[data-comment-id="' + id + '"]', docCanvas);
+      refHighlight(el);
+    } else if (act.dataset.reviewAct === 'rev-diff') {
+      const r = (doc.revisions || []).find(x => x.id === id);
+      const box = $('[data-diff-for="' + id + '"]', reviewDialog);
+      if (r && box) box.innerHTML = wordDiffHtml(r.before, r.after);
+    } else if (act.dataset.reviewAct === 'rev-accept') {
+      resolveRevision(id, true);
+    } else if (act.dataset.reviewAct === 'rev-reject') {
+      resolveRevision(id, false);
+    }
+  });
+}
+
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
   if (kind === 'table') { tableDialog.showModal(); return; }
@@ -8055,6 +8338,8 @@ editorToolbar.addEventListener('click', event => {
     toggleFormatPopover(btn.dataset.popover, btn);
   } else if (btn.dataset.insert) {
     handleInsert(btn.dataset.insert);
+  } else if (btn.dataset.review) {
+    handleReview(btn.dataset.review);
   }
 });
 

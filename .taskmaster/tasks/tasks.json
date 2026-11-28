@@ -937,13 +937,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T16:42:17.734Z"
+      },
+      {
+        "id": "69",
+        "title": "الدفعة ٣٧ — المراجعة",
+        "description": "تعليقات، تتبّع تغييرات، قبول/رفض، ومقارنة نسختين",
+        "details": "نموذج تعليقات وتغييرات محفوظ داخل المستند؛ تعليقات مثبتة على التحديد؛ تتبّع على مستوى القسم مع دمج التعديلات المتتالية؛ لوحة مراجعة بتبويبين؛ فرق كلمات عبر LCS مع قبول ورفض وإعادة رسم المحرر.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T16:48:46.646Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T16:42:17.734Z",
-      "taskCount": 68,
-      "completedCount": 68,
+      "lastModified": "2026-11-28T16:48:46.646Z",
+      "taskCount": 69,
+      "completedCount": 69,
       "tags": [
         "master"
       ]
