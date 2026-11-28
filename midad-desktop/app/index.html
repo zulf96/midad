@@ -2410,6 +2410,24 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٣٦: الحواشي والمراجع ----- */
+.fn-ref{ color:var(--coral-deep); font-size:.72em; font-weight:700; cursor:pointer; vertical-align:super; padding:0 1px; }
+.fn-ref:hover{ text-decoration:underline; }
+.fn-ref[data-kind="endnote"]{ color:#1e3d59; }
+.notes-block{ margin-top:18px; padding-top:10px; border-top:1px solid #dbe7ec; font-size:.86em; color:var(--ink,#22323c); }
+.notes-block[data-notes="endnote"]{ border-top:2px solid #1e3d59; }
+.fn-item{ margin:3px 0; line-height:1.7; }
+.fn-num{ font-weight:700; color:var(--coral-deep); margin-inline-end:6px; }
+.doc-caption{ font-size:.85em; font-weight:700; color:var(--navy); text-align:center; margin:6px 0 12px; page-break-inside:avoid; break-inside:avoid; }
+.doc-caption[data-kind="table"]{ caption-side:top; text-align:start; }
+.cap-num{ color:var(--coral-deep); }
+.xref{ color:#1e3d59; border-bottom:1px dotted currentColor; cursor:pointer; }
+.xref:hover{ background:#fff3bf; }
+.xref-flash{ background:#fff0a8; outline:2px solid #ffb84d; border-radius:3px; }
+@media print{
+  .notes-block{ break-inside:avoid; }
+  .fn-ref,.xref{ text-decoration:none; border:0; }
+}
 /* ----- أدوات الجدول: محاذاة الخلية، الملاءمة، تكرار الرأس ----- */
 .doc-table :is(td,th).ca-tl{ text-align:left; vertical-align:top; }
 .doc-table :is(td,th).ca-tc{ text-align:center; vertical-align:top; }
@@ -3837,6 +3855,10 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <button class="tb-btn insert" type="button" data-insert="qa" title="سؤال وجواب" aria-label="سؤال وجواب"><svg aria-hidden="true"><use href="#i-help"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="problem" title="مسألة علمية محلولة" aria-label="مسألة علمية محلولة"><svg aria-hidden="true"><use href="#i-pen"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="symbol" title="الرموز العلمية" aria-label="الرموز العلمية"><svg aria-hidden="true"><use href="#i-sigma"/></svg></button>
+            <button class="tb-btn insert" type="button" data-insert="footnote" title="حاشية سفلية" aria-label="حاشية سفلية"><span aria-hidden="true">١*</span></button>
+            <button class="tb-btn insert" type="button" data-insert="endnote" title="حاشية نهائية" aria-label="حاشية نهائية"><span aria-hidden="true">١**</span></button>
+            <button class="tb-btn insert" type="button" data-insert="caption" title="تسمية شكل أو جدول" aria-label="تسمية شكل أو جدول"><span aria-hidden="true">تسمية</span></button>
+            <button class="tb-btn insert" type="button" data-insert="xref" title="مرجع متقاطع" aria-label="مرجع متقاطع"><svg aria-hidden="true"><use href="#i-layers"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
@@ -4796,6 +4818,40 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
   </div>
 </dialog>
 
+<dialog id="referenceDialog" aria-labelledby="refHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="refHeading">إدراج حاشية أو مرجع</h2>
+        <p>تُرقَّم الحواشي والتسميات تلقائيًا، وتُحدَّث المراجع المتقاطعة عند أي تعديل.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="field">
+      <label for="refType">النوع</label>
+      <select id="refType">
+        <option value="footnote">حاشية سفلية</option>
+        <option value="endnote">حاشية نهائية</option>
+        <option value="figure">تسمية شكل</option>
+        <option value="table">تسمية جدول</option>
+        <option value="xref">مرجع متقاطع</option>
+      </select>
+    </div>
+    <div class="field" id="refTextField">
+      <label for="refText">النص</label>
+      <textarea id="refText" rows="3" placeholder="اكتب نص الحاشية أو التسمية…"></textarea>
+    </div>
+    <div class="field" id="refTargetField" hidden>
+      <label for="refTarget">الهدف</label>
+      <select id="refTarget"></select>
+    </div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close>إلغاء</button>
+      <button class="btn btn-primary" type="button" id="refInsertBtn">إدراج</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="confirmDialog" aria-labelledby="confirmHeading">
   <div class="dialog-card">
     <div class="dialog-head">
@@ -5229,9 +5285,10 @@ const ALLOWED_CLASSES = new Set([
   'hl-yellow','hl-green','hl-coral','hl-blue','hl-purple',
   'font-cairo','font-tajawal','font-amiri','font-dubai','font-readex','font-ibm',
   'fs-10','fs-11','fs-12','fs-13','fs-14','fs-16','fs-18','fs-20','fs-24','fs-28','fs-32','fs-36',
-  'movable','dragging'
+  'movable','dragging',
+  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash'
 ]);
-const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move']);
+const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move','data-fn','data-kind','data-notes','data-cap-id','data-cap-n','data-ref','data-ref-id']);
 
 /* ----- وضع الأغلفة المستوردة (HTML): وسم SVG وخصائصه ----- */
 /* ملاحظة: الفحص يجري بأسماء صغيرة (toLowerCase) — المتصفح يصحّح حالة وسوم وخصائص SVG تلقائيًا عند الإخراج */
@@ -6766,6 +6823,7 @@ function renderEditor(rebuild) {
     if (typeof enhanceMovables === 'function') enhanceMovables();
   }
   renumberQuestions();
+  if (typeof renumberReferences === 'function') renumberReferences();
   applyWatermarks();
   syncEditorChrome(doc);
   updateOutline();
@@ -6928,6 +6986,164 @@ function renumberQuestions() {
     });
   });
 }
+
+/* ---------- الدفعة ٣٦: الحواشي والمراجع المتقاطعة ---------- */
+const referenceDialog = $('#referenceDialog');
+const refType = $('#refType');
+const refText = $('#refText');
+const refTarget = $('#refTarget');
+const refTextField = $('#refTextField');
+const refTargetField = $('#refTargetField');
+
+function refLabel(kind) {
+  return kind === 'table' ? 'جدول' : 'شكل';
+}
+function refHighlight(el) {
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('xref-flash');
+  setTimeout(() => el.classList.remove('xref-flash'), 1400);
+}
+function updateRefFields() {
+  const t = refType ? refType.value : 'footnote';
+  if (refTextField) refTextField.hidden = t === 'xref';
+  if (refTargetField) refTargetField.hidden = t !== 'xref';
+}
+function fillRefTargets() {
+  if (!refTarget) return;
+  const caps = $$('.doc-caption[data-cap-id]', docCanvas);
+  refTarget.innerHTML = caps.length
+    ? caps.map(c => {
+        const label = refLabel(c.dataset.kind) + ' ' + toAr(Number(c.dataset.capN) || 1);
+        const txt = c.textContent.replace(/^(شكل|جدول)\s*[٠-٩]+\s*[:：-]?\s*/, '').trim().slice(0, 48);
+        return '<option value="' + esc(c.dataset.capId) + '">' + esc(label + (txt ? ' — ' + txt : '')) + '</option>';
+      }).join('')
+    : '<option value="">لا توجد تسميات بعد — أضف تسمية شكل أو جدول أولًا</option>';
+}
+function openReferenceDialog(kind) {
+  if (!referenceDialog) return;
+  const allowed = ['footnote', 'endnote', 'figure', 'table', 'xref'];
+  if (refType) refType.value = allowed.indexOf(kind) >= 0 ? kind : 'footnote';
+  updateRefFields();
+  if (refType && refType.value === 'xref') fillRefTargets();
+  if (typeof referenceDialog.showModal === 'function') referenceDialog.showModal();
+  else referenceDialog.setAttribute('open', '');
+  if (refType && refType.value !== 'xref') setTimeout(() => { if (refText) refText.focus(); }, 60);
+}
+function appendNoteItem(body, type, n, text, rid) {
+  if (!body) return null;
+  let block = $$('.notes-block[data-notes="' + type + '"]', body).pop() || null;
+  if (!block) {
+    block = document.createElement('div');
+    block.className = 'notes-block';
+    block.dataset.notes = type;
+    body.appendChild(block);
+  }
+  const item = document.createElement('p');
+  item.className = 'fn-item';
+  item.dataset.fn = String(n);
+  if (rid) item.dataset.refId = rid;
+  item.innerHTML = '<span class="fn-num">' + toAr(n) + '</span> — ' + esc(text);
+  block.appendChild(item);
+  return item;
+}
+function renumberReferences() {
+  [['footnote', $$('.fn-ref[data-kind="footnote"]', docCanvas), $$('.notes-block[data-notes="footnote"] .fn-item', docCanvas)],
+   ['endnote', $$('.fn-ref[data-kind="endnote"]', docCanvas), $$('.notes-block[data-notes="endnote"] .fn-item', docCanvas)]
+  ].forEach(pair => {
+    const liveIds = new Set(pair[1].map(ref => ref.dataset.refId).filter(Boolean));
+    pair[2].forEach(item => {
+      const id = item.dataset.refId;
+      if (id && !liveIds.has(id)) item.remove();
+    });
+    const items = pair[2].filter(item => item.isConnected);
+    pair[1].forEach((ref, i) => { const num = i + 1; ref.dataset.fn = String(num); ref.textContent = toAr(num); });
+    items.forEach((item, i) => {
+      const num = i + 1; item.dataset.fn = String(num);
+      const badge = item.querySelector('.fn-num');
+      if (badge) badge.textContent = toAr(num);
+    });
+  });
+  ['figure', 'table'].forEach(kind => {
+    $$('.doc-caption[data-kind="' + kind + '"]', docCanvas).forEach((cap, i) => {
+      const num = i + 1;
+      cap.dataset.capN = String(num);
+      const badge = cap.querySelector('.cap-num');
+      if (badge) badge.textContent = toAr(num);
+    });
+  });
+  const caps = $$('.doc-caption[data-cap-id]', docCanvas);
+  $$('.xref[data-ref]', docCanvas).forEach(x => {
+    let target = caps.find(c => c.dataset.capId === x.dataset.ref);
+    if (!target) {
+      const wantTable = (x.textContent || '').indexOf('جدول') >= 0;
+      target = caps.find(c => (c.dataset.kind === 'table') === wantTable) || caps[0];
+      if (!target) return;
+      x.dataset.ref = target.dataset.capId;
+    }
+    x.textContent = 'انظر ' + refLabel(target.dataset.kind) + ' ' + toAr(Number(target.dataset.capN) || 1);
+  });
+}
+function insertReference() {
+  if (!referenceDialog) return;
+  const type = refType ? refType.value : 'footnote';
+  const text = (refText && refText.value || '').trim();
+  if (type === 'xref') {
+    const id = refTarget ? refTarget.value : '';
+    if (!id) { toast('لا يوجد هدف متاح للمرجع المتقاطع.', 'error'); return; }
+    insertHtml('<span class="xref" data-ref="' + esc(id) + '">انظر مرجعًا</span>');
+    renumberReferences();
+    const body = currentBody();
+    if (body) syncBodyFromDom(body);
+    referenceDialog.close();
+    toast('تم إدراج المرجع المتقاطع.');
+    return;
+  }
+  if (type === 'footnote' || type === 'endnote') {
+    const body = currentBody();
+    if (!body) { toast('افتح مستندًا وأضف حاشية داخل المتن.', 'error'); return; }
+    const n = $$('.fn-ref[data-kind="' + type + '"]', docCanvas).length + 1;
+    const note = text || 'اكتب نص الحاشية هنا…';
+    const rid = 'fn-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+    insertHtml('<sup class="fn-ref" data-kind="' + type + '" data-fn="' + n + '" data-ref-id="' + rid + '" title="' + esc(note.slice(0, 90)) + '">' + toAr(n) + '</sup>');
+    const target = type === 'endnote'
+      ? ($$('.paper-body', docCanvas).pop() || body) : body;
+    appendNoteItem(target, type, n, note, rid);
+    renumberReferences();
+    syncBodyFromDom(target);
+    referenceDialog.close();
+    toast(type === 'footnote' ? 'تم إدراج الحاشية السفلية.' : 'تم إدراج الحاشية النهائية.');
+    return;
+  }
+  const n = $$('.doc-caption[data-kind="' + type + '"]', docCanvas).length + 1;
+  const id = 'cap-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
+  const label = refLabel(type);
+  insertHtml('<div class="doc-caption" data-kind="' + type + '" data-cap-id="' + id + '" data-cap-n="' + n + '">' +
+    label + ' <span class="cap-num">' + toAr(n) + '</span>: ' + esc(text || 'عنوان التسمية') + '</div><p><br></p>');
+  renumberReferences();
+  const b = currentBody();
+  if (b) syncBodyFromDom(b);
+  referenceDialog.close();
+  toast('تم إدراج تسمية ' + label + '.');
+}
+
+if (refType) refType.addEventListener('change', updateRefFields);
+const refInsertBtn = $('#refInsertBtn');
+if (refInsertBtn) refInsertBtn.addEventListener('click', insertReference);
+docCanvas.addEventListener('click', event => {
+  const fn = event.target.closest('.fn-ref');
+  if (fn) {
+    const items = $$('.notes-block[data-notes="' + fn.dataset.kind + '"] .fn-item', docCanvas);
+    refHighlight(items[(Number(fn.dataset.fn) || 1) - 1]);
+    return;
+  }
+  const xref = event.target.closest('.xref');
+  if (xref) {
+    const target = $$('.doc-caption[data-cap-id]', docCanvas).find(c => c.dataset.capId === xref.dataset.ref);
+    refHighlight(target);
+  }
+});
+
 
 function updateDocTitleRefs(doc) {
   $$('[data-doc-title]', docCanvas).forEach(el => { el.textContent = doc.title; });
@@ -7619,6 +7835,7 @@ docCanvas.addEventListener('input', event => {
     } else {
       clearLegacyPlaceholder(el);
       renumberQuestions();
+      if (typeof renumberReferences === 'function') renumberReferences();
       syncBodyFromDom(el);
       return;
     }
@@ -7786,6 +8003,7 @@ function insertHtml(html) {
   }
   if (typeof enhanceMovables === 'function') enhanceMovables();
   renumberQuestions();
+  if (typeof renumberReferences === 'function') renumberReferences();
   syncBodyFromDom(body);
   if (doc) commitUndo(doc, 'إدراج محتوى');
 }
@@ -7801,6 +8019,7 @@ function handleInsert(kind) {
   if (kind === 'problem') { openProblemDialog(); return; }
   if (kind === 'symbol') { openSymbolDialog(); return; }
   if (kind === 'qa') { openQaDialog(); return; }
+  if (['footnote','endnote','caption','xref'].indexOf(kind) >= 0) { openReferenceDialog(kind); return; }
   if (kind === 'callout') {
     insertHtml('<div class="note note-info"><div class="note-head"><span class="nk-ico">i</span>ملاحظة</div><p>اكتب ملاحظتك المهمة هنا...</p></div><p><br></p>');
     return;
@@ -10473,6 +10692,7 @@ qaInsertBtn.addEventListener('click', () => {
     if (corner) item.appendChild(corner);
     item.classList.add('qa-exam');
     renumberQuestions();
+    if (typeof renumberReferences === 'function') renumberReferences();
     if (body) syncBodyFromDom(body);
     if (doc) commitUndo(doc, 'تعديل سؤال');
     qaDialog.close();

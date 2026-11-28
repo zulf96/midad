@@ -925,13 +925,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T16:31:48.271Z"
+      },
+      {
+        "id": "68",
+        "title": "الدفعة ٣٦ — الحواشي والمراجع",
+        "description": "حواشٍ سفلية/نهائية، تسمية أشكال وجداول، ومراجع متقاطعة עם ترقيم تلقائي",
+        "details": "أربعة أزرار إدراج ونافذة موحّدة؛ حواشٍ مرتبطة بمعرّفات فريدة تُحذف عند حذف المرجع؛ تسميات تُرقَّم لكل نوع؛ مراجع متقاطعة تُحدَّث تلقائيًا وتقفز إلى الهدف؛ أنماط طباعة وقائمة بيضاء موسّعة.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T16:42:17.734Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T16:31:48.271Z",
-      "taskCount": 67,
-      "completedCount": 67,
+      "lastModified": "2026-11-28T16:42:17.734Z",
+      "taskCount": 68,
+      "completedCount": 68,
       "tags": [
         "master"
       ]
