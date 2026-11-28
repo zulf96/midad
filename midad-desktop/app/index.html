@@ -816,7 +816,7 @@ body[data-view="editor"] #libraryView{ display:none !important; }
   scroll-margin-top:calc(var(--header-h) + 72px);
   padding:var(--page-pad);
   display:flex; flex-direction:column;
-  background:var(--paper);
+  background:var(--paper-tint, var(--paper));
   border:1px solid #e4ecef;
   border-radius:5px;
   box-shadow:0 26px 55px -38px rgba(18,41,60,.55), 0 3px 10px -6px rgba(18,41,60,.12);
@@ -2410,6 +2410,23 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٣٨: الصفحة المتقدمة ----- */
+.canvas[data-cols="2"] .paper-body{ column-count:2; column-gap:30px; }
+.canvas[data-cols="3"] .paper-body{ column-count:3; column-gap:24px; }
+.canvas[data-cols="2"] .paper-body > *,
+.canvas[data-cols="3"] .paper-body > *{ break-inside:avoid; }
+.paper.break-before{ break-before:page; page-break-before:always; }
+.canvas[data-page-border="solid"] .paper{ border:2px solid var(--navy); }
+.canvas[data-page-border="double"] .paper{ border:4px double var(--navy); }
+.canvas[data-page-border="dashed"] .paper{ border:2px dashed var(--accent); }
+.paper-first-head{ font-size:.82em; color:#738894; border-bottom:1px dashed #dbe7ec; padding-bottom:6px; margin-bottom:14px; outline:none; }
+.paper-first-head:empty::before{ content:"ترويسة أول صفحة…"; color:#b3c1c8; }
+@media print{
+  .canvas[data-cols="2"] .paper-body{ column-count:2; column-gap:30px; }
+  .canvas[data-cols="3"] .paper-body{ column-count:3; column-gap:24px; }
+  .paper.break-before{ break-before:page; page-break-before:always; }
+  .paper-first-head{ border-bottom-color:#dbe7ec; }
+}
 /* ----- الدفعة ٣٧: المراجعة والتعليقات ----- */
 .comment-anchor{ background:#fff3bf; border-bottom:2px solid #f0a500; cursor:pointer; padding:0 2px; }
 .comment-anchor:hover{ background:#ffe08a; }
@@ -3659,6 +3676,31 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
           <option value="portrait">عمودي</option>
           <option value="landscape">أفقي</option>
         </select>
+      </div>
+      <div class="setting-row">
+        <span>أعمدة الصفحة</span>
+        <select class="mini-select" id="columnsSelect" aria-label="عدد أعمدة الصفحة">
+          <option value="1">عمود واحد</option>
+          <option value="2">عمودان</option>
+          <option value="3">ثلاثة أعمدة</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>ترويسة أول صفحة</span>
+        <input class="mini-input" type="text" id="firstHeadInput" placeholder="نص يظهر أعلى أول صفحة محتوى" aria-label="ترويسة أول صفحة" />
+      </div>
+      <div class="setting-row">
+        <span>حدود الصفحة</span>
+        <select class="mini-select" id="pageBorderSelect" aria-label="حدود الصفحة">
+          <option value="none">افتراضي</option>
+          <option value="solid">خط متصل</option>
+          <option value="double">مزدوج</option>
+          <option value="dashed">متقطّع</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>لون الصفحة</span>
+        <input type="color" id="pageColorInput" value="#ffffff" aria-label="لون خلفية الصفحة" />
       </div>
       <div class="setting-row">
         <span>حذف الهوامش</span>
@@ -5802,7 +5844,8 @@ function normalizeDoc(raw, preserveId) {
         title: String((s && s.title) || '').slice(0, 200),
         body: sanitizeHtml(String((s && s.body) || '')),
         blank: !!(s && s.blank),
-        continuation: !!(s && s.continuation)
+        continuation: !!(s && s.continuation),
+        breakBefore: !!(s && s.breakBefore)
       }))
     : [];
   const now = Date.now();
@@ -5824,6 +5867,10 @@ function normalizeDoc(raw, preserveId) {
     marginsMm: normalizeMarginsMm(raw),
     pageSize: (raw.pageSize in PAGE_SIZES) ? raw.pageSize : 'A4',
     orientation: raw.orientation === 'landscape' ? 'landscape' : 'portrait',
+    columns: ['1','2','3'].indexOf(String(raw.columns || '1')) >= 0 ? String(raw.columns) : '1',
+    firstPageHeader: String(raw.firstPageHeader || '').slice(0, 160),
+    pageBorder: ['none','solid','double','dashed'].indexOf(raw.pageBorder) >= 0 ? raw.pageBorder : 'none',
+    pageColor: /^#[0-9a-fA-F]{6}$/.test(raw.pageColor) ? raw.pageColor : '#ffffff',
     frameGradient: raw.frameGradient === undefined ? true : !!raw.frameGradient,
     font: isValidFontValue(raw.font) ? raw.font : 'cairo',
     coverLayout: COVER_LAYOUTS.includes(raw.coverLayout) ? raw.coverLayout : 'classic',
@@ -5999,6 +6046,10 @@ const statSections    = $('#statSections');
 const statPages       = $('#statPages');
 const statPageSize    = $('#statPageSize');
 const pageSizeSelect  = $('#pageSizeSelect');
+const columnsSelect  = $('#columnsSelect');
+const firstHeadInput = $('#firstHeadInput');
+const pageBorderSelect = $('#pageBorderSelect');
+const pageColorInput = $('#pageColorInput');
 const orientationSelect = $('#orientationSelect');
 const findBtn         = $('#findBtn');
 const findDialog      = $('#findDialog');
@@ -6470,6 +6521,7 @@ function sheetToolsHtml(section) {
   return '<div class="sheet-tools">' +
     '<button type="button" data-move="up" title="تحريك للأعلى" aria-label="تحريك القسم للأعلى"><svg aria-hidden="true"><use href="#i-up"/></svg></button>' +
     '<button type="button" data-move="down" title="تحريك للأسفل" aria-label="تحريك القسم للأسفل"><svg aria-hidden="true"><use href="#i-down"/></svg></button>' +
+    '<button type="button" data-break-sec="' + section.id + '" title="بدء صفحة جديدة قبل هذا القسم" aria-label="فصل صفحة قبل القسم"><svg aria-hidden="true"><use href="#i-page"/></svg></button>' +
     '<button class="danger" type="button" data-del-sec="' + section.id + '" title="حذف الصفحة" aria-label="حذف الصفحة"><svg aria-hidden="true"><use href="#i-trash"/></svg></button>' +
   '</div>';
 }
@@ -6736,8 +6788,11 @@ function sectionHtml(doc, section, index) {
   if (section.blank) return blankSectionHtml(doc, section, index);
   const total = sheetCount(doc);
   const contentNumber = doc.sections.slice(0, index + 1).filter(s => !s.blank).length;
-  return '<article class="paper section-paper' + (section.continuation ? ' is-continuation' : '') + '" data-sec-paper="' + section.id + '">' +
+  const firstHeader = contentNumber === 1 && doc.firstPageHeader && doc.firstPageHeader.trim()
+    ? '<div class="paper-first-head" contenteditable="true" spellcheck="false" data-first-head>' + esc(doc.firstPageHeader) + '</div>' : '';
+  return '<article class="paper section-paper' + (section.continuation ? ' is-continuation' : '') + (section.breakBefore ? ' break-before' : '') + '" data-sec-paper="' + section.id + '">' +
     frameHtml() +
+    firstHeader +
     '<div class="paper-head">' +
       '<span class="sec-index" aria-hidden="true">' + toAr(contentNumber) + '</span>' +
       '<h2 contenteditable="true" data-sec="' + section.id + '" data-field="title" spellcheck="false">' + esc(section.title) + '</h2>' +
@@ -6750,7 +6805,7 @@ function sectionHtml(doc, section, index) {
 
 function blankSectionHtml(doc, section, index) {
   const total = sheetCount(doc);
-  return '<article class="paper blank-paper" data-sec-paper="' + section.id + '">' +
+  return '<article class="paper blank-paper' + (section.breakBefore ? ' break-before' : '') + '" data-sec-paper="' + section.id + '">' +
     frameHtml() +
     sheetToolsHtml(section) +
     '<div class="paper-body blank-body" contenteditable="true" data-sec="' + section.id + '" data-field="body" spellcheck="false">' + section.body + '</div>' +
@@ -6793,6 +6848,11 @@ function syncEditorChrome(doc) {
   if (marginSelect) marginSelect.value = doc.margins;
   if (pageSizeSelect) pageSizeSelect.value = pageDims(doc).name;
   if (orientationSelect) orientationSelect.value = doc.orientation === 'landscape' ? 'landscape' : 'portrait';
+  if (columnsSelect) columnsSelect.value = String(doc.columns || '1');
+  if (firstHeadInput) firstHeadInput.value = doc.firstPageHeader || '';
+  if (pageBorderSelect) pageBorderSelect.value = doc.pageBorder || 'none';
+  if (pageColorInput) pageColorInput.value = doc.pageColor || '#ffffff';
+  applyAdvancedPage(doc);
   syncMarginInputs(doc);
   if (frameGradSwitch) frameGradSwitch.setAttribute('aria-checked', String(doc.frameGradient !== false));
   if (fontSelectEl) { populateFontOptions(doc); fontSelectEl.value = isValidFontValue(doc.font) ? doc.font : 'cairo'; }
@@ -6837,6 +6897,13 @@ function applyMargins(doc) {
     docCanvas.style.removeProperty('--page-pad');
     docCanvas.style.removeProperty('--print-pad');
   }
+}
+
+function applyAdvancedPage(doc) {
+  if (!docCanvas || !doc) return;
+  docCanvas.dataset.cols = String(doc.columns || '1');
+  docCanvas.dataset.pageBorder = doc.pageBorder || 'none';
+  docCanvas.style.setProperty('--paper-tint', doc.pageColor || '#ffffff');
 }
 
 function applyPageSize(doc) {
@@ -7935,6 +8002,13 @@ docCanvas.addEventListener('input', event => {
     return;
   }
 
+  if (el.hasAttribute('data-first-head')) {
+    doc.firstPageHeader = (el.textContent || '').replace(/\u00a0/g, ' ').trim().slice(0, 160);
+    if (firstHeadInput) firstHeadInput.value = doc.firstPageHeader;
+    scheduleSave();
+    return;
+  }
+
   if (el.dataset.sec) {
     const section = doc.sections.find(s => s.id === el.dataset.sec);
     if (!section) return;
@@ -8000,6 +8074,16 @@ docCanvas.addEventListener('click', event => {
   const id = paper && paper.dataset.secPaper;
   if (btn.dataset.move && id) moveSection(id, btn.dataset.move === 'up' ? -1 : 1);
   if (btn.dataset.delSec) deleteSection(btn.dataset.delSec);
+  if (btn.dataset.breakSec && id) {
+    const section = (activeDoc() && activeDoc().sections || []).find(x => x.id === id);
+    if (section) {
+      section.breakBefore = !section.breakBefore;
+      renderEditor(true);
+      scheduleSave();
+      toast(section.breakBefore ? 'سيبدأ هذا القسم في صفحة جديدة.' : 'أُلغي فصل الصفحة قبل القسم.');
+    }
+    return;
+  }
 });
 
 /* منع أدوات الغلاف من تحريك مؤشر الكتابة */
@@ -12340,6 +12424,35 @@ frameSelect.addEventListener('change', () => {
   if (!doc) return;
   doc.frame = FRAME_KEYS.includes(frameSelect.value) ? frameSelect.value : 'none';
   docCanvas.dataset.frame = doc.frame;
+  scheduleSave();
+});
+
+[[columnsSelect, 'columns', v => ['1','2','3'].indexOf(v) >= 0 ? v : '1', 'عدد الأعمدة'],
+ [pageBorderSelect, 'pageBorder', v => ['none','solid','double','dashed'].indexOf(v) >= 0 ? v : 'none', 'حدود الصفحة']].forEach(pair => {
+  const [el, key, norm, label] = pair;
+  if (!el) return;
+  el.addEventListener('change', () => {
+    const doc = activeDoc();
+    if (!doc) return;
+    doc[key] = norm(el.value);
+    applyAdvancedPage(doc);
+    scheduleSave();
+    toast(label + ': ' + el.options[el.selectedIndex].text);
+  });
+});
+if (pageColorInput) pageColorInput.addEventListener('input', () => {
+  const doc = activeDoc();
+  if (!doc) return;
+  doc.pageColor = /^#[0-9a-fA-F]{6}$/.test(pageColorInput.value) ? pageColorInput.value : '#ffffff';
+  applyAdvancedPage(doc);
+  scheduleSave();
+});
+if (firstHeadInput) firstHeadInput.addEventListener('input', () => {
+  const doc = activeDoc();
+  if (!doc) return;
+  doc.firstPageHeader = firstHeadInput.value.slice(0, 160);
+  const el = $('[data-first-head]', docCanvas);
+  if (el) el.textContent = doc.firstPageHeader;
   scheduleSave();
 });
 

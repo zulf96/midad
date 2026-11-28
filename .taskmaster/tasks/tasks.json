@@ -949,13 +949,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T16:48:46.646Z"
+      },
+      {
+        "id": "70",
+        "title": "الدفعة ٣٨ — الصفحة المتقدمة",
+        "description": "أعمدة الصفحة، فصل أقسام، ترويسة أول صفحة، حدود وألوان الصفحة",
+        "details": "خيارات في لوحة الإعدادات تُطبَّق على canvas عبر dataset/vars؛ عمودان/ثلاثة مع منع انقسام العناصر؛ زر فصل صفحة لكل قسم؛ ترويسة قابلة للتحرير في أول صفحة محتوى؛ حدود ولون خلفية مع دعم الطباعة والتصدير HTML.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T16:54:15.223Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T16:48:46.646Z",
-      "taskCount": 69,
-      "completedCount": 69,
+      "lastModified": "2026-11-28T16:54:15.223Z",
+      "taskCount": 70,
+      "completedCount": 70,
       "tags": [
         "master"
       ]
