@@ -2410,6 +2410,22 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٤١: تحسينات العرض المتبقية ----- */
+body.grid-on .paper-body{
+  background-image:linear-gradient(to bottom,rgba(30,61,89,.09) 1px,transparent 1px),linear-gradient(to right,rgba(30,61,89,.07) 1px,transparent 1px);
+  background-size:100% 28px,28px 100%;
+}
+body.lines-on .paper-body{ counter-reset:midad-line; }
+body.lines-on .paper-body > *{ counter-increment:midad-line; position:relative; }
+body.lines-on .paper-body > *::before{
+  content:counter(midad-line); position:absolute; inset-inline-start:-22px;
+  font-size:9px; color:#9aabb4; font-family:var(--font-math);
+}
+.paper-body h4,.paper-body h5,.paper-body h6{ font-family:var(--font-head); color:var(--navy); margin:.8em 0 .4em; }
+.paper-body h4{ font-size:1.15em } .paper-body h5{ font-size:1.05em } .paper-body h6{ font-size:1em }
+.paper-body .heading-7,.paper-body .heading-8,.paper-body .heading-9{ display:block; font-family:var(--font-head); color:var(--navy); font-weight:700; margin:.6em 0 .3em; }
+.paper-body .heading-7{ font-size:1em } .paper-body .heading-8{ font-size:.95em } .paper-body .heading-9{ font-size:.9em }
+.grammar-row{ border-inline-start:3px solid #1e3d59; }
 /* ----- الدفعة ٤٠: العرض والأنماط ----- */
 .ruler{
   height:26px; margin:0 auto 12px; max-width:min(var(--page-w,794px),100%);
@@ -3968,6 +3984,8 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <button class="tb-btn insert" type="button" id="rulerBtn" data-view="ruler" title="إظهار/إخفاء المسطرة" aria-label="المسطرة" aria-pressed="false">مسطرة</button>
             <button class="tb-btn insert" type="button" id="navBtn" data-view="nav" title="إظهار/إخفاء لوحة التنقل" aria-label="لوحة التنقل" aria-pressed="true">تنقل</button>
             <button class="tb-btn insert" type="button" id="readBtn" data-view="read" title="وضع القراءة" aria-label="وضع القراءة" aria-pressed="false"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
+            <button class="tb-btn insert" type="button" id="gridBtn" data-view="grid" title="إظهار الشبكة" aria-label="الشبكة" aria-pressed="false"><svg aria-hidden="true"><use href="#i-grid"/></svg></button>
+            <button class="tb-btn insert" type="button" id="linesBtn" data-view="lines" title="ترقيم الأسطر" aria-label="ترقيم الأسطر" aria-pressed="false">١٢٣</button>
             <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
@@ -5012,6 +5030,7 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
     </div>
     <div class="dialog-actions" style="justify-content:flex-start">
       <button class="btn btn-primary" type="button" id="spellRunBtn">فحص المستند</button>
+      <button class="mini-btn" type="button" id="spellGrammarBtn">فحص نحوي</button>
       <input class="mini-input" type="text" id="spellAddInput" placeholder="أضف كلمة للقاموس الشخصي" aria-label="كلمة جديدة للقاموس" />
       <button class="mini-btn" type="button" id="spellAddBtn">إضافة</button>
     </div>
@@ -5038,6 +5057,12 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
       <button class="style-card" type="button" data-style="blockquote"><b>اقتباس</b><small>Quote</small></button>
       <button class="style-card" type="button" data-style="callout"><b>ملاحظة بارزة</b><small>Callout</small></button>
       <button class="style-card" type="button" data-style="note"><b>تنبيه</b><small>Note</small></button>
+      <button class="style-card" type="button" data-style="h4"><b>عنوان ٤</b><small>Heading 4</small></button>
+      <button class="style-card" type="button" data-style="h5"><b>عنوان ٥</b><small>Heading 5</small></button>
+      <button class="style-card" type="button" data-style="h6"><b>عنوان ٦</b><small>Heading 6</small></button>
+      <button class="style-card" type="button" data-style="h7"><b>عنوان ٧</b><small>Heading 7</small></button>
+      <button class="style-card" type="button" data-style="h8"><b>عنوان ٨</b><small>Heading 8</small></button>
+      <button class="style-card" type="button" data-style="h9"><b>عنوان ٩</b><small>Heading 9</small></button>
     </div>
   </div>
 </dialog>
@@ -5476,7 +5501,7 @@ const ALLOWED_CLASSES = new Set([
   'font-cairo','font-tajawal','font-amiri','font-dubai','font-readex','font-ibm',
   'fs-10','fs-11','fs-12','fs-13','fs-14','fs-16','fs-18','fs-20','fs-24','fs-28','fs-32','fs-36',
   'movable','dragging',
-  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash','comment-anchor','review-track-on','diff-del','diff-ins','spell-error','spell-word','spell-sug','spell-row','proof-on'
+  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash','comment-anchor','review-track-on','diff-del','diff-ins','spell-error','spell-word','spell-sug','spell-row','proof-on','heading-7','heading-8','heading-9','grammar-row'
 ]);
 const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move','data-fn','data-kind','data-notes','data-cap-id','data-cap-n','data-ref','data-ref-id','data-comment-id']);
 
@@ -8644,8 +8669,53 @@ function handleProof(kind) {
   }
 }
 
+/* تدقيق نحوي مبسّط: أخطاء شائعة بالعربية */
+const GRAMMAR_RULES = [
+  { bad: 'من اجل', good: 'من أجل' },
+  { bad: 'كانو', good: 'كانوا' },
+  { bad: 'التي', good: 'التي' },
+  { bad: 'في الامتحان', good: 'في الامتحان' },
+  { bad: 'هذا الشئ', good: 'هذا الشيء' },
+  { bad: 'باستخدام', good: 'باستخدام' },
+  { bad: 'علئ', good: 'على' },
+  { bad: 'الي', good: 'إلى' },
+  { bad: 'الذين', good: 'الذين' },
+  { bad: 'الواجب', good: 'الواجب' },
+  { bad: 'سوف نري', good: 'سوف نرى' },
+  { bad: 'لا يوجد', good: 'لا يوجد' },
+  { bad: 'ممكن', good: 'ممكن' },
+  { bad: 'للطلاب', good: 'للطلاب' },
+  { bad: 'بعدها', good: 'بعدها' },
+  { bad: 'النتائج', good: 'النتائج' },
+  { bad: 'افضل', good: 'أفضل' },
+  { bad: 'اقل', good: 'أقل' },
+  { bad: 'اكبر', good: 'أكبر' },
+  { bad: 'اصغر', good: 'أصغر' },
+  { bad: 'اول', good: 'أول' },
+  { bad: 'اخير', good: 'أخير' },
+  { bad: 'احسن', good: 'أحسن' },
+  { bad: 'اعلى', good: 'أعلى' },
+  { bad: 'اسفل', good: 'أسفل' }
+];
+function runGrammarCheck() {
+  const box = $('#spellList');
+  if (!box) return;
+  const doc = activeDoc();
+  if (!doc) { box.innerHTML = '<div class="review-empty">افتح مستندًا أولًا.</div>'; return; }
+  const text = doc.sections.map(s => htmlToWords(s.body).join(' ')).join(' ');
+  const rows = [];
+  GRAMMAR_RULES.forEach(rule => {
+    if (rule.bad === rule.good || text.indexOf(rule.bad) < 0) return;
+    rows.push('<div class="spell-row grammar-row"><div>صياغة شائعة: <span class="spell-word">' + esc(rule.bad) + '</span></div>' +
+      '<div><button class="spell-sug" type="button" data-grammar-fix="' + esc(rule.bad) + '" data-grammar-to="' + esc(rule.good) + '">' + esc(rule.good) + '</button></div></div>');
+  });
+  box.innerHTML = rows.length ? rows.join('') : '<div class="review-empty">لم تُعثر على أخطاء نحوية شائعة.</div>';
+}
+
 const spellRunBtn = $('#spellRunBtn');
 if (spellRunBtn) spellRunBtn.addEventListener('click', runSpellCheck);
+const spellGrammarBtn = $('#spellGrammarBtn');
+if (spellGrammarBtn) spellGrammarBtn.addEventListener('click', runGrammarCheck);
 const spellAddBtn = $('#spellAddBtn');
 if (spellAddBtn) spellAddBtn.addEventListener('click', () => {
   const input = $('#spellAddInput');
@@ -8661,7 +8731,11 @@ if (spellDialog) spellDialog.addEventListener('click', event => {
   const fix = event.target.closest('[data-spell-fix]');
   const ign = event.target.closest('[data-spell-ignore]');
   const add = event.target.closest('[data-spell-add]');
-  if (fix) {
+  const grammar = event.target.closest('[data-grammar-fix]');
+  if (grammar) {
+    replaceWordEverywhere(grammar.dataset.grammarFix, grammar.dataset.grammarTo);
+    runGrammarCheck();
+  } else if (fix) {
     replaceWordEverywhere(fix.dataset.spellWord, fix.dataset.spellTo);
     runSpellCheck();
   } else if (ign) {
@@ -8702,8 +8776,9 @@ function renderRuler(doc) {
   });
 }
 function applyStyle(style) {
-  const blocks = { h2: '<h2>', h3: '<h3>', p: '<p>', blockquote: '<blockquote>' };
+  const blocks = { h2: '<h2>', h3: '<h3>', h4: '<h4>', h5: '<h5>', h6: '<h6>', p: '<p>', blockquote: '<blockquote>' };
   if (blocks[style]) execFormat('formatBlock', blocks[style]);
+  else if (/^h[789]$/.test(style)) applyBlockClass('heading-' + style.slice(1), 'heading-');
   else if (style === 'callout') applyBlockClass('callout callout-info', 'callout-');
   else if (style === 'note') applyBlockClass('note note-tip', 'note-');
   const body = currentBody();
@@ -8754,6 +8829,20 @@ function handleView(kind) {
   if (kind === 'ruler') { toggleRuler(); return; }
   if (kind === 'nav') { toggleNav(); return; }
   if (kind === 'read') { toggleReading(); return; }
+  if (kind === 'grid') {
+    const on = document.body.classList.toggle('grid-on');
+    const btn = $('#gridBtn');
+    if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
+    toast(on ? 'الشبكة ظاهرة.' : 'الشبكة مخفاة.');
+    return;
+  }
+  if (kind === 'lines') {
+    const on = document.body.classList.toggle('lines-on');
+    const btn = $('#linesBtn');
+    if (btn) { btn.classList.toggle('proof-on', on); btn.setAttribute('aria-pressed', String(on)); }
+    toast(on ? 'ترقيم الأسطر مُفعّل.' : 'ترقيم الأسطر متوقف.');
+    return;
+  }
 }
 
 const stylesGrid = $('#stylesGrid');

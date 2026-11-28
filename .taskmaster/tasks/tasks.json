@@ -985,13 +985,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T17:04:44.868Z"
+      },
+      {
+        "id": "73",
+        "title": "الدفعة ٤١ — تحسينات العرض المتبقية",
+        "description": "شبكة، أنماط ١–٩، ترقيم أسطر، وتدقيق نحوي مبسط",
+        "details": "أزرار عرض إضافية للشبكة وترقيم الأسطر؛ توسيع معرض الأنماط إلى h1–h9؛ فحص نحوي بقواعد أخطاء شائعة مع استبدال فوري داخل نفس نافذة التدقيق.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:07:36.537Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T17:04:44.868Z",
-      "taskCount": 72,
-      "completedCount": 72,
+      "lastModified": "2026-11-28T17:07:36.537Z",
+      "taskCount": 73,
+      "completedCount": 73,
       "tags": [
         "master"
       ]
