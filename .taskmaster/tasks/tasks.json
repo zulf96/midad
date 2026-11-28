@@ -961,13 +961,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T16:54:15.223Z"
+      },
+      {
+        "id": "71",
+        "title": "الدفعة ٣٩ — التدقيق الإملائي",
+        "description": "مدقق عربي بقاموس مدمج، تصحيح تلقائي، وقاموس شخصي",
+        "details": "قاموس عربي مدمج مع تطبيع الألف والتاء المربوطة والتشكيل، مطابقة باديئ/لواحق شائعة، اقتراحات بمسافة تحرير Damerau-Levenshtein، تصحيح تلقائي أثناء الكتابة، قاموس شخصي محفوظ في التخزين والنسخ الاحتياطي.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:01:15.953Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T16:54:15.223Z",
-      "taskCount": 70,
-      "completedCount": 70,
+      "lastModified": "2026-11-28T17:01:15.953Z",
+      "taskCount": 71,
+      "completedCount": 71,
       "tags": [
         "master"
       ]

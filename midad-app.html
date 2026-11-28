@@ -2410,6 +2410,14 @@ body[data-night="on"] .qa-rich ol li::marker{ color:#ffb08f; }
   font-weight:700; font-size:.88em; color:var(--navy); text-align:start;
 }
 
+/* ----- الدفعة ٣٩: التدقيق اللغوي ----- */
+.spell-error{ text-decoration:underline wavy #e2542a; text-underline-offset:3px; }
+.spell-word{ font-weight:700; color:#a83a17; }
+.spell-sug{ border:1px solid #dbe7ec; background:#fff; border-radius:7px; padding:4px 9px; cursor:pointer; color:#1e3d59; }
+.spell-sug:hover{ background:#eef4f6; }
+.spell-row{ padding:8px 0; border-bottom:1px solid #eef4f6; display:grid; gap:6px; }
+.spell-row:last-child{ border-bottom:0; }
+.proof-on{ background:#dcf5e5 !important; color:#0d7d52 !important; }
 /* ----- الدفعة ٣٨: الصفحة المتقدمة ----- */
 .canvas[data-cols="2"] .paper-body{ column-count:2; column-gap:30px; }
 .canvas[data-cols="3"] .paper-body{ column-count:3; column-gap:24px; }
@@ -3921,6 +3929,8 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
             <button class="tb-btn insert" type="button" data-review="comment" title="إضافة تعليق على التحديد" aria-label="إضافة تعليق"><svg aria-hidden="true"><use href="#i-pen"/></svg></button>
             <button class="tb-btn insert" type="button" id="trackChangesBtn" data-review="track" title="تتبّع التغييرات" aria-label="تتبّع التغييرات" aria-pressed="false">تتبّع</button>
             <button class="tb-btn insert" type="button" data-review="panel" title="لوحة المراجعة: التعليقات والتغييرات والمقارنة" aria-label="لوحة المراجعة"><svg aria-hidden="true"><use href="#i-eye"/></svg></button>
+            <button class="tb-btn insert" type="button" data-proof="spell" title="التدقيق الإملائي العربي" aria-label="التدقيق الإملائي"><svg aria-hidden="true"><use href="#i-sparkle"/></svg></button>
+            <button class="tb-btn insert" type="button" id="autoCorrectBtn" data-proof="auto" title="التصحيح التلقائي أثناء الكتابة" aria-label="التصحيح التلقائي" aria-pressed="false">تصحيح</button>
             <button class="tb-btn insert" type="button" data-insert="hr" title="فاصل" aria-label="فاصل"><svg aria-hidden="true"><use href="#i-words"/></svg></button>
             <button class="tb-btn insert" type="button" data-insert="blank-page" title="صفحة فارغة" aria-label="إدراج صفحة فارغة"><svg aria-hidden="true"><use href="#i-page"/></svg></button>
           </div>
@@ -4952,6 +4962,27 @@ body[data-night="on"] .night-toggle[aria-pressed="true"]{ background:rgba(76,154
   </div>
 </dialog>
 
+<dialog id="spellDialog" class="review-dialog" aria-labelledby="spellHeading">
+  <div class="dialog-card">
+    <div class="dialog-head">
+      <div>
+        <h2 id="spellHeading">التدقيق الإملائي العربي</h2>
+        <p>يقترح تصحيح الكلمات باستخدام قاموس مدمج وقاموسك الشخصي، بلا اتصال بالإنترنت.</p>
+      </div>
+      <button class="dialog-close" type="button" data-close aria-label="إغلاق"><svg aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="dialog-actions" style="justify-content:flex-start">
+      <button class="btn btn-primary" type="button" id="spellRunBtn">فحص المستند</button>
+      <input class="mini-input" type="text" id="spellAddInput" placeholder="أضف كلمة للقاموس الشخصي" aria-label="كلمة جديدة للقاموس" />
+      <button class="mini-btn" type="button" id="spellAddBtn">إضافة</button>
+    </div>
+    <div class="review-list" id="spellList" style="margin-top:12px"><div class="review-empty">اضغط «فحص المستند» للبدء.</div></div>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" data-close>إغلاق</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="confirmDialog" aria-labelledby="confirmHeading">
   <div class="dialog-card">
     <div class="dialog-head">
@@ -5386,7 +5417,7 @@ const ALLOWED_CLASSES = new Set([
   'font-cairo','font-tajawal','font-amiri','font-dubai','font-readex','font-ibm',
   'fs-10','fs-11','fs-12','fs-13','fs-14','fs-16','fs-18','fs-20','fs-24','fs-28','fs-32','fs-36',
   'movable','dragging',
-  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash','comment-anchor','review-track-on','diff-del','diff-ins'
+  'fn-ref','fn-item','fn-num','notes-block','doc-caption','cap-num','xref','xref-flash','comment-anchor','review-track-on','diff-del','diff-ins','spell-error','spell-word','spell-sug','spell-row','proof-on'
 ]);
 const ALLOWED_ATTRS = new Set(['class','href','target','rel','dir','colspan','rowspan','span','title','src','alt','data-move','data-fn','data-kind','data-notes','data-cap-id','data-cap-n','data-ref','data-ref-id','data-comment-id']);
 
@@ -5910,6 +5941,84 @@ function normalizeDoc(raw, preserveId) {
   };
 }
 
+/* ---------- الدفعة ٣٩: القاموس العربي المدمج ---------- */
+const AR_DICT_RAW = `
+هذا هذه ذلك تلك الذين اللاتي الذي التي من إلى عن على في مع بين كان كانت يكون تكون قد لم لن لا نعم إذا عندما قبل بعد حول بدون ضد كل بعض اثنان اثنتان ثلاثة اربعة خمسة ستة سبعة ثمانية تسعة عشرة عدد واحد عدة أول ثاني ثالث رابع أخير آخر جديد قديم كبير صغير جيد أفضل مهم واضح بسيط مختلف متعدد عام خاص يوم وقت سنة شهر ساعة دقيقة ثانية صباح مساء الآن بداية نهاية وسط جانب أمام خلف فوق تحت يمين يسار شمال جنوب طريق بيت مدرسة جامعة كتاب دفتر قلم ورقة صفحة غلاف فهرس مستند ملزمة قسم عنوان فصل باب سطر كلمة جملة فقرة نص تنسيق جدول صورة شكل رسم معادلة سؤال جواب إجابة طالب مدرس أستاذ مادة دراسة مراجعة امتحان اختبار حل تمرين نظرية قانون مثال تعريف مفهوم نتيجة خلاصة هدف أهداف محاضرة ملخص بنك أسئلة الجبر حساب هندسة رياضيات فيزياء كيمياء تاريخ جغرافيا لغة عربية إنجليزية تنظير تطبيق أساسيات متغير ثابت دالة معادلة مصفوفة متجه محدد مجموع فرق ضرب قسمة نسبة عدد صحيح كسر عشري مربع جذر أساس لوغاريتم احتمال إحصاء رسم بياني منحنى نقطة خط مستقيم زاوية مثلث دائرة محيط مساحة حجم سطح مجسم مخروط أسطوانة كرة قطر نصف قطر مماس عمودي توازٍ متوازٍ مستطيل مربع معين شبه منحرف مثلثات دوائر زوايا أعداد عمليات حسابية قيم حلول معادلات مصفوفات متجهات محددات نظريات براهين تعاريف أمثلة تطبيقات تمارين مسائل نصوص معلومات بيانات تحليل تركيب مقارنة تصنيف ترتيب تسلسل تكرار تجربة ملاحظة استنتاج فرضية نهائية عملي نظري مرجع مراجع مصدر مصادر بحث مقالة تقرير تقديم خاتمة تمهيد مقدمة المادة الدراسية المرحلة الصفية المجموعة الأولى المجموعة الثانية السؤال الأول السؤال الثاني الإجابة الصحيحة درجة الدرجة العلامة نجاح رسوب مستوى تعليم تعليمي أكاديمي علمي عملي نظري منهج المنهج خطة الخطة درس الدروس وحدة الوحدات باب الأبواب فصل الفصول صفحة الصفحات مجلد المجلدات الطبعة الإصدار التحديث النسخة الحفظ التصدير الاستيراد الملف المستند المشروع القسم العنوان الترويسة التذييل الهامش الحاشية التعليق المراجعة التدقيق الإملائي التصحيح القاموس الكلمات الكلمة الحرف الرمز الجدول الأعمدة الصفوف الخلايا الصورة الأشكال الرسم المعادلات المتغيرات القيم النتائج الحلول الخطوات التفاصيل الشرح المثال التطبيق التمرين السؤال الجواب الإجابة الفكرة المفهوم التعريف القانون النظرية القاعدة الاستثناء الحالة الحالات الشرط Conditions النتيجة الخلاصة تلخيص تهدف مركزة لأهم مفاهيم خطي محلولة تساعدك الربط تمييز متجهات مصفوفات عمليات أساسية حساب محددات استخدامها تحديد قابلية عكس أنظمة معادلات خطية مراجعة شاملة`;
+
+const AR_DICT = new Set(AR_DICT_RAW.split(/\s+/).map(normAr).filter(w => w.length > 1));
+
+function normAr(word) {
+  return String(word || '')
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/\u0640/g, '')
+    .replace(/[أإآٱ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[ؤئ]/g, 'ء')
+    .replace(/[^\u0600-\u06FF]/g, '');
+}
+const AR_DISPLAY = new Map();
+AR_DICT_RAW.split(/\s+/).forEach(w => { const n = normAr(w); if (n && !AR_DISPLAY.has(n)) AR_DISPLAY.set(n, w); });
+
+const AR_PREFIXES = ['وال', 'بال', 'كال', 'لل', 'فال', 'ال', 'و', 'ب', 'ك', 'ل', 'ف'];
+const AR_SUFFIXES = ['ها', 'كم', 'كن', 'هم', 'هن', 'ان', 'ات', 'ون', 'ين', 'ي', 'ه', 'ت'];
+function isKnownArabic(word) {
+  const n = normAr(word);
+  if (!n) return true;
+  if (AR_DICT.has(n) || (state.customDict || []).indexOf(n) >= 0) return true;
+  for (const p of AR_PREFIXES) {
+    if (n.indexOf(p) === 0 && AR_DICT.has(n.slice(p.length))) return true;
+  }
+  for (const suf of AR_SUFFIXES) {
+    if (n.length > suf.length + 2 && n.endsWith(suf) && AR_DICT.has(n.slice(0, -suf.length))) return true;
+  }
+  for (const p of AR_PREFIXES) {
+    if (n.indexOf(p) !== 0) continue;
+    const rest = n.slice(p.length);
+    for (const suf of AR_SUFFIXES) {
+      if (rest.length > suf.length + 2 && rest.endsWith(suf) && AR_DICT.has(rest.slice(0, -suf.length))) return true;
+    }
+  }
+  return false;
+}
+function editDistance(a, b) {
+  const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 0; j <= b.length; j++) m[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        m[i][j] = Math.min(m[i][j], m[i - 2][j - 2] + 1);
+      }
+    }
+  }
+  return m[a.length][b.length];
+}
+function spellSuggestions(word) {
+  const n = normAr(word);
+  if (AUTOCORRECT[n]) return [AUTOCORRECT[n]];
+  const out = [];
+  for (const cand of AR_DICT) {
+    if (Math.abs(cand.length - n.length) > 2) continue;
+    const d = editDistance(n, cand);
+    if (d <= 2) out.push({ word: cand, d });
+  }
+  out.sort((a, b) => a.d - b.d);
+  return out.slice(0, 5).map(x => AR_DISPLAY.get(x.word) || x.word);
+}
+const AUTOCORRECT = {
+  'اللغه': 'اللغة', 'المدرسه': 'المدرسة', 'الجامعه': 'الجامعة',
+  'النتايج': 'النتائج', 'الاول': 'الأول', 'الاخر': 'الآخر',
+  'الان': 'الآن', 'اما': 'أما', 'اذا': 'إذا', 'او': 'أو',
+  'ان': 'أن', 'الرياضه': 'الرياضة', 'العلوم': 'العلوم',
+  'معلومات': 'معلومات', 'الاسئله': 'الأسئلة', 'الاجابه': 'الإجابة',
+  'الصفحه': 'الصفحة', 'الملزمه': 'الملزمة', 'المستند': 'المستند'
+};
+function normalizeDict(raw) {
+  if (!Array.isArray(raw)) return [];
+  return Array.from(new Set(raw.map(normAr).filter(w => w.length > 1))).slice(0, 1000);
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -5920,13 +6029,13 @@ function loadState() {
         const customCovers = Array.isArray(parsed.customCovers)
           ? parsed.customCovers.map(normalizeCustomCover).filter(Boolean).slice(0, 30)
           : [];
-        return { docs, customCovers };
+        return { docs, customCovers, customDict: normalizeDict(parsed.customDict) };
       }
     }
   } catch (err) {
     console.warn('تعذّر قراءة التخزين المحلي:', err);
   }
-  return { docs: [seedDoc()], customCovers: [] };
+  return { docs: [seedDoc()], customCovers: [], customDict: [] };
 }
 
 const state = loadState();
@@ -5944,7 +6053,7 @@ function queueDesktopSave() {
   clearTimeout(desktopSaveTimer);
   desktopSaveTimer = setTimeout(() => {
     try {
-      const json = JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [] });
+      const json = JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [], customDict: state.customDict || [] });
       window.midadDesktop.storage.write(json)
         .then(ok => { if (ok === false) toast('تعذّر الحفظ في ملف البيانات الآمن.', 'error'); })
         .catch(() => {});
@@ -5974,7 +6083,7 @@ async function hydrateFromDesktop() {
       }
     } else if (state.docs.length) {
       window.midadDesktop.storage.write(JSON.stringify({
-        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || []
+        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [], customDict: state.customDict || []
       })).catch(() => {});
     }
     /* نسخة احتياطية يومية تلقائية */
@@ -5982,7 +6091,7 @@ async function hydrateFromDesktop() {
     try { lastBackup = Number(localStorage.getItem('midad.lastBackup')) || 0; } catch (err) { /* تجاهل */ }
     if (Date.now() - lastBackup > 86400000 && state.docs.length) {
       window.midadDesktop.storage.backup(JSON.stringify({
-        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || []
+        version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [], customDict: state.customDict || []
       })).then(name => {
         if (name) { try { localStorage.setItem('midad.lastBackup', String(Date.now())); } catch (err) { /* تجاهل */ } }
       }).catch(() => {});
@@ -5992,7 +6101,7 @@ async function hydrateFromDesktop() {
 
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [] }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ version: 1, savedAt: Date.now(), docs: state.docs, customCovers: state.customCovers || [], customDict: state.customDict || [] }));
     queueDesktopSave();
     return true;
   } catch (err) {
@@ -8018,6 +8127,7 @@ docCanvas.addEventListener('input', event => {
       updateTocDom();
     } else {
       clearLegacyPlaceholder(el);
+      if (autocorrectOn) applyAutoCorrect();
       renumberQuestions();
       if (typeof renumberReferences === 'function') renumberReferences();
       syncBodyFromDom(el);
@@ -8375,6 +8485,137 @@ if (reviewDialog) {
   });
 }
 
+/* ---------- الدفعة ٣٩: التدقيق والتصحيح التلقائي ---------- */
+const spellDialog = $('#spellDialog');
+const spellIgnored = new Set();
+let autocorrectOn = false;
+
+function spellIssues() {
+  const doc = activeDoc();
+  if (!doc) return [];
+  const seen = new Set();
+  const issues = [];
+  doc.sections.forEach(section => {
+    htmlToWords(section.body).forEach(word => {
+      if (!/^[\u0600-\u06FF]+$/.test(word) || word.length < 3) return;
+      if (isKnownArabic(word) || spellIgnored.has(normAr(word))) return;
+      const key = normAr(word);
+      if (seen.has(key)) return;
+      seen.add(key);
+      issues.push({ word, suggestions: spellSuggestions(word) });
+    });
+  });
+  return issues.slice(0, 120);
+}
+function runSpellCheck() {
+  const box = $('#spellList');
+  if (!box) return;
+  if (!activeDoc()) { box.innerHTML = '<div class="review-empty">افتح مستندًا أولًا.</div>'; return; }
+  const issues = spellIssues();
+  if (!issues.length) { box.innerHTML = '<div class="review-empty">لا توجد أخطاء إملائية واضحة.</div>'; return; }
+  box.innerHTML = issues.map((it, i) =>
+    '<div class="spell-row"><div><span class="spell-word">' + esc(it.word) + '</span> — كلمة غير معروفة</div>' +
+    '<div>' + (it.suggestions.length
+      ? it.suggestions.map(s => '<button class="spell-sug" type="button" data-spell-fix="' + i + '" data-spell-word="' + esc(it.word) + '" data-spell-to="' + esc(s) + '">' + esc(s) + '</button>').join(' ')
+      : '<span class="hint">لا توجد اقتراحات قريبة</span>') + '</div>' +
+    '<div><button class="mini-btn" type="button" data-spell-ignore="' + esc(it.word) + '">تجاهل</button> ' +
+    '<button class="mini-btn" type="button" data-spell-add="' + esc(it.word) + '">أضف للقاموس</button></div></div>'
+  ).join('');
+}
+function replaceWordEverywhere(from, to) {
+  const walker = document.createTreeWalker(docCanvas, NodeFilter.SHOW_TEXT, null);
+  const nodes = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (!node.parentElement || !node.parentElement.closest('.paper-body')) continue;
+    if ((node.textContent || '').indexOf(from) >= 0) nodes.push(node);
+  }
+  let changed = 0;
+  nodes.forEach(n => {
+    n.textContent = (n.textContent || '').split(from).join(to);
+    changed++;
+    const body = n.parentElement.closest('.paper-body');
+    if (body) syncBodyFromDom(body);
+  });
+  if (changed) { persist(); toast('استُبدلت ' + toAr(changed) + ' كلمة.'); }
+  return changed;
+}
+function applyAutoCorrect() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+  const node = range.startContainer;
+  if (node.nodeType !== 3) return;
+  const before = (node.textContent || '').slice(0, range.startOffset);
+  const m = /([\u0600-\u06FF]+)$/.exec(before);
+  if (!m) return;
+  const fix = AUTOCORRECT[normAr(m[1])];
+  if (!fix || fix === m[1]) return;
+  const r = document.createRange();
+  r.setStart(node, range.startOffset - m[1].length);
+  r.setEnd(node, range.startOffset);
+  r.deleteContents();
+  r.insertNode(document.createTextNode(fix));
+  const after = document.createRange();
+  after.setStart(node, range.startOffset - m[1].length + fix.length);
+  after.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(after);
+  const body = node.parentElement && node.parentElement.closest('.paper-body');
+  if (body) syncBodyFromDom(body);
+  toast('تصحيح تلقائي: ' + m[1] + ' → ' + fix);
+}
+function toggleAutoCorrect() {
+  autocorrectOn = !autocorrectOn;
+  const btn = $('#autoCorrectBtn');
+  if (btn) {
+    btn.classList.toggle('proof-on', autocorrectOn);
+    btn.setAttribute('aria-pressed', String(autocorrectOn));
+  }
+  toast(autocorrectOn ? 'التصحيح التلقائي مُفعّل.' : 'التصحيح التلقائي متوقف.');
+}
+function handleProof(kind) {
+  if (kind === 'auto') { toggleAutoCorrect(); return; }
+  if (kind === 'spell') {
+    if (!activeDoc()) { toast('افتح مستندًا أولًا.', 'error'); return; }
+    runSpellCheck();
+    if (spellDialog && typeof spellDialog.showModal === 'function') spellDialog.showModal();
+    else if (spellDialog) spellDialog.setAttribute('open', '');
+  }
+}
+
+const spellRunBtn = $('#spellRunBtn');
+if (spellRunBtn) spellRunBtn.addEventListener('click', runSpellCheck);
+const spellAddBtn = $('#spellAddBtn');
+if (spellAddBtn) spellAddBtn.addEventListener('click', () => {
+  const input = $('#spellAddInput');
+  const w = normAr(input && input.value || '');
+  if (!w) { toast('اكتب كلمة صحيحة أولًا.', 'error'); return; }
+  state.customDict = normalizeDict((state.customDict || []).concat([w]));
+  persist();
+  if (input) input.value = '';
+  runSpellCheck();
+  toast('أُضيفت الكلمة إلى القاموس الشخصي.');
+});
+if (spellDialog) spellDialog.addEventListener('click', event => {
+  const fix = event.target.closest('[data-spell-fix]');
+  const ign = event.target.closest('[data-spell-ignore]');
+  const add = event.target.closest('[data-spell-add]');
+  if (fix) {
+    replaceWordEverywhere(fix.dataset.spellWord, fix.dataset.spellTo);
+    runSpellCheck();
+  } else if (ign) {
+    spellIgnored.add(normAr(ign.dataset.spellIgnore));
+    runSpellCheck();
+  } else if (add) {
+    const w = normAr(add.dataset.spellAdd);
+    state.customDict = normalizeDict((state.customDict || []).concat([w]));
+    persist();
+    runSpellCheck();
+    toast('أُضيفت إلى القاموس الشخصي.');
+  }
+});
+
 function handleInsert(kind) {
   if (kind === 'equation') { openEquationDialog(); return; }
   if (kind === 'table') { tableDialog.showModal(); return; }
@@ -8424,6 +8665,8 @@ editorToolbar.addEventListener('click', event => {
     handleInsert(btn.dataset.insert);
   } else if (btn.dataset.review) {
     handleReview(btn.dataset.review);
+  } else if (btn.dataset.proof) {
+    handleProof(btn.dataset.proof);
   }
 });
 
@@ -13563,6 +13806,9 @@ async function handleImport() {
       const byId = new Map(state.docs.map(d => [d.id, d]));
       incomingDocs.forEach(d => { if (!d.createdAt) d.createdAt = Date.now(); d.updatedAt = Date.now(); byId.set(d.id, d); });
       state.docs = Array.from(byId.values());
+      if (Array.isArray(data.customDict)) {
+        state.customDict = normalizeDict((state.customDict || []).concat(data.customDict));
+      }
       const coverById = new Map((state.customCovers || []).map(c => [c.id, c]));
       incomingCovers.forEach(c => coverById.set(c.id, c));
       state.customCovers = Array.from(coverById.values());
