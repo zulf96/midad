@@ -1,0 +1,102 @@
+{
+  "name": "midad-studio",
+  "productName": "Midad Studio",
+  "version": "1.0.0",
+  "homepage": "https://github.com/zulf96/midad",
+  "description": "مِداد ستوديو — استوديو تأليف الملازم الدراسية",
+  "author": {
+    "name": "مِداد",
+    "email": "zulf96@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --publish never",
+    "dist": "electron-builder --win --publish never",
+    "release": "electron-builder --win --publish always",
+    "dist:win": "electron-builder --win --publish never",
+    "release:win": "electron-builder --win --publish always",
+    "dist:linux": "electron-builder --linux --publish never",
+    "dist:linux:x64": "electron-builder --linux --x64 --publish never",
+    "dist:linux:arm64": "electron-builder --linux --arm64 -c.directories.output=release-arm64 --publish never",
+    "release:linux": "electron-builder --linux --publish always",
+    "dist:portable": "electron-builder --win portable --publish never",
+    "check:release": "node scripts/check-release-assets.js --dir release",
+    "check:release:live": "node scripts/check-release-assets.js --tag"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.midad.studio",
+    "productName": "Midad Studio",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*",
+      "build/icon.png"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "zulf96",
+        "repo": "midad"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "artifactName": "Midad-Studio-Setup-${version}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "unicode": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "مِداد ستوديو",
+      "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage"
+        },
+        {
+          "target": "deb"
+        }
+      ],
+      "category": "Office",
+      "synopsis": "استوديو تأليف الملازم الدراسية العربية",
+      "description": "تأليف الملازم الدراسية العربية وتنسيقها وتصديرها وطباعتها على A4.",
+      "icon": "build/icon.png",
+      "maintainer": "Midad Studio <zulf96@users.noreply.github.com>",
+      "executableName": "midad-studio",
+      "artifactName": "Midad-Studio-${version}-${arch}.${ext}",
+      "desktop": {
+        "Name": "مِداد ستوديو",
+        "GenericName": "استوديو تأليف الملازم",
+        "Comment": "تأليف الملازم الدراسية العربية وطباعتها",
+        "Categories": "Office;Education;",
+        "Keywords": "تعليم;ملازم;مستندات;طباعة;"
+      }
+    }
+  }
+}

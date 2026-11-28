@@ -1,0 +1,22 @@
+# Build artifacts
+midad-rust/target/
+midad-rust/dist/
+midad-rust/trunk-server.log
+**/.stage/
+**/__pycache__/
+*.log
+
+# Graphify caches
+graphify-out/cache/
+graphify-out/.graphify_*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Electron
+midad-desktop/node_modules/
+midad-desktop/release/
+midad-desktop/release-arm64/
+midad-desktop/.electron-builder-cache/

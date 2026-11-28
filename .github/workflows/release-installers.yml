@@ -1,0 +1,112 @@
+name: Build installers (EXE + APK) and attach to v1.0.0
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows-exe:
+    name: Windows NSIS installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Electron dependencies
+        working-directory: midad-desktop
+        run: npm install
+
+      - name: Build Windows installer
+        working-directory: midad-desktop
+        run: npm run dist:win
+
+      - name: Rename and upload EXE
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $exe = Get-ChildItem -Path midad-desktop/release -Filter '*Setup*.exe' | Select-Object -First 1
+          if (-not $exe) { throw 'EXE not found' }
+          $target = "Midad Studio Setup 1.0.0.exe"
+          Copy-Item $exe.FullName $target
+          gh release upload v1.0.0 "$target" --repo ${{ github.repository }} --clobber
+
+  android-apk:
+    name: Android debug APK (Capacitor)
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android platform
+        run: |
+          SDKMANAGER=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager | head -1)
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Create Capacitor project and sync web assets
+        run: |
+          mkdir -p mobile
+          cd mobile
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "app.midad.studio",
+            "appName": "Midad Studio",
+            "webDir": "../midad-desktop/app",
+            "server": { "androidScheme": "https" }
+          }
+          EOF
+          npx cap add android
+          cp -a ../android-icons/. android/app/src/main/res/
+          npx cap sync android
+
+      - name: Install Gradle 8.2.1 (required by Android Gradle Plugin)
+        run: |
+          for i in 1 2 3; do
+            curl -L --retry 5 --retry-delay 5 -o "$RUNNER_TEMP/gradle.zip" \
+              https://services.gradle.org/distributions/gradle-8.2.1-bin.zip && break || sleep 15
+          done
+          unzip -q "$RUNNER_TEMP/gradle.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/gradle-8.2.1/bin" >> "$GITHUB_PATH"
+
+      - name: Build APK
+        run: |
+          cd mobile/android
+          if command -v gradle >/dev/null 2>&1; then
+            gradle assembleDebug
+          else
+            chmod +x gradlew
+            for i in 1 2 3; do
+              ./gradlew assembleDebug && break || sleep 15
+            done
+          fi
+
+      - name: Rename and upload APK
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APK=$(find mobile/android -name 'app-debug.apk' | head -1)
+          if [ -z "$APK" ]; then echo "APK not found"; exit 1; fi
+          cp "$APK" "Midad Studio Setup 1.0.0.apk"
+          gh release upload v1.0.0 "Midad Studio Setup 1.0.0.apk" --repo ${{ github.repository }} --clobber
