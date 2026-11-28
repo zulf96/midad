@@ -1009,13 +1009,25 @@
         "priority": "high",
         "subtasks": [],
         "updatedAt": "2026-11-28T17:24:40.775Z"
+      },
+      {
+        "id": "75",
+        "title": "إصلاح تباين نصوص الواجهة الرئيسية",
+        "description": "جعل نصوص بطاقة الترحيب والإحصاءات مقروءة في الوضع النهاري ضمن هوية حبر وذهب",
+        "details": "متغيرات(--hero-fg/--hero-muted/--hero-panel) تتغير مع وضع Adobe والوضع الليلي، وتحديث لون الروابط وشريط القوالب إلى الذهب/التيل.",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-11-28T17:29:20.235Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-11-28T17:24:40.775Z",
-      "taskCount": 74,
-      "completedCount": 74,
+      "lastModified": "2026-11-28T17:29:20.236Z",
+      "taskCount": 75,
+      "completedCount": 75,
       "tags": [
         "master"
       ]
